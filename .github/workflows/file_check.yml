@@ -1,0 +1,20 @@
+name: Check for files and notebook output
+
+on:
+  pull_request:
+    branches: main
+
+jobs:
+  build:
+    permissions: write-all
+    name: File warnings
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: LFS-warning
+      uses: ppremk/lfs-warning@v3.2
+      with:
+        filesizelimit: 1MB
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Ensure Clean Jupyter Notebooks
+      uses: ResearchSoftwareActions/EnsureCleanNotebooksAction@1.1

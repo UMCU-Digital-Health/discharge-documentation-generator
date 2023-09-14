@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "discharge_docs"
+version = "0.1.0"
+authors = [
+  { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
+]
+description = "Tool that uses LLM's to automatically generate hospital discharge documentation. Part of the "AI for administration load" project."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies =[]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+dev = ["black", "flake8", "isort", "rsconnect-python"]
+
+[tool.isort]
+profile = "black"
