@@ -1,0 +1,6 @@
+openai==0.28.0
+python-dotenv==1.0.0
+matplotlib
+plotly
+dash
+-e .

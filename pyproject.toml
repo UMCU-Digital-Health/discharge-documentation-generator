@@ -7,19 +7,33 @@ name = "discharge_docs"
 version = "0.1.0"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
+  { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
 ]
-description = "Tool that uses LLM's to automatically generate hospital discharge documentation. Part of the 'AI for administration load' project."
+description = "Tool that uses LLM's to automatically generate discharge documentation. Part of the 'AI for administration load' project."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = "==3.8.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies =[]
+dependencies =["streamlit~=1.26", "openai~=0.28", "python-dotenv~=1.0"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-dev = ["black", "flake8", "isort", "rsconnect-python"]
+dev = ["black", "ruff", "rsconnect-python", "nbstripout"]
 
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+src = ["src"]
+ignore = []
+line-length = 88
+select = [
+    "B",
+    "E",
+    "F",
+    "W",
+    "C90",
+    "I",
+]

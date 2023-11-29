@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "run.app:app"
+  },
+  "python": {
+    "version": "3.8.12",
+    "package_manager": {
+      "name": "pip",
+      "version": "23.3.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "c78e6bc2b67f04f3d39a32105cf1fc6e"
+    },
+    ".gitignore": {
+      "checksum": "8f4c4875f26880fd19da292db7dd427c"
+    },
+    "CHANGELOG.md": {
+      "checksum": "80dfef011b4e8d586884798d6f730a19"
+    },
+    "README.md": {
+      "checksum": "785fa4e29ab9369b68b5e225e30b3968"
+    },
+    "data/processed/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "data/raw/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "data/raw/example_patient_file_gpt.txt": {
+      "checksum": "0b3e432117625a33011acaed9f994d8b"
+    },
+    "docs/Makefile": {
+      "checksum": "ef4f00c423089323edef1d3cff31a4a2"
+    },
+    "docs/_static/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "docs/conf.py": {
+      "checksum": "cda4962949e0daec53846d5e181f3ec3"
+    },
+    "docs/index.rst": {
+      "checksum": "15ae536a3c2b4212dd630c3665729d0f"
+    },
+    "docs/make.bat": {
+      "checksum": "1eb66bfc2d91ac65bd16a1a73bded2ca"
+    },
+    "pyproject.toml": {
+      "checksum": "8f7a9012be4d0987cf7e1b206f9e0c11"
+    },
+    "run/.ipynb_checkpoints/app-checkpoint.py": {
+      "checksum": "974b90cf225170db48fd4bbf492cb383"
+    },
+    "run/app.py": {
+      "checksum": "e157f5715e86c0866aec81097f2ff36f"
+    },
+    "setup.cfg": {
+      "checksum": "5896bf0dffe7886cbfbec0aced6472b4"
+    },
+    "src/discharge_docs.egg-info/PKG-INFO": {
+      "checksum": "c0fdca2e648fbd7801983a64fc68b239"
+    },
+    "src/discharge_docs.egg-info/SOURCES.txt": {
+      "checksum": "ad0457dcb16b8dbf0f66cf1741a683b6"
+    },
+    "src/discharge_docs.egg-info/dependency_links.txt": {
+      "checksum": "68b329da9893e34099c7d8ad5cb9c940"
+    },
+    "src/discharge_docs.egg-info/requires.txt": {
+      "checksum": "a779eaa9c9d78d91bdd74ed1f2b7426c"
+    },
+    "src/discharge_docs.egg-info/top_level.txt": {
+      "checksum": "c6a6796dce1b656d249fb9d74ac6c3e6"
+    },
+    "src/discharge_docs/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/__pycache__/__init__.cpython-38.pyc": {
+      "checksum": "859c4996bad552ef0d057f7f23068855"
+    },
+    "src/discharge_docs/__pycache__/dashboard_helper.cpython-38.pyc": {
+      "checksum": "fdbaa928edd9902306e68348a718c8a6"
+    },
+    "src/discharge_docs/__pycache__/prompt.cpython-38.pyc": {
+      "checksum": "c7b429ea350a7f733ea4b44eb3266981"
+    },
+    "src/discharge_docs/dashboard_helper.py": {
+      "checksum": "64a5a7bcadc9a393de3aac7720cc4d3d"
+    },
+    "src/discharge_docs/prompt.py": {
+      "checksum": "fa2e8fc1e5d875fd08cc5eb27a0dc804"
+    }
+  }
+}
