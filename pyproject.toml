@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies =["streamlit~=1.26", "openai~=0.28", "python-dotenv~=1.0"]
+dependencies =["streamlit~=1.26", "openai~=0.28", "python-dotenv~=1.0", "deduce~=1.0"]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]

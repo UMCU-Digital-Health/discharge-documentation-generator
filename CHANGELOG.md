@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2023-11-29
 
+### Added
+- Added queries to extract data from dataplatform
+- Extracted data from the IC's from MetaVision
+- Added notebook to apply deduce to extracted data
 
 ## [0.1.0] - 2023-11-06
 
+### Added
 - demo dashboard
-
-
