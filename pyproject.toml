@@ -4,31 +4,37 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "0.1.2"
+version = "0.1.3"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
 ]
 description = "Tool that uses LLM's to automatically generate discharge documentation. Part of the 'AI for administration load' project."
 readme = "README.md"
-requires-python = "==3.8.12"
+requires-python = "~=3.10.2"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies =["streamlit~=1.26", "openai~=0.28", "python-dotenv~=1.0", "deduce~=1.0"]
+dependencies =[
+  "openai~=1.8",
+  "python-dotenv~=1.0",
+  "deduce~=3.0.1",
+  "matplotlib~=3.8",
+  "plotly~=5.18",
+  "dash~=2.14",
+  "pandas~=2.1"
+]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-dev = ["black", "ruff", "rsconnect-python", "nbstripout"]
+dev = ["black", "ruff", "rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5"]
 
 [tool.isort]
 profile = "black"
 
 [tool.ruff]
 src = ["src"]
-ignore = []
-line-length = 88
 select = [
     "B",
     "E",

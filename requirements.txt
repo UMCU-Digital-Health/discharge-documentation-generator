@@ -1,7 +1,10 @@
-openai==0.28.0
-deduce==1.0.8
+openai==1.8.0
+deduce==3.0.1
 python-dotenv==1.0.0
-matplotlib
-plotly
-dash
+matplotlib==3.8.2
+plotly==5.18.0
+dash==2.14.2
+pandas==2.1.4
+rouge-score==0.1.2
+dvclive==3.5.1
 -e .

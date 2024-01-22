@@ -1,0 +1,16 @@
+params:
+- output/dvclive/params.yaml
+metrics:
+- output/dvclive/metrics.json
+plots:
+- output/dvclive/plots/metrics:
+    x: step
+stages:
+  evaluate_gpt:
+    cmd: python src/discharge_docs/evaluate/evaluate_prompt.py
+    deps:
+    - data/prompts/system_prompt.txt
+    - data/prompts/user_prompt1.txt
+    - data/raw/example_patient_discharge.txt
+    - data/raw/example_patient_file_gpt.txt
+    - src/discharge_docs/evaluate/evaluate_prompt.py

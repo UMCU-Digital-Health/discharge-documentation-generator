@@ -1,26 +1,18 @@
 import json
+import re
 
-import openai
 
-
-def get_chatgpt_output(patient_file, engine):
-    response_beloop = openai.ChatCompletion.create(
-        engine=engine,
+def get_chatgpt_output(patient_file, engine, client):
+    response_beloop = client.chat.completions.create(
+        model=engine,
         messages=[
             {
                 "role": "system",
                 "content": """Retourneer alle delen van het paragraaf tekst in het
-                format van JSON, gegroupeerd per categorie
-                zoals hieronder aangegeven. Geef daarnaast ook de bron zinnen waaruit
+                format van JSON, met een entry per categorie.
+                Geef daarnaast ook de bron zinnen waaruit
                 het beloop is gehaald weer.
-                [{"Categorie": *Categorie*,
-                    "Beloop tijdens opname": *Beloop tijdens de opname van die
-                    categorie*,
-                    "Bron:", *Bron zinnen waaruit het beloop is gehaald*}].
-                Geef alleen dit JSON object terug als content,
-                geef verder geen output terug. Hou het antwoord in het JSON object
-                kort. Als je het antwoord niet weet, geef dat dan aan en verzin
-                niet iets. Schrijf het alsof je een arts bent die communiceert met een
+                Schrijf het alsof je een arts bent die communiceert met een
                 huisarts.""",
             },
             {
@@ -36,7 +28,7 @@ def get_chatgpt_output(patient_file, engine):
                 wanneer de patient ontslagen wordt.
                 Het is belangrijk om lopende zinnen te schrijven. Benoem de volgende
                 zaken:
-                    - Wanneer er een compliactie optrad in verhouding tot de opname op
+                    - Wanneer er een complicatie optrad in verhouding tot de opname op
                     dag 1
                     - Wat deze complicatie was
                     - Hoe deze complicatie behandeld is
@@ -45,10 +37,11 @@ def get_chatgpt_output(patient_file, engine):
                 Mochten er geen klachten zijn, dan kun je dit ook aangeven.
                 Geef ook de bron zinnen waaruit het beloop is gehaald weer, CITEER de
                 bron woord voor woord.
-                Antwoord in een enkel JSON formaat per categorie van de vorm
+                Antwoord in JSON formaat per categorie van de vorm:
                 [{"Categorie": *Categorie*, "Beloop tijdens opname":
                 *Beloop tijdens opname*,  "Bron:", *Bron zinnen waaruit het beloop is
-                gehaald*}].
+                gehaald*}, {"Categorie": *Categorie2*, ...}]
+                Geen alleen dit JSON-object terug!
                 """,
             },
             {"role": "user", "content": patient_file},
@@ -56,21 +49,13 @@ def get_chatgpt_output(patient_file, engine):
         temperature=0,
     )
 
-    response_status = openai.ChatCompletion.create(
-        engine=engine,
+    response_status = client.chat.completions.create(
+        model=engine,
         messages=[
             {
                 "role": "system",
-                "content": """Retourneer alle delen van het paragraaf tekst in het
-                format van JSON, gegroupeerd per categorie
-                zoals hieronder aangegeven.
-                [{"Categorie": *Categorie*,
-                    "Huidige status": *Huidige status*,
-                    "Bron:", *Bron zinnen waaruit de huidige status is gehaald*}].
-                Geef alleen dit JSON object terug als content,
-                geef verder geen output terug. Hou het antwoord in het JSON object
-                kort. Als je het antwoord niet weet, geef dat dan aan en verzin
-                niet iets. Schrijf het alsof je een arts bent die communiceert met een
+                "content": """Retourneer alle delen van het paragraaf tekst in
+                JSON format. Schrijf het alsof je een arts bent die communiceert met een
                 huisarts.""",
             },
             {
@@ -95,15 +80,28 @@ def get_chatgpt_output(patient_file, engine):
                 volgende behandelende arts van op de hoogte moet zijn.
                 Geef ook de bron zinnen waaruit de huidige status is gehaald weer,
                 CITEER de bron woord voor woord.
-                Antwoord in een enkel JSON formaat per categorie van de vorm
+                Antwoord in JSON formaat per categorie van de vorm:
                 [{"Categorie": *Categorie*, "Huidige status": *Huidige status*,
-                "Bron:", *Bron zinnen waaruit de huidige status is gehaald*}].
+                "Bron:", *Bron zinnen waaruit de huidige status is gehaald*},
+                {"Categorie": *Categorie2*, ...}]
+                Geen alleen dit JSON-object terug!
                 """,
             },
             {"role": "user", "content": patient_file},
         ],
     )
-
-    reply_beloop = json.loads(response_beloop["choices"][0]["message"]["content"])
-    reply_status = json.loads(response_status["choices"][0]["message"]["content"])
+    reply_beloop = json.loads(
+        re.sub(
+            "```(json)?",
+            "",
+            response_beloop.model_dump()["choices"][0]["message"]["content"],
+        )
+    )
+    reply_status = json.loads(
+        re.sub(
+            "```(json)?",
+            "",
+            response_status.model_dump()["choices"][0]["message"]["content"],
+        )
+    )
     return reply_beloop, reply_status

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2024-01-19
+
+### Added
+- Added DVC experiment setup and config files
+
+### Changed
+- Updated to python 3.10
+- Updated openai package version and rewrote notebook and demo dash
+- Updated DEDUCE version in notebook
+
+### Fixed
+- Demo dashboard now sometimes works, still not robust
+- Removed print statement from dashboard
+
 ## [0.1.2] - 2024-01-10
 
 ### Fixed

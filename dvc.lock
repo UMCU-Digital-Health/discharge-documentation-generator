@@ -1,0 +1,25 @@
+schema: '2.0'
+stages:
+  evaluate_gpt:
+    cmd: python src/discharge_docs/evaluate/evaluate_prompt.py
+    deps:
+    - path: data/prompts/system_prompt.txt
+      hash: md5
+      md5: 2c3aa80de42460bad3ce1583cb349423
+      size: 212
+    - path: data/prompts/user_prompt1.txt
+      hash: md5
+      md5: b7277afbbfefb6c0ba6e71e507ec79d6
+      size: 1190
+    - path: data/raw/example_patient_discharge.txt
+      hash: md5
+      md5: d38c541564b41865eb1b17255a235862
+      size: 1538
+    - path: data/raw/example_patient_file_gpt.txt
+      hash: md5
+      md5: 1700b1e448015cd097cdf2cfbef528ed
+      size: 2179
+    - path: src/discharge_docs/evaluate/evaluate_prompt.py
+      hash: md5
+      md5: ab21720696886e515b6c7f6b28b66a79
+      size: 3628

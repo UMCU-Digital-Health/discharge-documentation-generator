@@ -1,23 +1,26 @@
+import logging
 import os
-import re
 from pathlib import Path
 
 import dash
-import openai
 from dash import callback_context, dcc, html
 from dash.dependencies import Input, Output, State
 from dotenv import load_dotenv
+from openai import AzureOpenAI
 
-from discharge_docs.dashboard_helper import highlight
-from discharge_docs.prompt import get_chatgpt_output
+from discharge_docs.dashboard.helper import highlight
+from discharge_docs.dashboard.prompt import get_chatgpt_output
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
-deployment_name = "model-gpt35"
+deployment_name = "aiva-gpt"
 
-openai.api_key = os.getenv("AZURE_OPENAI_KEY")
-openai.api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
-openai.api_type = "azure"
-openai.api_version = "2023-05-15"  # this may change in the future
+client = AzureOpenAI(
+    api_version="2023-05-15",
+    api_key=os.getenv("AZURE_OPENAI_KEY"),
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+)
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
@@ -26,11 +29,9 @@ with open(
 ) as f:
     example_patient_file = f.read()
 
-# sequences = re.split(re.escape("\n"), example_patient_file, flags=re.IGNORECASE)
-# example_patient_file_list = [html.Br(), *sequences]
-
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+application = app.server  # Neccessary for debugging in vscode, no further use
 app.layout = html.Div(
     [
         # This component is invisible, only used to store intermediate calculated df
@@ -151,8 +152,7 @@ app.layout = html.Div(
 def generate_ontslagbrief(n_clicks):
     if n_clicks is not None:
         reply_beloop, reply_status = get_chatgpt_output(
-            patient_file=example_patient_file,
-            engine=deployment_name,
+            patient_file=example_patient_file, engine=deployment_name, client=client
         )
 
         beloop_output = []
@@ -212,60 +212,59 @@ def combined_callback(
     triggered_id = ctx.triggered_id
 
     # Logic for highlight_selected_word
-    if triggered_id and "zoek-button" in triggered_id:
-        if zoek_n_clicks is not None and selected_word:
-            output = html.Div(example_patient_file)
-            output.children = highlight(example_patient_file, selected_word)
-            return output
+    if (
+        triggered_id
+        and "zoek-button" in triggered_id
+        and zoek_n_clicks is not None
+        and selected_word
+    ):
+        output = html.Div(example_patient_file)
+        output.children = highlight(example_patient_file, selected_word)
+        return output
 
     # Logic for highlight selected section and category sources
-    if triggered_id and "controleer-button" in triggered_id:
-        print("triggered")
-        if controleer_n_clicks is not None and selected_section and selected_category:
-            if selected_section == "Beloop tijdens opname":
-                response = reply_beloop
-            elif selected_section == "Huidige status":
-                response = reply_status
-            print(response)
-            # find the right dictionary in response
-            selected_dict = None
-            for category_pair in response:
-                if category_pair["Categorie"] == selected_category:
-                    selected_dict = category_pair
-                    break
+    if (
+        triggered_id
+        and "controleer-button" in triggered_id
+        and controleer_n_clicks is not None
+        and selected_section
+        and selected_category
+    ):
+        if selected_section == "Beloop tijdens opname":
+            response = reply_beloop
+        elif selected_section == "Huidige status":
+            response = reply_status
 
-            print(selected_dict)
-            # use selected_dict as needed
-            if selected_dict is not None:
-                bron_text = selected_dict["Bron:"]
-                bron_list = re.findall(r"'(.*?)'", bron_text)
-            else:
-                print(
-                    "No matching category found so GPT output is in incorrect format."
-                )
-            print(bron_list)
-            print(bron_text)
-            output = html.Div(example_patient_file)
-            highlighted_sources = example_patient_file
-            for bron in bron_list:
-                # if there is a dot at the end of a bron, remove it
-                if bron[-1] == ".":
-                    bron = bron[:-1]
+        # find the right dictionary in response
+        selected_dict = None
+        for category_pair in response:
+            if category_pair["Categorie"] == selected_category:
+                selected_dict = category_pair
+                break
 
-                print(bron)
+        # use selected_dict as needed
+        if selected_dict is not None:
+            bron_text = selected_dict["Bron"]
+            bron_list = bron_text.split(". ")
+        else:
+            logger.warning(
+                "No matching category found so GPT output is in incorrect format."
+            )
 
-                highlighted_sources = highlight(highlighted_sources, bron)
-            output.children = highlighted_sources
-            return output
+        output = html.Div(example_patient_file)
+        highlighted_sources = example_patient_file
+        for bron in bron_list:
+            # if there is a dot at the end of a bron, remove it
+            if bron[-1] == ".":
+                bron = bron[:-1]
 
-    # Logic for reset_highlights
-    elif triggered_id and "reset-button" in triggered_id:
-        if reset_n_clicks is not None:
-            return html.Div(example_patient_file)
+            highlighted_sources = highlight(highlighted_sources, bron)
+        output.children = highlighted_sources
+        return output
 
     # Default return
     return html.Div(example_patient_file)
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8509)
