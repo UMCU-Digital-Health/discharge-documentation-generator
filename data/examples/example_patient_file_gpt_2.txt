@@ -1,0 +1,159 @@
+### Dag 1
+- **Toestand**
+   - Circulatie: hartslag (HR) 110 bpm, bloeddruk (BP) 90/60 mmHg, op dopamine 5 mcg/kg/min.
+   - Ademhaling: zuurstofverzadiging (SpO2) 92% op FiO2 60%, teugvolume 450 ml, positieve eindexpiratoire druk (PEEP) 8 cm H2O.
+   - Neurologisch: Glasgow Coma Scale (GCS) 5 (E1V2M2), pupillen 3 mm bilateraal.
+   - Overige: hemoglobine (Hb) 9 g/dl, aantal witte bloedcellen (WBC) 12.000 /μl.
+- **Actieve problemen**
+   - Ernstig hoofdtrauma.
+   - Meerdere botbreuken.
+   - Ademhalingsproblemen.
+- **Actief beleid**
+   - Mechanisch ventilatiebeheer.
+   - Neurologische monitoring.
+   - Vloeistofreanimatie en inotrope ondersteuning.
+
+### Dag 2
+- **Toestand**
+   - Circulatie: HR 95 bpm, bloeddruk 110/70 mmHg, Dopamine verlaagd tot 3 mcg/kg/min.
+   - Ademhaling: SpO2 94% op FiO2 50%, ademvolume 400 ml, PEEP 6 cm H2O.
+   - Neurologisch: GCS 6 (E1V3M2), pupillen 3 mm, reactief.
+   - Overige: Hb 10 g/dl, WBC 11.000/μl.
+- **Actieve problemen**
+   - Risico op secundair hersenletsel.
+   - Ademhalingsondersteuning is aan de gang.
+- **Actief beleid**
+   - Geleidelijke vermindering van de ademhalingsondersteuning.
+   - Regelmatige neurologische beoordelingen.
+   - Infectiebewaking.
+
+### Dag 3
+- **Toestand**
+   - Circulatie: HR 88 bpm, BP 120/80 mmHg, buiten inotropen.
+   - Ademhaling: SpO2 96% op FiO2 40%, ademvolume 380 ml, PEEP 5 cm H2O.
+   - Neurologisch: GCS 7 (E2V2M3), pupillen 4 mm, reactief.
+   - Overige: Hb 10,5 g/dl, WBC 10.000/μl.
+- **Actieve problemen**
+   - Mogelijke longontsteking.
+   - Neurologisch herstel onzeker.
+- **Actief beleid**
+   - Antibiotica bij vermoedelijke longontsteking.
+   - Verbeterde neuroprotectiestrategieën.
+   - Initiatie van voedingsondersteuning.
+
+### Dag 4
+- **Toestand**
+   - Circulatie: HR 80 bpm, bloeddruk 130/85 mmHg.
+   - Ademhaling: SpO2 97% op FiO2 30%, spontane ademhalingsproef gestart.
+   - Neurologisch: GCS 8 (E2V3M3), pupillen 4 mm, reactief.
+   - Overige: Hb 11 g/dl, WBC 9.500/μl.
+- **Actieve problemen**
+   - Ontwennen van de beademing.
+   - Monitoren van neurologische vooruitgang.
+- **Actief beleid**
+   - Progressief speenprotocol.
+   - Continue neurologische beoordelingen.
+   - Wondzorgbeheer.
+
+### Dag 5
+- **Toestand**
+   - Circulatie: HR 75 bpm, bloeddruk 135/90 mmHg.
+   - Ademhaling: SpO2 98% op neuscanule 2 l/min.
+   - Neurologisch: GCS 9 (E3V3M3), persoonsgericht.
+   - Overige: Hb 11,5 g/dl, WBC 9.000/μl.
+- **Actieve problemen**
+   - Fysiotherapie voor mobiliteit.
+   - Cognitieve beperking.
+- **Actief beleid**
+   - Initiatie van fysiotherapie en ergotherapie.
+   - Cognitieve beoordelingen.
+   - Ademhalingsondersteuning indien nodig.
+
+### Dag 6
+- **Toestand**
+   - Circulatie: HR 72 bpm, bloeddruk 140/85 mmHg.
+   - Ademhaling: SpO2 99% op kamerlucht.
+   - Neurologisch: GCS 10 (E3V4M3), milde agitatie.
+   - Overige: Mobilisatie met hulp, Hb 12 g/dl.
+- **Actieve problemen**
+   - Posttraumatische verwarring.
+   - Rehabilitatie is aan de gang.
+- **Actief beleid**
+   - Indien nodig verdoving bij agitatie.
+   - Revalidatieoefeningen.
+   - Ondersteunende zorg.
+
+### Dag 7
+- **Toestand**
+   - Circulatie: HR 70 bpm, bloeddruk 138/82 mmHg.
+   - Ademhaling: SpO2 99% op kamerlucht, goede hoestreflex.
+   - Neurologisch: GCS 11 (E3V4M4), herkenning van familie.
+   - Overige: verbetering van de voedingsinname, Hb 12,5 g/dl.
+- **Actieve problemen**
+   - Cognitieve en geheugenstoornissen.
+   - Aanhoudende fysiotherapiebehoeften.
+- **Actief beleid**
+   - Cognitieve therapie.
+   - Fysiotherapie.
+   - Voedingsbeoordeling.
+
+### Dag 8
+- **Toestand**
+   - Circulatie: HR 68 bpm, bloeddruk 135/80 mmHg.
+   - Ademhaling: onafhankelijke ademhaling, SpO2 100%.
+   - Neurologisch: GCS 12 (E3V4M5), plaatsgericht.
+   - Overige: Lopen met hulp, Hb 13 g/dl.
+- **Actieve problemen**
+   - Voortgezet cognitief herstel.
+   - Fysieke krachtopbouw.
+- **Actief beleid**
+   - Mobiliteitsoefeningen.
+   - Dagelijkse cognitieve oefeningen.
+   - Gezondheidsbewaking.
+
+### Dag 9
+- **Toestand**
+   - Circulatie: HR 65 bpm, bloeddruk 130/78 mmHg.
+   - Ademhaling: geen hulp, SpO2 100%.
+   - Neurologisch: GCS 13 (E4V4M5), incidentele desoriëntatie.
+   - Overige: zelfvoeding, onder toezicht, Hb 13,5 g/dl.
+- **Actieve problemen**
+   - Gedeeltelijk geheugenverlies.
+   - Uithoudingsvermogen opbouwen.
+- **Actief beleid**
+   - Geheugenoefeningen.
+   - Toename van fysieke activiteit.
+   - Voedingsmonitoring.
+
+### Dag 10
+- **Toestand**
+   - Circulatie: HR 62 bpm, bloeddruk 128/76 mmHg.
+   - Ademhaling: normale functie, SpO2 100%.
+   - Neurologisch: GCS 14 (E4V5M5), alert en georiënteerd.
+   - Overige: Toenemende mobiliteit, Hb 14 g/dl.
+- **Actieve problemen**
+   - Fijne motorische stoornis.
+   - Emotionele labiliteit.
+- **Actief beleid**
+   - Fijne motoriektherapie.
+   - Psychologische ondersteuning.
+   - Fysiotherapie.
+
+### Dag 11
+- **Toestand**
+   - Circulatie: HR 60 bpm, bloeddruk 125/75 mmHg.
+   - Ademhaling: helder, onbewerkt, SpO2 100%.
+   - Neurologisch: GCS 15, volledig georiënteerd.
+   - Overige: Onafhankelijk met ADL's, Hb 14,2 g/dl.
+- **Actieve problemen**
+   - Aanpassing aan trauma.
+   - Fysieke versterking.
+- **Actief beleid**
+   - Psychologische begeleiding.
+   - Fysieke conditionering.
+   - Medische opvolging.
+
+### Dag 12
+- **Toestand**
+   - Circulatie: HR 58 bpm, bloeddruk 120/70 mmHg.
+   - Met betrekking tot

@@ -25,7 +25,8 @@ client = AzureOpenAI(
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
 with open(
-    Path(__file__).parents[1] / "data" / "raw" / "example_patient_file_gpt.txt", "r"
+    Path(__file__).parents[1] / "data" / "examples" / "example_patient_file_gpt_1.txt",
+    "r",
 ) as f:
     example_patient_file = f.read()
 
@@ -34,7 +35,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 application = app.server  # Neccessary for debugging in vscode, no further use
 app.layout = html.Div(
     [
-        # This component is invisible, only used to store intermediate calculated df
+        # This component is invisible, only used to store interm calculated df
         dcc.Store(id="reply_beloop"),
         dcc.Store(id="reply_status"),
         html.H1("Ontslag documentatie demo"),
@@ -97,7 +98,8 @@ app.layout = html.Div(
                                 dcc.Input(
                                     id="selected-word",
                                     type="text",
-                                    placeholder="Zoek een woord in het patientdossier",
+                                    placeholder="Zoek een woord in het "
+                                    + "patiëntdossier",
                                 ),
                                 html.Button("Zoek", id="zoek-button"),
                             ]
@@ -110,7 +112,10 @@ app.layout = html.Div(
                                     "label": "Beloop tijdens opname",
                                     "value": "Beloop tijdens opname",
                                 },
-                                {"label": "Huidige status", "value": "Huidige status"},
+                                {
+                                    "label": "Huidige status",
+                                    "value": "Huidige status",
+                                },
                             ],
                             placeholder="Selecteer een kopje",
                         ),
@@ -118,7 +123,10 @@ app.layout = html.Div(
                             id="selected_category",
                             options=[
                                 {"label": "Respiratie", "value": "Respiratie"},
-                                {"label": "Cardiologie", "value": "Cardiologie"},
+                                {
+                                    "label": "Cardiologie",
+                                    "value": "Cardiologie",
+                                },
                                 {"label": "Neurologie", "value": "Neurologie"},
                                 {"label": "Infectie", "value": "Infectie"},
                             ],
@@ -149,10 +157,12 @@ app.layout = html.Div(
     ],
     Input("submit-button", "n_clicks"),
 )
-def generate_ontslagbrief(n_clicks):
+def generate_ontslagbrief(n_clicks: int):
     if n_clicks is not None:
         reply_beloop, reply_status = get_chatgpt_output(
-            patient_file=example_patient_file, engine=deployment_name, client=client
+            patient_file=example_patient_file,
+            engine=deployment_name,
+            client=client,
         )
 
         beloop_output = []
@@ -248,7 +258,8 @@ def combined_callback(
             bron_list = bron_text.split(". ")
         else:
             logger.warning(
-                "No matching category found so GPT output is in incorrect format."
+                "No matching category found, "
+                + " so GPT output is in incorrect format."
             )
 
         output = html.Div(example_patient_file)

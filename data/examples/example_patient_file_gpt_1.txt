@@ -1,0 +1,59 @@
+Dag 1:
+Respiratie: De patiënt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.
+Cardiologie: Vitale parameters zijn stabiel.
+Neurologie: De patiënt is verward, vermoedelijk door de anesthesie.
+Infectie: -
+
+Dag 2:
+Respiratie: Ademhalingsproblemen blijven ernstig, ECMO-ondersteuning wordt gestart.
+Cardiologie: Stabiele vitale parameters.
+Neurologie: Verwardheid blijft aanhouden, vermoeden op delier.
+Infectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.
+
+Dag 3:
+Respiratie: ECMO-ondersteuning wordt voortgezet.
+Cardiologie: Stabiele vitale parameters.
+Neurologie: delier.
+Infectie: minimale verdere stijging in temp, antibiotica worden voortgezet.
+
+Dag 4:
+Respiratie: Enige verbetering in de ademhaling, patiënt blijft afhankelijk van ECMO.
+Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
+Neurologie: Verwardheid en delier nemen toe.
+Infectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.
+
+Dag 5:
+Respiratie: ECMO-ondersteuning.
+Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
+Neurologie: Verwardheid en delier.
+Infectie: constant, antibioticakuur.
+
+Dag 6:
+Respiratie: ECMO-ondersteuning.
+Cardiologie: - (Geen significante verandering)
+Neurologie: Delier verbetert geleidelijk.
+Infectie: -  constant, antibioticakuur.
+
+Dag 7:
+Respiratie: De patiënt begint van ECMO af te komen, maar blijft ondersteuning nodig hebben.
+Cardiologie: Vitale parameters stabiliseren met behulp van medicatie.
+Neurologie: -
+Infectie:  constant, antibioticakuur.
+
+Dag 8:
+Respiratie: - (Geen significante verandering)
+Cardiologie: - (Geen significante verandering)
+Neurologie: geen delier meer
+Infectie:  constant, antibioticakuur.
+
+Dag 9:
+Respiratie: zuurstof, patient zwak  
+Cardiologie: - (Geen significante verandering)
+Neurologie: stabiel en helder
+Infectie:  constant, antibioticakuur.
+
+Dag 10:
+Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof
+Cardiologie: Vitale parameters zijn nu stabiel zonder medicatie.
+Neurologie: -
+Infectie:  constant, antibioticakuur.

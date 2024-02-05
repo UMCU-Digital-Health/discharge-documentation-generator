@@ -1,0 +1,105 @@
+
+### Anamnese Patiënt
+
+#### Persoonlijke Gegevens:
+- Naam: Jan de Vries
+- Leeftijd: 63 jaar
+- Geslacht: Man
+- Gewicht: 70 kg
+- Lengte: 175 cm
+
+#### Medische Voorgeschiedenis:
+- Diagnose van maagkanker gesteld op 03-11-2023.
+- Eerdere medische geschiedenis: Hypertensie, behandeld met lisinopril.
+- Medicijngebruik: Lisinopril 10 mg dagelijks, paracetamol zo nodig.
+- Allergieën: Geen bekende allergieën.
+
+#### Sociale Geschiedenis:
+- Roken: Ex-roker, gestopt 10 jaar geleden.
+- Alcoholgebruik: Matig, één glas wijn bij het diner.
+- Beroep: Gepensioneerd leraar.
+- Woonsituatie: Woont met echtgenote, goede sociale ondersteuning.
+
+#### Familiegeschiedenis:
+- Moeder overleden aan borstkanker op 68-jarige leeftijd.
+- Vader overleden aan hartziekte op 72-jarige leeftijd.
+- Geen broers of zussen met bekende kanker of genetische aandoeningen.
+
+#### Huidige Klachten en Symptomen:
+- Gewichtsverlies van 5 kg in de afgelopen 3 maanden.
+- Verminderde eetlust en terugkerende buikpijn.
+- Incidentele misselijkheid, geen braken.
+
+#### Voedingstoestand:
+- Verminderde eetlust, voornamelijk zachte voeding en vloeistoffen.
+- Problemen met de inname van grote maaltijden.
+
+#### Psychologisch:
+- Algemeen welbevinden, maar bezorgd over de diagnose en komende behandeling.
+- Licht slaapstoornissen gemeld sinds de diagnose.
+
+#### Review of Systems:
+- Cardiovasculair: Stabiel onder medicatie, geen klachten van pijn op de borst of kortademigheid.
+- Respiratoir: Geen kortademigheid of hoesten.
+- Neurologisch: Geen duizeligheid, hoofdpijn of veranderingen in motoriek of sensoriek.
+- Gastro-intestinaal: Zoals genoemd, verminderde eetlust en buikpijn, geen veranderingen in stoelgang.
+- Urinair: Normale mictie, geen dysurie of hematurie.
+
+---
+
+#### **Status:**
+
+- **Circulatie:**
+  - Bloeddruk: 120/80 mmHg
+  - Hartslag: 75 bpm, regelmatig
+  - Perifere pulsen: Sterk en regelmatig
+  - Capillaire refilltijd: <2 seconden
+  - Vochtbalans: +500 ml (IV vloeistoffen minus urine-output)
+
+- **Respiratoir:**
+  - Zuurstofsaturatie: 96% op kamertemperatuur
+  - Ademhalingsfrequentie: 16 ademhalingen per minuut, onbelast
+  - Ademgeluiden: Helder bilateraal
+  - Geen tekenen van ademhalingsproblemen
+
+- **Neurologisch:**
+  - Bewustzijn: Wakker, alert en georiënteerd x3
+  - Glasgow Coma Schaal: 15
+  - Pupilreactie: PERRLA (Pupillen Gelijk, Rond, Reactief op Licht en Accommodatie)
+  - Motorische en sensorische functies: Intact
+
+- **Overig:**
+  - Wondplaats: Schoon, droog, hechtingen intact, geen tekenen van infectie
+  - Pijn: Beheerd met IV pijnstillers, patiënt meldt 3/10 op pijnschaal
+  - Voeding: NPO (nil per os, niets via de mond) volgens postoperatief protocol
+  - GI-functie: Darmgeluiden aanwezig, geen tekenen van ileus
+
+---
+
+#### **Actieve Problemen:**
+
+1. Postoperatief herstel van maagkankeroperatie.
+2. Pijnbeheersing na de operatie.
+3. Risico op postoperatieve complicaties zoals infectie of bloeding.
+
+---
+
+#### **Actieve Beleidsmaatregelen:**
+
+1. **Monitoring:**
+   - Continue hartmonitoring.
+   - Regelmatige controles van bloeddruk, ademhalingsfrequentie en zuurstofsaturatie.
+   - Dagelijkse neurologische beoordelingen.
+
+2. **Medicatie:**
+   - IV pijnstillers voor pijnbeheersing.
+   - Profylactische antibiotica ter voorkoming van infecties.
+   - Anticoagulantia voor DVT-profylaxe (Diepe Veneuze Trombose).
+
+3. **Zorginterventies:**
+   - Bedrust met geleidelijke mobilisatie zoals getolereerd.
+   - Wondzorg en controle op tekenen van infectie.
+   - NPO-status met IV-hydratatie, overgaand in orale inname zoals getolereerd.
+
+---
+

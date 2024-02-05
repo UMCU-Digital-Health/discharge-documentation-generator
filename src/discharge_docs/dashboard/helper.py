@@ -6,7 +6,9 @@ from dash import html
 def highlight(text, selected_words):
     # als text string is
     if isinstance(text, str):
-        sequences = re.split(re.escape(selected_words), text, flags=re.IGNORECASE)
+        sequences = re.split(
+            re.escape(selected_words), text, flags=re.IGNORECASE
+        )
         i = 1
         while i < len(sequences):
             sequences.insert(i, html.Mark(selected_words.upper()))

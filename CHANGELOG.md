@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-02-05
+
+### Added
+- Exploratory analysis and preprocessing code
+- Visualisation dashboards of metavision and Hix data
+
 ## [0.1.3] - 2024-01-19
 
 ### Added
