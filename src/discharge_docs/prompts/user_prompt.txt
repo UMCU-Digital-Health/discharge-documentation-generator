@@ -1,0 +1,5 @@
+Hieronder volgt het dossier van een patiënt met onder andere dagstatussen voor de opname van een patiënt in het ziekenhuis.
+Je taak is om een samenvatting over het beloop de opname van de patient te schrijven voor de volgende behandelende arts te schrijven op basis van deze informatie.
+Dit doe je per categorie. 
+Antwoord in een enkel JSON formaat per categorie van de vorm:
+[{"Categorie": *Categorie*, "Beloop tijdens opname": *Beloop tijdens opname*}].

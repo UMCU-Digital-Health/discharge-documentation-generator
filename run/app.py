@@ -25,7 +25,10 @@ client = AzureOpenAI(
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
 with open(
-    Path(__file__).parents[1] / "data" / "examples" / "example_patient_file_gpt_1.txt",
+    Path(__file__).parents[1]
+    / "data"
+    / "raw"
+    / "example_patient_file_gpt_1.txt",
     "r",
 ) as f:
     example_patient_file = f.read()
@@ -74,9 +77,13 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.H3("Beloop tijdens opname"),
-                                        html.Div(id="beloop-output", children=[""]),
+                                        html.Div(
+                                            id="beloop-output", children=[""]
+                                        ),
                                         html.H3("Status bij ontslag"),
-                                        html.Div(id="status-output", children=[""]),
+                                        html.Div(
+                                            id="status-output", children=[""]
+                                        ),
                                     ]
                                 )
                             ],
@@ -92,7 +99,9 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.H2("Controleer ontslagbrief"),
-                        dcc.Markdown("Zoek naar een woord in het patientdossier:"),
+                        dcc.Markdown(
+                            "Zoek naar een woord in het patientdossier:"
+                        ),
                         html.Div(
                             [
                                 dcc.Input(
@@ -104,13 +113,19 @@ app.layout = html.Div(
                                 html.Button("Zoek", id="zoek-button"),
                             ]
                         ),
-                        dcc.Markdown("Controleer de losse stukjes GPT bronnen:"),
+                        dcc.Markdown(
+                            "Controleer de losse stukjes GPT bronnen:"
+                        ),
                         dcc.Dropdown(
                             id="selected_section",
                             options=[
                                 {
                                     "label": "Beloop tijdens opname",
                                     "value": "Beloop tijdens opname",
+                                },
+                                {
+                                    "label": "Huidige status",
+                                    "value": "Huidige status",
                                 },
                                 {
                                     "label": "Huidige status",
@@ -127,6 +142,10 @@ app.layout = html.Div(
                                     "label": "Cardiologie",
                                     "value": "Cardiologie",
                                 },
+                                {
+                                    "label": "Cardiologie",
+                                    "value": "Cardiologie",
+                                },
                                 {"label": "Neurologie", "value": "Neurologie"},
                                 {"label": "Infectie", "value": "Infectie"},
                             ],
@@ -134,7 +153,9 @@ app.layout = html.Div(
                         ),
                         html.Button("Controleer", id="controleer-button"),
                         html.Br(),
-                        html.Button("Reset alle markeringen", id="reset-button"),
+                        html.Button(
+                            "Reset alle markeringen", id="reset-button"
+                        ),
                     ],
                     style={
                         "width": "30%",

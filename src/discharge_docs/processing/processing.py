@@ -14,7 +14,7 @@ def process_data_metavision(df: pd.DataFrame) -> pd.DataFrame:
 
     - Remove patients with length of stay 0 days.
     - Remove encounters that do not have a discharge letter.
-    - Create columns with number of words, number of characters, and number of tokens.
+    - Create columns with nr of words, nr of characters, & nr of tokens
     - Keep only the latest input per category per date.
     - Drop rows where columns are NaN.
 
@@ -35,7 +35,8 @@ def process_data_metavision(df: pd.DataFrame) -> pd.DataFrame:
 
     # remove encounters that do not have a discharge letter
     encounters_with_discharge = df.loc[
-        df["code_display_original"] == "Medische Ontslagbrief - Beloop", "enc_id"
+        df["code_display_original"] == "Medische Ontslagbrief - Beloop",
+        "enc_id",
     ].unique()
     df = df[df["enc_id"].isin(encounters_with_discharge)]
 
@@ -82,7 +83,8 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     5. add length of stay
     6. remove patients with length of stay 0 days
     7. remove encounters that do not have a discharge letter
-
+    8. replace date in rows with 1899 in the date
+    9. rename ontslagbrief
 
     Parameters
     ----------
@@ -129,6 +131,21 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     ].unique()
     df = df[df["enc_id"].isin(encounters_with_discharge)]
 
+    # Function to replace 1899 dates with the most recent date in the group
+    # as the 1899 dates are not valid and contain the discharge docs
+    def replace_1899_dates(group):
+        # Replace 1899 dates with the most recent date in the group
+        group.loc[group["date"].dt.year == 1899, "date"] = group["date"].max()
+        return group
+
+    # Group by 'enc_id' and apply the function
+    df = df.groupby("enc_id").apply(replace_1899_dates).reset_index(drop=True)
+
+    # rename ontslagbrief
+    df["description"] = df["description"].replace(
+        "Medische Ontslagbrief - Beloop", "Ontslagbrief"
+    )
+
     return df
 
 
@@ -148,13 +165,13 @@ def process_data_HiX(
     Returns
     -------
     DataFrame
-        Processed patient file with merged data, sorted by encounter ID and time.
+        Processed patient file with merged data, sorted by enc ID and time.
 
     Notes
     -----
     This function performs the following steps:
-    1. Removes encounters that are not present in both patient_data and discharge_data.
-    2. Converts specific columns to datetime  in both patient_data and discharge_data.
+    1. Remove enc that are not present in both patient_data and discharge_data
+    2. Converts some cols to datetime in both patient_data and discharge_data
     3. Renames columns in both patient_data and discharge_data.
     4. Subsets the necessary columns in both patient_data and discharge_data.
     5. Keeps only the last discharge letter in discharge_data.
@@ -267,7 +284,7 @@ def get_patient_file(enc_id: int, df: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
 
     patient_file_string = "\n".join(
         patient_file.apply(
-            lambda row: f"{row['description']} ( {row['date']} ): {row['value']}",
+            lambda row: (f"{row['description']} ( {row['date']} ): {row['value']}"),
             axis=1,
         )
     )
@@ -292,21 +309,18 @@ def get_patient_discharge_docs(enc_id: int, df: pd.DataFrame) -> str:
     str
         The discharge documentation for the patient.
     """
+    # TODO: process HIX data to have ontslagbrief as description
+    discharge_documentation = df[
+        (df["enc_id"] == enc_id) & (df["description"].isin(["Ontslagbrief"]))
+    ].sort_values(by=["date", "description"])
 
-    patient_file = df[df.enc_id == enc_id]
-
-    # keep rows with ontslag in the description
-    discharge_letter = patient_file.loc[
-        patient_file.description.str.contains("ontslag", case=False), "value"
-    ]
-
-    return discharge_letter.values[-1]
+    return discharge_documentation.value
 
 
 def split_discharge_docs_NICU(discharge_doc: pd.DataFrame) -> pd.DataFrame:
     """
-    Split the discharge document into sections based on predefined headers that are
-    available in the string.
+    Split the discharge document into sections based on predefined headers
+    that are available in the string.
 
     Parameters
     ----------
@@ -316,8 +330,8 @@ def split_discharge_docs_NICU(discharge_doc: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pandas.DataFrame
-        A DataFrame containing the sections of the discharge document, with the category
-         and text columns.
+        A DataFrame containing the sections of the discharge document, with
+        the category and text columns.
 
     """
     headers = [
@@ -364,7 +378,7 @@ def split_discharge_docs_NICU(discharge_doc: pd.DataFrame) -> pd.DataFrame:
     split_strings = [discharge_doc[start:end].strip() for start, end in indices]
 
     # Include the last section
-    split_strings.append(discharge_doc[indices[-1][1] + len(headers[-1]) :].strip())
+    split_strings.append(discharge_doc[(indices[-1][1] + len(headers[-1])) :].strip())
 
     # make a dataframe
     df = pd.DataFrame({"category": headers, "text": split_strings})
@@ -373,8 +387,8 @@ def split_discharge_docs_NICU(discharge_doc: pd.DataFrame) -> pd.DataFrame:
 
 def pseudonomise_by_hand(string):
     """
-    Pseudonomises the given string by replacing specific words that are identified by
-    hand with placeholders.
+    Pseudonomises the given string by replacing specific words that are
+     identified by hand with placeholders.
 
     Parameters
     ----------
@@ -393,7 +407,8 @@ def pseudonomise_by_hand(string):
 
 def get_splitted_discharge_docs_NICU(enc_id: int, data: pd.DataFrame) -> pd.DataFrame:
     """
-    Retrieves the patient's discharge documentation from the given enc ID and data.
+    Retrieves the patient's discharge documentation
+    from the given enc ID and data.
 
     Parameters
     ----------

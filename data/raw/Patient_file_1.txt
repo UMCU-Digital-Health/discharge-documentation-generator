@@ -1,0 +1,115 @@
+**Patiënt Opnamegegevens:**
+Patiëntnaam: Jan Jansen
+Leeftijd: 55
+Opnamedatum: 1 januari 2024
+Reden voor opname: Ernstige ademhalingsmoeilijkheden als gevolg van door de gemeenschap verworven longontsteking.
+
+**Toestand bij Opname:**
+- Intubatie en mechanische ventilatie bij aankomst.
+- Lage saturatie, gestart met hoogdebiet zuurstoftherapie.
+- Hemodynamische instabiliteit, noodzaak van vasopressorondersteuning om de bloeddruk te handhaven.
+- Initieel laboratoriumonderzoek toonde leukocytose en verhoogde ontstekingsmarkers aan.
+
+**Dagelijks Statusrapport:**
+
+**Dag 1:**
+- **Ademhaling:** Voortgezette mechanische ventilatie met PEEP op 12 cmH2O. Zuurstofsaturatie verbeterde geleidelijk tot 90%. (PaO2/FiO2 ratio: 150)
+- **Circulatie:** Stabiele bloeddruk met vasopressorondersteuning, MAP: 75 mmHg
+- **Neurologie:** Patiënt reageert op pijnlijke prikkels. Geen tekenen van neurologische tekorten.
+- **Infectie:** Breed-spectrum antibiotica gestart. (Witbloedcelaantal: 15.000/mm³)
+- **VB/Nierfunctie:** Urineproductie 50 ml/uur. CRRT gestart voor acuut nierletsel.
+- **Milieu interieur:** Strikte vochtbalans gehandhaafd.
+- **Maag-darm:** Neusmaagsonde geplaatst.
+- **Psych/SOC:** Familie geïnformeerd over de kritieke toestand. Emotionele ondersteuning geboden.
+
+**Dag 2:**
+- **Ademhaling:** Verbetering in longcompliance. PEEP verminderd tot 8 cmH2O. Saturatie gestabiliseerd op 92% met verminderde FiO2. (PaO2/FiO2 ratio: 200)
+- **Circulatie:** Afname van vasopressorondersteuning. Bloeddruk in orde (MAP: 80 mmHg)
+- **Neurologie:** Geen verslechtering.
+- **Infectie:** Bloedkweken toonden de aanwezigheid van een bacteriële ziekteverwekker aan. Antibiotica aangepast. (Kweekgevoeligheid: Positief voor Gram-negatieve bacteriën)
+- **VB/Nierfunctie:** Voortzetting van CRRT. Stabiele renale parameters. (Creatinineklaring: 60 ml/min)
+- **Milieu interieur:** Strikte vochtbalans gehandhaafd. Elektrolyten binnen normale grenzen. (Natrium: 140 mEq/L, Kalium: 4,0 mEq/L)
+- **Maag-darm:** Geen tekenen van gastro-intestinale bloeding. Enteraal voeden voortgezet.
+- **Psych/SOC:** Reguliere updates aan de familie. Familie bezocht de patiënt.
+
+**Dag 3:**
+- **Ademhaling:** Voortdurende verbetering in longfunctie. PEEP verder verminderd. Saturatie gehandhaafd op 94% met lage FiO2. (PaO2/FiO2 ratio: 250)
+- **Circulatie:** Stabiele hemodynamiek. Vasopressorondersteuning stopgezet. (MAP: 85 mmHg)
+- **Neurologie:** Geen neurologische complicaties waargenomen. Patiënt reageert en is meewerkend.
+- **Infectie:** Ontstekingsmarkers dalen. Kweekresultaten tonen verbetering aan. (C-reactief proteïne: 30 mg/L)
+- **VB/Nierfunctie:** Voortgezette CRRT voor aanhoudende renale ondersteuning. Urineproductie verbetert. (Urine Output: 100 ml/uur)
+- **Milieu interieur:** Handhaven van strikte vochtbalans. Elektrolyten binnen normaal bereik.
+- **Maag-darm:** Enteraal voeden voortgezet. Geen tekenen van intolerantie.
+- **Psych/SOC:** Voortdurende familieondersteuning. Besprak plannen voor langdurig herstel.
+
+**Dag 4:**
+- **Ademhaling:** Succesvol geëxtubeerd. Overgeschakeld naar niet-invasieve ventilatie. Zuurstofondersteuning geleidelijk verminderd. (Spontane ademhalingsfrequentie: 18 ademhalingen/min)
+- **Circulatie:** Stabiele bloeddruk zonder vasopressoren. (MAP: 90 mmHg)
+- **Neurologie:** Geen nieuwe neurologische problemen. Voortdurende responsiviteit.
+- **Infectie:** Antibiotica voortgezet volgens gevoeligheidsresultaten.
+- **VB/Nierfunctie:** Verbetering van nierfunctie. CRRT stopgezet. (Creatinineklaring: 80 ml/min)
+- **Milieu interieur:** Monitoring van vochtbalans. Elektrolyten stabiel.
+- **Maag-darm:** Overgegaan op gevorderde voeding zoals verdragen. Regelmatige darmbewegingen.
+- **Psych/SOC:** Patiënt begon fysiotherapie. Familie actief betrokken bij de zorg.
+
+**Dag 5:**
+- **Ademhaling:** Voortdurende verbetering in respiratoire status. Zuurstofondersteuning volledig gestaakt. (SpO2 op kamertemperatuur: 98%)
+- **Circulatie:** Hemodynamisch stabiel zonder ondersteuning. (MAP: 92 mmHg)
+- **Neurologie:** Geen neurologische tekorten. Toenemende mobiliteit.
+- **Infectie:** Antibiotica voltooid. Ontstekingsmarkers binnen normale grenzen. (C-reactief proteïne: 5 mg/L)
+- **VB/Nierfunctie:** Stabiele renale parameters. Geen tekenen van acuut nierletsel.
+- **Milieu interieur:** Handhaven van optimale vochtbalans. Elektrolyten binnen het bereik.
+- **Maag-darm:** Overgestapt
+
+ naar een normaal dieet. Goede orale inname.
+- **Psych/SOC:** Fysiotherapie en ergotherapie gestart.
+
+**Dag 6:**
+- **Ademhaling:** Voortdurende stabiliteit in respiratoire status. Patiënt blijft zonder aanvullende zuurstof. Geen tekenen van ademhalingsmoeilijkheden.
+- **Circulatie:** Hemodynamisch stabiel.
+- **Neurologie:** Patiënt vertoont verbetering in mobiliteit. Fysiotherapiesessies richten zich op krachttraining.
+- **Infectie:** Geen tekenen van terugkerende infectie. Antibiotica voltooid. Voortgezette bewaking met routinematige laboratoriumtests.
+- **VB/Nierfunctie:** Renale functie blijft binnen normaal bereik. Geen tekenen van renale beperking.
+- **Milieu interieur:** Handhaven van optimale vocht- en elektrolytenbalans. Regelmatige beoordelingen van laboratoriumparameters.
+- **Maag-darm:** Patiënt tolereert een normaal dieet goed. Geen meldingen van gastro-intestinale problemen.
+- **Psych/SOC:** Voortdurende revalidatie-inspanningen. Familie betrokken bij therapiesessies. Emotionele ondersteuning geboden.
+
+**Dag 7:**
+- **Ademhaling:** Stabiel zonder respiratoire ondersteuning. Monitoring op tekenen van ademhalingsmoeilijkheden of achteruitgang. (Röntgenfoto van de borst: Helder)
+- **Circulatie:** Hemodynamisch stabiel.
+- **Neurologie:** Verdere verbetering in mobiliteit en kracht. Ergotherapie geïntroduceerd voor dagelijkse activiteiten.
+- **Infectie:** Geen bewijs van terugkerende infectie. Voortgezette monitoring van ontstekingsmarkers.
+- **VB/Nierfunctie:** Renale functie blijft verbeteren. Dagelijkse beoordelingen voor eventuele veranderingen.
+- **Milieu interieur:** Handhaven van vochtbalans. Elektrolyten binnen normale grenzen.
+- **Maag-darm:** Dieet uitgebreid tot vast voedsel. Geen gemelde problemen met de spijsvertering.
+- **Psych/SOC:** Emotionele en psychologische ondersteuning geboden. Familie betrokken bij zorgplanning.
+
+**Dag 8:**
+- **Ademhaling:** Aanhoudende stabiliteit in respiratoire functie. Geen tekenen van respiratoire compromis. (Longfunctietests: Normaal)
+- **Circulatie:** Hemodynamische parameters binnen normaal bereik.
+- **Neurologie:** Voortdurende verbetering in mobiliteit en coördinatie. Revalidatiesessies geïntensiveerd.
+- **Infectie:** Geen nieuwe tekenen van infectie. Ontstekingsmarkers blijven binnen normale grenzen.
+- **VB/Nierfunctie:** Renale functie stabiel. Geen lopende behoefte aan renale ondersteuning.
+- **Milieu interieur:** Voortgezette handhaving van vocht- en elektrolytenbalans.
+- **Maag-darm:** Patiënt blijft een normaal dieet goed verdragen. Geen klachten van het maag-darmkanaal.
+- **Psych/SOC:** Familiediscussies over ontslagplanning en post-ICU-zorg.
+
+**Dag 9:**
+- **Ademhaling:** Ongewijzigd, zonder ademhalingsmoeilijkheden. Monitoring voor eventuele late complicaties. (Röntgenfoto van de borst: Onopvallend)
+- **Circulatie:** Hemodynamisch stabiel.
+- **Neurologie:** Bijna volledig herstel in mobiliteit. Revalidatie-inspanningen gericht op overgang naar zelfzorg.
+- **Infectie:** Geen tekenen van terugkerende infectie. Voltooien van antibioticakuur.
+- **VB/Nierfunctie:** Stabiele renale parameters. Monitoring voor eventuele late complicaties.
+- **Milieu interieur:** Handhaven van optimale vocht- en elektrolytenbalans.
+- **Maag-darm:** Dieet blijft goed verdragen. Geen gemelde gastro-intestinale problemen.
+- **Psych/SOC:** Voortgezette familie-educatie voor post-ICU-zorg en ondersteuning. Voorbereiding op ontslag.
+
+**Dag 10:**
+- **Ademhaling:** Afname van mechanische ventilatie succesvol gestart. Patiënt ademt spontaan met goede saturatie. (Spontane ademhalingsfrequentie: 16 ademhalingen/min)
+- **Circulatie:** Hemodynamisch stabiel.
+- **Neurologie:** Patiënt volledig bij bewustzijn en georiënteerd.
+- **Infectie:** Aanzienlijke verbetering in ontstekingsmarkers. Antibiotica voltooid. (C-reactief proteïne: 3 mg/L)
+- **VB/Nierfunctie:** Renale functie verbetert geleidelijk. CRRT stopgezet. (Creatinineklaring: 90 ml/min)
+- **Milieu interieur:** Stabiele elektrolyten- en vochtbalans.
+- **Maag-darm:** Overgeschakeld naar orale inname. Dieet goed verdragen.
+- **Psych/SOC:** Familie-educatie over post-ICU-zorg en revalidatie. Ontslagplanning geïnitieerd.
