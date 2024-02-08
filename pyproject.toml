@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "0.2.0"
+version = "0.2.1"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
@@ -24,6 +24,7 @@ dependencies =[
   "plotly~=5.18",
   "dash~=2.14",
   "pandas~=2.1",
+  "SQLAlchemy~=2.0",
   "tiktoken~=0.5",
 ]
 
