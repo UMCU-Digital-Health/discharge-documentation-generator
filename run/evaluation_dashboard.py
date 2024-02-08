@@ -54,35 +54,6 @@ app.layout = get_layout(
 
 
 @app.callback(
-    Output("Encounter_info_div", "children"),
-    [Input("patient_admission_dropdown", "value")],
-)
-def get_encounter_info(selected_patient_admission: str) -> list:
-    """
-    Retrieves encounter information for the selected patiënt admission.
-
-    Parameters
-    ----------
-     patiënt selected_patient_admission : str
-        The selected encounter ID.
-
-    Returns
-    -------
-    list
-        A list containing a string with info about the selected encounter.
-    """
-    if selected_patient_admission == "patient_1_nicu":
-        data = patient_1_NICU
-    else:
-        data = patient_1_NICU  # TODO change once more patients are available
-    return [
-        f"The geselecteerde patiënt opname {selected_patient_admission} is "
-        + f"van de afdeling {data.department.iloc[0]} en heeft een opnameduur "
-        + f" van {data.length_of_stay.iloc[0]} dagen."
-    ]
-
-
-@app.callback(
     Output("date_dropdown", "value"),
     [
         Input("previous_date_button", "n_clicks"),
@@ -214,12 +185,12 @@ def display_value(
         ].sort_values(by=["date", "description"])
 
     if sort_dropdown_choice == "sort_by_date":
-        patient_file = patient_file.sort_values(by=["description", "date"])
-    elif sort_dropdown_choice == "sort_by_code":
         patient_file = patient_file.sort_values(by=["date", "description"])
+    elif sort_dropdown_choice == "sort_by_code":
+        patient_file = patient_file.sort_values(by=["description", "date"])
 
     if patient_file.empty:
-        return ["The selected part of the patient file is empty."]
+        return ["De geselecteerde data is niet ingevuld voor deze patient."]
     else:
         returnable = []
         for index in patient_file.index:
@@ -227,7 +198,7 @@ def display_value(
                 html.B(
                     str(
                         patient_file.loc[index, "description"]
-                        + "-"
+                        + " - "
                         + str(patient_file.loc[index, "date"].date())
                     )
                 )
@@ -337,6 +308,42 @@ def display_GPT_discharge_documentation(
             )
 
     return GPT_output
+
+
+@app.callback(
+    Output("evaluation_saved_label", "children"),
+    [Input("evaluate_button", "n_clicks")],
+    [State("evaluation_slider", "value"), State("evaluation_text", "value")],
+)
+def gather_feedback(n_clicks: int, evaluation_slider: int, evaluation_text: str) -> str:
+    """
+    Gather feedback from the user.
+
+    Parameters
+    ----------
+    n_clicks : int
+        The number of times the feedback button was clicked.
+    evaluation_slider : int
+        The score given by the user on the evaluation slider.
+    evaluation_text : str
+        The feedback text provided by the user.
+
+    Returns
+    -------
+    str
+        A string containing the user's score and feedback.
+
+    Raises
+    ------
+    PreventUpdate
+        If the feedback button was clicked without any changes.
+
+    """
+    if n_clicks is None:
+        raise PreventUpdate
+    # TODO add functionality to save the feedback to database
+    # using evaluation slider and evaluation text
+    return "De feedback is opgeslagen, bedankt!"
 
 
 # Run the app
