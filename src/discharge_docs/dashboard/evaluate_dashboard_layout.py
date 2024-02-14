@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from dash import dcc, html
 
@@ -58,6 +57,14 @@ def get_layout(
                                 "label": "Patient 1 (NICU: 6 dagen)",
                                 "value": "patient_1_nicu",
                             },
+                            {
+                                "label": "Patient 1 (IC: 2 dagen)",
+                                "value": "patient_1_ic",
+                            },
+                            {
+                                "label": "Patient 1 (CAR:  dagen)",
+                                "value": "patient_1_car",
+                            },
                         ],
                         value="patient_1_nicu",
                         style={"width": "100%"},
@@ -87,14 +94,7 @@ def get_layout(
                     ),
                     dcc.Dropdown(
                         id="date_dropdown",
-                        options=[
-                            {
-                                "label": date.date(),
-                                "value": date,
-                            }
-                            for date in data.date.unique()
-                        ],
-                        value=data.date.unique()[0],
+                        options=[],
                         style={"width": "100%"},
                     ),
                     html.Button(
@@ -124,8 +124,8 @@ def get_layout(
             ),
             dcc.Dropdown(
                 id="description_dropdown",
-                options=np.sort(data.description.unique()),
-                value=[],  # np.sort(data.description.unique()),
+                options=[],
+                value=[],
                 multi=True,
                 style={"width": "100%"},
             ),
@@ -167,7 +167,6 @@ def get_layout(
                 value="sort_by_code",
                 style={
                     "width": "50%",
-                    # align to thr right border
                     "float": "right",
                 },
             ),
@@ -252,13 +251,26 @@ def get_layout(
                     "padding": "10px",
                 },
             ),
-            html.H2("Gegenereerde ontslagbrief:"),
-            dcc.Loading(
-                html.Div(
-                    ["Placeholder for GPTdischarge letter"],
-                    id="output_GPT_discharge_documentation",
-                ),
-                type="default",
+            html.Div(
+                [
+                    html.H2("Gegenereerde ontslagbrief:"),
+                    dcc.Loading(
+                        html.Div(
+                            ["Placeholder for GPTdischarge letter"],
+                            id="output_GPT_discharge_documentation",
+                        ),
+                        type="default",
+                    ),
+                    html.Br(),
+                ],
+                style={
+                    "padding": "10px",
+                    "border-radius": "10px",
+                    "background-color": "white",
+                    "border": "3px solid whitesmoke",
+                    "margin-top": "10px",
+                    "margin-bottom": "10px",
+                },
             ),
         ],
     )
@@ -320,7 +332,7 @@ def get_layout(
             html.Div(
                 [
                     html.H5("Template prompt"),
-                    html.P(template_prompt),
+                    html.P(template_prompt, id="template_prompt_space"),
                 ]
             ),
         ],

@@ -124,12 +124,26 @@ def load_evaluatie_prompt():
     return evaluatie_prompt
 
 
-def load_NICU_template_prompt():
+def load_template_prompt(department: str) -> str:
+    """
+    Load the template prompt for a given department.
+
+    Parameters
+    ----------
+    department : str
+        The name of the department for which to load the template prompt.
+
+    Returns
+    -------
+    str
+        The template prompt for the specified department.
+    """
     with open(
-        Path(__file__).parents[1] / "prompts" / "NICU_template_prompt.txt", "r"
+        Path(__file__).parents[1] / "prompts" / (department + "_template_prompt.txt"),
+        "r",
     ) as file:
-        NICU_template_prompt = file.read()
-    return NICU_template_prompt
+        template_prompt = file.read()
+    return template_prompt
 
 
 def get_GPT_discharge_docs(

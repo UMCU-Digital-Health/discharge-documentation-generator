@@ -178,6 +178,7 @@ def process_data_HiX(
     6. Merges patient_data and discharge_data.
     7. Adds a "date" column based on the "time" column in the merged data.
     8. Calculates the length of stay for each encounter in the merged data.
+    9. Rename ontslagbrief
     """
     # remove encounters that are not in both datasets
     encounters_in_patient_files = patient_data.enc_id.unique()
@@ -256,10 +257,15 @@ def process_data_HiX(
     patient_file = patient_file.sort_values(by=["enc_id", "time"]).reset_index(
         drop=True
     )
+
+    # rename ontslagbrief
+    patient_file["description"] = patient_file["description"].replace(
+        "Ontslagbericht", "Ontslagbrief"
+    )
     return patient_file
 
 
-def get_patient_file(enc_id: int, df: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
+def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves the patient file for a given encounter ID from a DataFrame.
 
@@ -275,7 +281,10 @@ def get_patient_file(enc_id: int, df: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
     tuple
         A tuple containing the patient file string and the filtered DataFrame.
     """
-    patient_file = df[df.enc_id == enc_id]
+    if enc_id is not None:
+        patient_file = df[df.enc_id == enc_id]
+    else:
+        patient_file = df
 
     # remove rows with ontslag in the description
     patient_file = patient_file[
@@ -292,27 +301,31 @@ def get_patient_file(enc_id: int, df: pd.DataFrame) -> Tuple[str, pd.DataFrame]:
     return patient_file_string, patient_file
 
 
-def get_patient_discharge_docs(enc_id: int, df: pd.DataFrame) -> str:
+def get_patient_discharge_docs(df: pd.DataFrame, enc_id: int = None) -> str:
     """
     Retrieves the discharge documentation for a specific patient based on their
-    encounter ID.
+    encounter ID or if the data is only for one end_id.
 
     Parameters
     ----------
-    enc_id : int
-        The encounter ID of the patient.
     df : DataFrame
         The DataFrame containing the patient data.
+    enc_id : int, optional
+        The encounter ID of the patient.
 
     Returns
     -------
     str
         The discharge documentation for the patient.
     """
-    # TODO: process HIX data to have ontslagbrief as description
-    discharge_documentation = df[
-        (df["enc_id"] == enc_id) & (df["description"].isin(["Ontslagbrief"]))
-    ].sort_values(by=["date", "description"])
+    if enc_id is None:
+        discharge_documentation = df[
+            df["description"].isin(["Ontslagbrief"])
+        ].sort_values(by=["date", "description"])
+    else:
+        discharge_documentation = df[
+            (df["enc_id"] == enc_id) & (df["description"].isin(["Ontslagbrief"]))
+        ].sort_values(by=["date", "description"])
 
     return discharge_documentation.value
 

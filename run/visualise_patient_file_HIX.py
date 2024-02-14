@@ -53,9 +53,7 @@ app.layout = html.Div(
                     value=df_HIX["enc_id"].iloc[1],
                     style={"width": "100%"},
                 ),
-                html.Button(
-                    "Next", id="next_enc_button", style={"width": "30%"}
-                ),
+                html.Button("Next", id="next_enc_button", style={"width": "30%"}),
             ],
             style={"display": "flex", "width": "40%"},
         ),
@@ -72,15 +70,11 @@ app.layout = html.Div(
                     id="date_dropdown",
                     style={"width": "100%"},
                 ),
-                html.Button(
-                    "Next", id="next_date_button", style={"width": "30%"}
-                ),
+                html.Button("Next", id="next_date_button", style={"width": "30%"}),
             ],
             style={"display": "flex", "width": "40%"},
         ),
-        dcc.Checklist(
-            id="date_checklist", options=["View all dates"], value=[]
-        ),
+        dcc.Checklist(id="date_checklist", options=["View all dates"], value=[]),
         html.H3("Select which section of the patient file you want to see:"),
         dcc.Checklist(
             id="description_dropdown",
@@ -89,9 +83,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Button("Selecteer alle opties", id="select_all_button"),
-                html.Button(
-                    "Deselecteer alle opties", id="deselect_all_button"
-                ),
+                html.Button("Deselecteer alle opties", id="deselect_all_button"),
             ],
             style={"width": "40%"},
         ),
@@ -241,9 +233,7 @@ def update_date_options(
     """
     date_options = [
         {"label": str(date), "value": date}
-        for date in df_HIX[df_HIX["enc_id"] == selected_enc_id][
-            "date"
-        ].unique()
+        for date in df_HIX[df_HIX["enc_id"] == selected_enc_id]["date"].unique()
     ]
     return date_options
 
@@ -357,11 +347,7 @@ def display_value(
     Returns:
     - list: The formatted patient file information to be displayed.
     """
-    if (
-        selected_description is None
-        or selected_date is None
-        or selected_enc_id is None
-    ):
+    if selected_description is None or selected_date is None or selected_enc_id is None:
         return [""]
     if selected_all_dates:
         patient_file = df_HIX[
@@ -423,7 +409,7 @@ def display_discharge_documentation(selected_enc_id: str) -> list:
         return [""]
     discharge_documentation = df_HIX[
         (df_HIX["enc_id"] == selected_enc_id)
-        & (df_HIX["description"].isin(["Ontslagbericht"]))
+        & (df_HIX["description"].isin(["Ontslagbrief"]))
     ].sort_values(by=["date", "description"])
 
     if discharge_documentation.empty:
