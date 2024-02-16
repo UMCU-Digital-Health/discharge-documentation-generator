@@ -62,7 +62,7 @@ def get_layout(
                                 "value": "patient_1_ic",
                             },
                             {
-                                "label": "Patient 1 (CAR:  dagen)",
+                                "label": "Patient 1 (CAR: 2 dagen)",
                                 "value": "patient_1_car",
                             },
                         ],
@@ -152,6 +152,12 @@ def get_layout(
             ),
             html.Br(),
             html.H2("Patiëntendossier:"),
+            dcc.Input(
+                id="search_bar",
+                type="text",
+                placeholder="Zoek naar een specifiek onderdeel in het patiëntendossier",
+                style={"width": "100%", "margin-bottom": "10px"},
+            ),
             dcc.Dropdown(
                 id="sorting_dropdown",
                 options=[
@@ -340,6 +346,7 @@ def get_layout(
             "background-color": "lightgrey",
             "border-radius": "10px",
             "padding": "10px",
+            "width": "50%",
         },
     )
 

@@ -4,7 +4,21 @@ import pandas as pd
 from dash import html
 
 
-def highlight(text, selected_words):
+def highlight(text, selected_words: str) -> list:
+    """Highlight selected words in the given text.
+
+    Parameters
+    ----------
+    text : str or list
+        The text or list of texts to be highlighted.
+    selected_words : str
+        The words to be highlighted in the text.
+
+    Returns
+    -------
+    list
+        The text with the selected words highlighted.
+    """
     # als text string is
     if isinstance(text, str):
         sequences = re.split(re.escape(selected_words), text, flags=re.IGNORECASE)

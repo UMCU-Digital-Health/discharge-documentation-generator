@@ -1,8 +1,0 @@
-Vergelijk de output van model met de output van het EPD.
-Geef de volgende scores tussen 0 en 100 terug:
-- Semantische Similariteit Score: Bereken de semantische gelijkenis tussen de GPT-uitvoer en de EPD-uitvoer. Ken een score toe op basis van hoe nauwkeurig de twee samenvattingen overeenkomen.
-- de nauwkeurigheid van de informatie in de model-uitvoer in vergelijking met de EPD-uitvoer. 
-- relevantie van de informatie in de model-uitvoer in vergelijking met de EPD-uitvoer.
-- Volledigheid Score: Beoordeel de volledigheid van de door GPT gegenereerde samenvatting in termen van het verstrekken van voldoende informatie zonder onnodige uitweiding. Ken een score toe op basis van de dekking van relevante details.
-Geef de scores terug in het volgende format:
-{"Semantische Similariteit Score": *Semantische Similariteit Score*, "Nauwkeurigheid": *Nauwkeurigheid*, "Relevantie": *Relevantie*, "Volledigheid Score": *Volledigheid Score*}

@@ -85,6 +85,8 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     7. remove encounters that do not have a discharge letter
     8. replace date in rows with 1899 in the date
     9. rename ontslagbrief
+    10. remove the MS Probleemlijst Date as it is the same as MS Probleemlijst Print but
+         formatted worse
 
     Parameters
     ----------
@@ -100,7 +102,7 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     df["enc_id"] = df.groupby(["AddmissionDate", "DischargeDate"]).ngroup()
 
     # Rename and drop columns
-    df = df.drop(columns=["ParameterID", "ValidationTime"]).rename(
+    df = df.drop(columns=["ParameterID", "ValidationTime", "pseudo_id"]).rename(
         columns={
             "AddmissionDate": "admissionDate",
             "DischargeDate": "dischargeDate",
@@ -146,6 +148,9 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
         "Medische Ontslagbrief - Beloop", "Ontslagbrief"
     )
 
+    # remove the MS Probleemlijst Date in description column
+    df = df[df["description"] != "MS Probleemlijst Date"]
+
     return df
 
 
@@ -179,6 +184,8 @@ def process_data_HiX(
     7. Adds a "date" column based on the "time" column in the merged data.
     8. Calculates the length of stay for each encounter in the merged data.
     9. Rename ontslagbrief
+    10. start with a 1000 index in enc_id
+
     """
     # remove encounters that are not in both datasets
     encounters_in_patient_files = patient_data.enc_id.unique()
@@ -262,6 +269,13 @@ def process_data_HiX(
     patient_file["description"] = patient_file["description"].replace(
         "Ontslagbericht", "Ontslagbrief"
     )
+
+    # map enc_id to start with 1000
+    enc_id_map = {
+        enc_id: 1000 + i for i, enc_id in enumerate(patient_file.enc_id.unique())
+    }
+    patient_file["enc_id"] = patient_file["enc_id"].map(enc_id_map)
+
     return patient_file
 
 
@@ -318,14 +332,14 @@ def get_patient_discharge_docs(df: pd.DataFrame, enc_id: int = None) -> str:
     str
         The discharge documentation for the patient.
     """
-    if enc_id is None:
-        discharge_documentation = df[
-            df["description"].isin(["Ontslagbrief"])
-        ].sort_values(by=["date", "description"])
+    if enc_id is not None:
+        discharge_documentation = df[df["enc_id"] == enc_id]
     else:
-        discharge_documentation = df[
-            (df["enc_id"] == enc_id) & (df["description"].isin(["Ontslagbrief"]))
-        ].sort_values(by=["date", "description"])
+        discharge_documentation = df
+
+    discharge_documentation = df[df["description"].isin(["Ontslagbrief"])].sort_values(
+        by=["date", "description"]
+    )
 
     return discharge_documentation.value
 
@@ -441,6 +455,44 @@ def get_splitted_discharge_docs_NICU(enc_id: int, data: pd.DataFrame) -> pd.Data
     return discharge_letter_split_df
 
 
+def combine_hix_and_metavision_for_visualisation(
+    df_HIX: pd.DataFrame, df_metavision: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Combines the HIX and metavision data for visualization.
+
+    Parameters
+    ----------
+    df_HIX : pd.DataFrame
+        The HIX data.
+    df_metavision : pd.DataFrame
+        The metavision data.
+
+    Returns
+    -------
+    pd.DataFrame
+        The combined dataframe for visualization.
+    """
+    df = pd.concat([df_metavision, df_HIX], axis=0)
+    # map enc_id to start from 0
+    enc_id_map = {enc_id: i for i, enc_id in enumerate(df.enc_id.unique())}
+    df["enc_id"] = df["enc_id"].map(enc_id_map)
+    # remove Intensive Care Kinderen and High Care Kinderen
+    df = df[~df.department.isin(["Intensive Care Kinderen", "High Care Kinderen"])]
+    df["label"] = (
+        "Patiënt "
+        + df["enc_id"].astype(str)
+        + " ("
+        + df["department"]
+        + ": "
+        + df["length_of_stay"].astype(str)
+        + " dagen opname)"
+    )
+    # sort by department
+    df = df.sort_values(by=["department", "enc_id", "date"])
+    return df
+
+
 if __name__ == "__main__":
     data_folder = Path(__file__).parents[3] / "data"
 
@@ -460,9 +512,15 @@ if __name__ == "__main__":
     )
     df_HiX = process_data_HiX(df_HiX_patient_files, df_HiX_discharge)
 
+    # combined data for visualisation
+    df_combined = combine_hix_and_metavision_for_visualisation(df_HiX, df_metavision)
+
     # Store the processed data
     df_metavision.to_parquet(data_folder / "processed" / "metavision_data.parquet")
     df_metavision_new.to_parquet(
         data_folder / "processed" / "metavision_new_data.parquet"
     )
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
+    df_combined.to_parquet(
+        data_folder / "processed" / "combined_data_for_visualisation.parquet"
+    )

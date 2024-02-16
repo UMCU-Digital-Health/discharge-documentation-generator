@@ -9,10 +9,7 @@ from dash.exceptions import PreventUpdate
 
 # load data
 df_metavision = pd.read_parquet(
-    Path(__file__).parents[1]
-    / "data"
-    / "processed"
-    / "metavision_new_data.parquet"
+    Path(__file__).parents[1] / "data" / "processed" / "metavision_new_data.parquet"
 )
 
 app = dash.Dash(__name__)
@@ -54,9 +51,7 @@ app.layout = html.Div(
                     value=df_metavision["enc_id"].iloc[1],
                     style={"width": "100%"},
                 ),
-                html.Button(
-                    "Next", id="next_enc_button", style={"width": "30%"}
-                ),
+                html.Button("Next", id="next_enc_button", style={"width": "30%"}),
             ],
             style={"display": "flex", "width": "40%"},
         ),
@@ -73,15 +68,11 @@ app.layout = html.Div(
                     id="date_dropdown",
                     style={"width": "100%"},
                 ),
-                html.Button(
-                    "Next", id="next_date_button", style={"width": "30%"}
-                ),
+                html.Button("Next", id="next_date_button", style={"width": "30%"}),
             ],
             style={"display": "flex", "width": "40%"},
         ),
-        dcc.Checklist(
-            id="date_checklist", options=["View all dates"], value=[]
-        ),
+        dcc.Checklist(id="date_checklist", options=["View all dates"], value=[]),
         html.H3("Select which section of the patient file you want to see:"),
         dcc.Checklist(
             id="description_dropdown",
@@ -117,9 +108,7 @@ app.layout = html.Div(
         html.Div(
             [
                 html.Button("Selecteer alle opties", id="select_all_button"),
-                html.Button(
-                    "Deselecteer alle opties", id="deselect_all_button"
-                ),
+                html.Button("Deselecteer alle opties", id="deselect_all_button"),
             ],
             style={"width": "40%"},
         ),
@@ -313,13 +302,9 @@ def update_date_dropdown(
     """
     changed_id = ctx.triggered_id
     if changed_id == "previous_date_button":
-        return df_metavision[df_metavision["date"] < current_date][
-            "date"
-        ].iloc[-1]
+        return df_metavision.loc[df_metavision["date"] < current_date, "date"].max()
     if changed_id == "next_date_button":
-        return df_metavision[df_metavision["date"] > current_date][
-            "date"
-        ].iloc[0]
+        return df_metavision.loc[df_metavision["date"] > current_date, "date"].min()
 
     raise PreventUpdate
 
@@ -401,11 +386,7 @@ def display_value(
     list
         The formatted patient file information to be displayed.
     """
-    if (
-        selected_description is None
-        or selected_date is None
-        or selected_enc_id is None
-    ):
+    if selected_description is None or selected_date is None or selected_enc_id is None:
         return [""]
     if selected_all_dates:
         patient_file = df_metavision[
@@ -467,11 +448,7 @@ def display_discharge_documentation(selected_enc_id: str) -> list:
         return [""]
     discharge_documentation = df_metavision[
         (df_metavision["enc_id"] == selected_enc_id)
-        & (
-            df_metavision["description"].isin(
-                ["Medische Ontslagbrief - Beloop"]
-            )
-        )
+        & (df_metavision["description"].isin(["Medische Ontslagbrief - Beloop"]))
     ].sort_values(by=["date", "description"])
 
     if discharge_documentation.empty:
@@ -482,4 +459,4 @@ def display_discharge_documentation(selected_enc_id: str) -> list:
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=False)
+    app.run_server(debug=True, port=8051)

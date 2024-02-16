@@ -3,7 +3,6 @@ from pathlib import Path
 
 import dash
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
 from dash import ctx, dcc, html
 from dash.dependencies import Input, Output, State
@@ -15,6 +14,7 @@ from discharge_docs.dashboard.evaluate_dashboard_layout import get_layout
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
     get_template_prompt,
+    highlight,
 )
 from discharge_docs.dashboard.prompt import (
     get_GPT_discharge_docs,
@@ -118,7 +118,7 @@ def update_date_dropdown_combined(
 
     changed_id = ctx.triggered_id
 
-    updated_date = current_date
+    updated_date = date_options[0]["value"] if date_options else None
 
     if changed_id == "previous_date_button":
         prev_dates = data[data["date"] < current_date]["date"]
@@ -157,7 +157,8 @@ def update_description_dropdown(selected_patient_admission: str) -> list:
         The updated list of options for the description dropdown.
     """
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
-    description_options = np.sort(data["description"].unique())
+    _, patient_file_df = get_patient_file(df=data)
+    description_options = patient_file_df["description"].sort_values().unique()
     return description_options
 
 
@@ -202,6 +203,7 @@ def handle_select_button_clicks(
         Input("date_checklist", "value"),
         Input("description_dropdown", "value"),
         Input("sorting_dropdown", "value"),
+        Input("search_bar", "value"),
     ],
 )
 def display_value(
@@ -210,6 +212,7 @@ def display_value(
     selected_all_dates: bool,
     selected_description: list,
     sort_dropdown_choice: str,
+    search_bar_input: str,
 ) -> list:
     """_summary_
 
@@ -268,8 +271,12 @@ def display_value(
                 )
             )
             returnable.append(html.Br())
-            returnable.append(str(patient_file.loc[index, "value"]))
+            returnable.append(patient_file.loc[index, "value"])
             returnable.append(html.Br())
+
+        if search_bar_input is not None:
+            returnable = highlight(returnable, search_bar_input)
+
         return returnable
 
 
@@ -347,7 +354,8 @@ def display_GPT_discharge_documentation(
         return [""]
 
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
-    (patient_file_string, patient_file_df) = get_patient_file(df=data)
+    patient_file_string, _ = get_patient_file(df=data)
+
     template_prompt, department = get_template_prompt(
         selected_patient_admission, template_prompt_dict
     )
@@ -375,20 +383,15 @@ def display_GPT_discharge_documentation(
         )
 
     GPT_output = []
-    if department == "nicu":
-        for category_pair in GPT_reply:
-            GPT_output.append(
-                html.Div(
-                    [
-                        html.Strong(category_pair["Categorie"]),
-                        dcc.Markdown(category_pair["Beloop tijdens opname"]),
-                    ]
-                )
+    for category_pair in GPT_reply:
+        GPT_output.append(
+            html.Div(
+                [
+                    html.Strong(category_pair["Categorie"]),
+                    dcc.Markdown(category_pair["Beloop tijdens opname"]),
+                ]
             )
-    elif department == "ic":
-        GPT_output.append("TODO")
-    elif department == "car":
-        GPT_output.append("TODO")
+        )
     return GPT_output
 
 
@@ -430,4 +433,4 @@ def gather_feedback(n_clicks: int, evaluation_slider: int, evaluation_text: str)
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8051)
