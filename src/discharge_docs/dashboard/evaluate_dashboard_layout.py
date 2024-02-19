@@ -1,328 +1,264 @@
-import pandas as pd
+import dash_bootstrap_components as dbc
 from dash import dcc, html
 
-colors = {
-    "white": "#FFFFFF",
-    "umcu_blue": "#1191fa",
-    "umcu_dark_blue": "#004285",
-    "umcu_light_blue": "#e0f2ff",
-    "umcu_orange": "#fc6039",
-    "umcu_light_orange": "#fdbfaf",
-    "black": "#000000",
-}
 
-
-def get_layout(
-    data: pd.DataFrame, user_prompt: str, system_prompt: str, template_prompt
-) -> html.Div:
+def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
     """
     Returns the layout for the evaluation dashboard.
 
     Parameters
     ----------
-    data : pd.DataFrame
-        The DataFrame containing the data for the dashboard.
     user_prompt : str
         The user prompt for generating the discharge documentation.
     system_prompt : str
         The system prompt for generating the discharge documentation.
-    template_prompt : str
-        The template prompt for generating the discharge documentation.
 
     Returns
     -------
     html.Div
         The layout for the discharge documentation dashboard.
     """
-    patient_selection_div = html.Div(
-        [
-            html.H1(
-                "Bekijk een patiëntendossier en evalueer de ontslagbrief",
-                style={
-                    "color": colors["white"],
-                    "backgroundColor": colors["umcu_blue"],
-                    "borderRadius": "15px",
-                    "text-indent": "20px",
-                    "padding": "20px",
-                    "text-align": "center",
-                },
+    navbar = dbc.NavbarSimple(
+        children=[dbc.NavItem(html.Div(id="logged_in_user", className="text-white"))],
+        brand=[
+            html.Img(
+                src="https://www.umcutrecht.nl/images/logo-umcu.svg", className="mb-2"
             ),
-            html.H3("Selecteer patiënt opname:"),
-            html.Div(
-                [
-                    dcc.Dropdown(
-                        id="patient_admission_dropdown",
-                        options=[
-                            {
-                                "label": "Patient 1 (NICU: 6 dagen)",
-                                "value": "patient_1_nicu",
-                            },
-                            {
-                                "label": "Patient 1 (IC: 2 dagen)",
-                                "value": "patient_1_ic",
-                            },
-                            {
-                                "label": "Patient 1 (CAR: 2 dagen)",
-                                "value": "patient_1_car",
-                            },
-                        ],
-                        value="patient_1_nicu",
-                        style={"width": "100%"},
-                    ),
-                ],
-            ),
+            "Ontslagbrief evaluatie",
         ],
-        style={
-            "padding": "10px",
-        },
+        color="#1191fa",
+        dark=True,
+        id="navbar",
     )
-    patient_file_tab = dcc.Tab(
-        label="Patiënt dossier",
-        children=[
-            html.H3("Selecteer deel van het patiëntendossier"),
-            html.Label(html.B("Welke datum wil je bekijken?")),
-            html.Div(
+
+    patient_selection_div = dbc.Row(
+        [
+            dbc.Col(
                 [
-                    html.Button(
-                        "Vorige",
-                        id="previous_date_button",
-                        style={
-                            "width": "30%",
-                            "margin-right": "10px",
-                            "border-radius": "10px",
-                        },
-                    ),
-                    dcc.Dropdown(
-                        id="date_dropdown",
-                        options=[],
-                        style={"width": "100%"},
-                    ),
-                    html.Button(
-                        "Volgende",
-                        id="next_date_button",
-                        style={
-                            "width": "30%",
-                            "margin-left": "10px",
-                            "border-radius": "10px",
-                        },
-                    ),
+                    dbc.Label("Selecteer patiëntopname:"),
+                    dbc.Select(id="patient_admission_dropdown", class_name="me-2"),
                 ],
-                style={
-                    "display": "flex",
-                },
-            ),
-            dcc.Checklist(
-                id="date_checklist",
-                options=["Bekijk de data van de gehele opname (alle datums)"],
-                value=[],
-            ),
-            html.Br(),
-            html.Label(
-                html.B(
-                    "Selecteer welke delen van het patiëntendossier je wilt bekijken:"
-                )
-            ),
-            dcc.Dropdown(
-                id="description_dropdown",
-                options=[],
-                value=[],
-                multi=True,
-                style={"width": "100%"},
-            ),
-            html.Div(
-                [
-                    html.Button(
-                        "Selecteer alle opties",
-                        id="select_all_button",
-                        style={
-                            "margin-right": "5px",
-                            "border-radius": "10px",
-                        },
-                    ),
-                    html.Button(
-                        "Deselecteer alle opties",
-                        id="deselect_all_button",
-                        style={
-                            "margin-left": "5px",
-                            "border-radius": "10px",
-                        },
-                    ),
-                ],
-                style={"flex-direction": "row", "display": "flex"},
-            ),
-            html.Br(),
-            html.H2("Patiëntendossier:"),
-            dcc.Input(
-                id="search_bar",
-                type="text",
-                placeholder="Zoek naar een specifiek onderdeel in het patiëntendossier",
-                style={"width": "100%", "margin-bottom": "10px"},
-            ),
-            dcc.Dropdown(
-                id="sorting_dropdown",
-                options=[
-                    {
-                        "label": "Sort by date",
-                        "value": "sort_by_date",
-                    },
-                    {
-                        "label": "Sort by code",
-                        "value": "sort_by_code",
-                    },
-                ],
-                value="sort_by_code",
-                style={
-                    "width": "50%",
-                    "float": "right",
-                },
-            ),
-            html.Br(),
-            html.Div(
-                ["Placeholder for patient file"],
-                id="output_value",
-                style={
-                    "width": "100%",
-                    "padding": "10px",
-                    "border-radius": "10px",
-                    "background-color": "whitesmoke",
-                },
+                width=4,
             ),
         ],
     )
 
-    original_dischare_docu_tab = dcc.Tab(
-        label="Originele ontslagbrief",
-        children=[
-            html.H2(
-                "Originele ontslagbrief:",
-                style={
-                    "width": "100%",
-                },
+    patient_file_tab = dbc.Card(
+        [
+            dbc.CardHeader(
+                [
+                    dbc.Label("Welke datum wil je bekijken?"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Vorige",
+                                    id="previous_date_button",
+                                    color="secondary",
+                                    outline=True,
+                                    className="me-2",
+                                ),
+                                width=2,
+                            ),
+                            dbc.Col(
+                                dbc.Select(id="date_dropdown", class_name="me-2"),
+                                width=8,
+                            ),
+                            dbc.Col(
+                                dbc.Button(
+                                    "Volgende",
+                                    id="next_date_button",
+                                    color="secondary",
+                                    outline=True,
+                                    className="me-2",
+                                ),
+                                width=2,
+                            ),
+                        ]
+                    ),
+                    dbc.Switch(
+                        id="date_checklist",
+                        label="Bekijk de data van de gehele opname (alle datums)",
+                        value=False,
+                    ),
+                    html.Br(),
+                    dbc.Label("Selecteer patiëntendossier type:"),
+                    dcc.Dropdown(
+                        id="description_dropdown",
+                        options=[],
+                        value=[],
+                        multi=True,
+                    ),
+                    html.Div(
+                        [
+                            dbc.Button(
+                                "Selecteer alle opties",
+                                id="select_all_button",
+                                color="secondary",
+                                outline=True,
+                                class_name="me-2",
+                                size="sm",
+                            ),
+                            dbc.Button(
+                                "Deselecteer alle opties",
+                                id="deselect_all_button",
+                                color="secondary",
+                                outline=True,
+                                class_name="me-2",
+                                size="sm",
+                            ),
+                        ]
+                    ),
+                ]
             ),
+            dbc.CardBody(
+                [
+                    html.H2("Patiëntendossier:"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Input(
+                                    id="search_bar",
+                                    type="text",
+                                    placeholder="Zoeken...",
+                                    class_name="mb-2",
+                                ),
+                            ),
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    id="sorting_dropdown",
+                                    options=[
+                                        {
+                                            "label": "Sort by date",
+                                            "value": "sort_by_date",
+                                        },
+                                        {
+                                            "label": "Sort by code",
+                                            "value": "sort_by_code",
+                                        },
+                                    ],
+                                    value="sort_by_code",
+                                ),
+                            ),
+                        ]
+                    ),
+                    html.Br(),
+                    html.Div(
+                        ["Placeholder for patient file"],
+                        id="output_value",
+                        className="bg-light",
+                    ),
+                ]
+            ),
+        ]
+    )
+
+    original_dischare_docu_tab = dbc.Card(
+        dbc.CardBody(
             dcc.Markdown(
                 ["Placeholder for original discharge letter"],
                 id="output_original_discharge_documentation",
-                style={
-                    "width": "100%",
-                    "padding": "10px",
-                    "border-radius": "10px",
-                    "background-color": "whitesmoke",
-                },
-            ),
-        ],
+                className="bg-light",
+            )
+        ),
     )
 
     GPT_div = html.Div(
         children=[
-            html.Div(
+            dbc.Card(
                 [
-                    html.H3("GPT settings:"),
-                    html.H5("Temperatuur:"),
-                    html.Label("0 is het minst creatief, 1 het meest creatief."),
-                    dcc.Slider(
-                        id="temperature_slider",
-                        min=0,
-                        max=1,
-                        step=0.1,
-                        value=0.1,
+                    dbc.CardHeader(html.H3("GPT settings:")),
+                    dbc.CardBody(
+                        [
+                            html.Label(
+                                "Temperatuur (0 is het minst creatief, 1 het meest)"
+                            ),
+                            dcc.Slider(
+                                id="temperature_slider",
+                                min=0,
+                                max=1,
+                                step=0.1,
+                                value=0.1,
+                            ),
+                            html.H5("Extra instructies:"),
+                            dbc.Label(
+                                "Voer hier extra instructies in die meegegeven "
+                                + "worden aan GPT (experimenteel):"
+                            ),
+                            dbc.Input(
+                                id="addition_prompt",
+                                type="text",
+                            ),
+                            dbc.Button(
+                                "Update en genereer onstlagbrief",
+                                id="update_discharge_button",
+                                color="primary",
+                                class_name="mt-2 me-2",
+                            ),
+                            dbc.Button(
+                                "Laat prompt zien",
+                                id="show_prompt_button",
+                                color="secondary",
+                                class_name="mt-2 me-2",
+                                outline=True,
+                            ),
+                        ]
                     ),
-                    html.H5("Extra instructies:"),
-                    html.Label(
-                        "Voer hier extra instructies in die meegegeven "
-                        + "worden aan GPT (experimenteel):"
-                    ),
-                    html.Br(),
-                    dcc.Input(
-                        id="addition_prompt", type="text", style={"width": "100%"}
-                    ),
-                    html.Br(),
-                    html.Button(
-                        "Update en genereer onstlagbrief",
-                        id="update_discharge_button",
-                        style={
-                            "height": "50px",
-                            "border-radius": "10px",
-                            "background-color": colors["umcu_orange"],
-                            "border": f"1px solid {colors['umcu_orange']}",
-                            "padding": "10px",
-                        },
-                    ),
-                    html.Label(
-                        "Klik op de knop hierboven om een ontslagbrief te genereren!"
-                    ),
-                ],
-                style={
-                    "background-color": colors["umcu_light_orange"],
-                    "border-radius": "10px",
-                    "padding": "10px",
-                },
+                ]
             ),
-            html.Div(
+            dbc.Card(
                 [
-                    html.H2("Gegenereerde ontslagbrief:"),
-                    dcc.Loading(
-                        html.Div(
-                            ["Placeholder for GPTdischarge letter"],
-                            id="output_GPT_discharge_documentation",
-                        ),
-                        type="default",
+                    dbc.CardHeader(html.H3("Gegenereerde ontslagbrief:")),
+                    dbc.CardBody(
+                        [
+                            dbc.Spinner(
+                                html.Div(
+                                    ["Placeholder for GPTdischarge letter"],
+                                    id="output_GPT_discharge_documentation",
+                                )
+                            ),
+                        ]
                     ),
-                    html.Br(),
                 ],
-                style={
-                    "padding": "10px",
-                    "border-radius": "10px",
-                    "background-color": "white",
-                    "border": "3px solid whitesmoke",
-                    "margin-top": "10px",
-                    "margin-bottom": "10px",
-                },
+                className="mt-2",
             ),
         ],
     )
 
-    eval_div = html.Div(
-        children=[
-            html.H2("Evaluatie"),
-            html.H5("Geef een score aan de ontslagbrief:"),
-            html.Label("1 is het minst goed, 10 is het best."),
-            dcc.Slider(
-                id="evaluation_slider",
-                min=1,
-                max=10,
-                step=1,
-                value=6,
-            ),
-            html.H5("Opmerkingen:"),
-            dcc.Textarea(
-                id="evaluation_text",
-                value="",
-                style={"width": "100%"},
-            ),
-            html.Button(
-                "Sla evaluatie op",
-                id="evaluate_button",
-                style={
-                    "height": "50px",
-                    "border-radius": "10px",
-                    "background-color": "#5484B3",
-                    "border": f"1px solid {'#5484B3'}",
-                    "padding": "10px",
-                },
-            ),
-            html.Br(),
-            html.Label("", id="evaluation_saved_label"),
-        ],
-        style={
-            "background-color": colors["umcu_light_blue"],
-            "border-radius": "10px",
-            "padding": "10px",
-        },
-    )
-
-    show_prompts_div = html.Details(
+    eval_div = dbc.Card(
         [
-            html.Summary("Gebruikte prompt tonen/verbergen"),
+            dbc.CardHeader(html.H3("Evaluatie")),
+            dbc.CardBody(
+                [
+                    html.H5("Geef een score voor de gegenereerde ontslagbrief:"),
+                    html.Label("1 is het minst goed, 10 is het best."),
+                    dcc.Slider(
+                        id="evaluation_slider",
+                        min=1,
+                        max=10,
+                        step=1,
+                        value=6,
+                    ),
+                    dbc.Label("Opmerkingen:"),
+                    dbc.Textarea(
+                        id="evaluation_text",
+                        value="",
+                    ),
+                    dbc.Button(
+                        "Sla evaluatie op",
+                        id="evaluate_button",
+                        color="primary",
+                        class_name="mt-2",
+                    ),
+                    dbc.Label("", id="evaluation_saved_label"),
+                ]
+            ),
+        ],
+        class_name="mt-2",
+    )
+
+    show_prompts_div = dbc.Offcanvas(
+        [
             html.Div(
                 [
                     html.H5("System prompt"),
@@ -338,45 +274,39 @@ def get_layout(
             html.Div(
                 [
                     html.H5("Template prompt"),
-                    html.P(template_prompt, id="template_prompt_space"),
+                    html.P("Laden...", id="template_prompt_space"),
                 ]
             ),
         ],
-        style={
-            "background-color": "lightgrey",
-            "border-radius": "10px",
-            "padding": "10px",
-            "width": "50%",
-        },
+        id="offcanvas",
+        is_open=False,
     )
 
     layout = html.Div(
         children=[
+            navbar,
             patient_selection_div,
-            html.Div(
+            dbc.Row(
                 children=[
-                    html.Div(
-                        dcc.Tabs(
+                    dbc.Col(
+                        dbc.Tabs(
                             [
-                                original_dischare_docu_tab,
-                                patient_file_tab,
+                                dbc.Tab(
+                                    original_dischare_docu_tab,
+                                    label="Originele ontslagbrief",
+                                ),
+                                dbc.Tab(patient_file_tab, label="Patiëntendossier"),
                             ],
-                            style={
-                                "display": "flex",
-                                "flex-direction": "row",
-                                "width": "100%",
-                            },
+                            class_name="mt-2",
                         ),
-                        style={"width": "50%", "padding": "10px"},
+                        width=6,
                     ),
-                    html.Div(
+                    dbc.Col(
                         [GPT_div, eval_div],
-                        style={"width": "50%"},
+                        width=6,
                     ),
                 ],
-                style={"display": "flex", "flex-direction": "row"},
             ),
-            html.Div(style={"border": "1px solid black", "margin": "10px 0"}),
             show_prompts_div,
         ]
     )

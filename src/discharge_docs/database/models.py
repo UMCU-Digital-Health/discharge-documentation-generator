@@ -27,7 +27,7 @@ class DashSession(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime)
     user: Mapped[str]
-    department: Mapped[str]
+    groups: Mapped[str]
     version: Mapped[str]
 
 
@@ -58,7 +58,7 @@ class DashEvaluation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     user_prompt_id = mapped_column(Integer, ForeignKey(DashUserPrompt.id), init=False)
     evaluation_metric: Mapped[str]
-    evaluation_value: Mapped[float]
+    evaluation_value: Mapped[str]
 
     user_prompt_relation: Mapped["DashUserPrompt"] = relationship(
         init=False, back_populates="evaluation_relation"

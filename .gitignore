@@ -6,6 +6,10 @@
 *.pickle
 *.csv
 *.xlsx
+*.db
+
+# Authentication config
+auth.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-02-16
+
+### Added
+- Added a local sqlite database to store evaluation of the dashboard
+- Added authorization to the dashboard
+
+### Changed
+- Changed the dashboard to use Bootstrap components
+
 ## [0.2.1] - 2024-01-31
 
 ### Added

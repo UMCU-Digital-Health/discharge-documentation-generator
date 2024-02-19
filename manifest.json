@@ -1,99 +1,105 @@
 {
   "version": 1,
-  "locale": "en_US.UTF-8",
   "metadata": {
     "appmode": "python-dash",
-    "entrypoint": "run.app:app"
+    "entrypoint": "run.evaluation_dashboard:app"
   },
+  "locale": "en_US.UTF-8",
   "python": {
-    "version": "3.8.12",
+    "version": "3.10.13",
     "package_manager": {
       "name": "pip",
-      "version": "23.3.1",
+      "version": "23.3.2",
       "package_file": "requirements.txt"
     }
   },
   "files": {
     "requirements.txt": {
-      "checksum": "c78e6bc2b67f04f3d39a32105cf1fc6e"
+      "checksum": "c669b40586d83462ff76c6b2a68228fb"
     },
-    ".gitignore": {
-      "checksum": "8f4c4875f26880fd19da292db7dd427c"
+    "data/processed/HiX_data.parquet": {
+      "checksum": "5144cc34d71687c42574b31d86873086"
     },
-    "CHANGELOG.md": {
-      "checksum": "80dfef011b4e8d586884798d6f730a19"
+    "data/processed/combined_data_for_visualisation.parquet": {
+      "checksum": "5805930f246021b6e870ad787bbbaedb"
     },
-    "README.md": {
-      "checksum": "785fa4e29ab9369b68b5e225e30b3968"
+    "data/processed/metavision_data.parquet": {
+      "checksum": "aaa6cf0b0710b212c0e534827c5f1ec4"
     },
-    "data/processed/.gitkeep": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    "data/processed/metavision_new_data.parquet": {
+      "checksum": "c59b9a318fa7f085c00108d2855f10c3"
     },
-    "data/raw/.gitkeep": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    "data/prompts/system_prompt.txt": {
+      "checksum": "2c3aa80de42460bad3ce1583cb349423"
     },
-    "data/raw/example_patient_file_gpt.txt": {
-      "checksum": "0b3e432117625a33011acaed9f994d8b"
-    },
-    "docs/Makefile": {
-      "checksum": "ef4f00c423089323edef1d3cff31a4a2"
-    },
-    "docs/_static/.gitkeep": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
-    },
-    "docs/conf.py": {
-      "checksum": "cda4962949e0daec53846d5e181f3ec3"
-    },
-    "docs/index.rst": {
-      "checksum": "15ae536a3c2b4212dd630c3665729d0f"
-    },
-    "docs/make.bat": {
-      "checksum": "1eb66bfc2d91ac65bd16a1a73bded2ca"
+    "data/prompts/user_prompt1.txt": {
+      "checksum": "b7277afbbfefb6c0ba6e71e507ec79d6"
     },
     "pyproject.toml": {
-      "checksum": "8f7a9012be4d0987cf7e1b206f9e0c11"
-    },
-    "run/.ipynb_checkpoints/app-checkpoint.py": {
-      "checksum": "974b90cf225170db48fd4bbf492cb383"
+      "checksum": "49958dd4339272075c506160cfa98027"
     },
     "run/app.py": {
-      "checksum": "e157f5715e86c0866aec81097f2ff36f"
+      "checksum": "34e2e6592c2b7e3ba1b8b60b38d560f8"
     },
-    "setup.cfg": {
-      "checksum": "5896bf0dffe7886cbfbec0aced6472b4"
+    "run/config/auth.toml": {
+      "checksum": "e0a669b4e39ea3c145b7e83ff6c5fe92"
     },
-    "src/discharge_docs.egg-info/PKG-INFO": {
-      "checksum": "c0fdca2e648fbd7801983a64fc68b239"
+    "run/evaluation_dashboard.py": {
+      "checksum": "37e30270d3df37800569f3fb59f8b3af"
     },
-    "src/discharge_docs.egg-info/SOURCES.txt": {
-      "checksum": "ad0457dcb16b8dbf0f66cf1741a683b6"
+    "run/visualise_patient_file.py": {
+      "checksum": "8f78ae0d5b363d28dc54b6f98f4edbf1"
     },
-    "src/discharge_docs.egg-info/dependency_links.txt": {
-      "checksum": "68b329da9893e34099c7d8ad5cb9c940"
+    "run/visualise_patient_file_HIX.py": {
+      "checksum": "b50d9ee0e008452102ff88dcf17f075a"
     },
-    "src/discharge_docs.egg-info/requires.txt": {
-      "checksum": "a779eaa9c9d78d91bdd74ed1f2b7426c"
-    },
-    "src/discharge_docs.egg-info/top_level.txt": {
-      "checksum": "c6a6796dce1b656d249fb9d74ac6c3e6"
+    "run/visualise_patient_file_metavision.py": {
+      "checksum": "3e68fb8a8d91066502a010cdc6fda473"
     },
     "src/discharge_docs/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
-    "src/discharge_docs/__pycache__/__init__.cpython-38.pyc": {
-      "checksum": "859c4996bad552ef0d057f7f23068855"
+    "src/discharge_docs/dashboard/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
-    "src/discharge_docs/__pycache__/dashboard_helper.cpython-38.pyc": {
-      "checksum": "fdbaa928edd9902306e68348a718c8a6"
+    "src/discharge_docs/dashboard/evaluate_dashboard_layout.py": {
+      "checksum": "eeb93efd7fb0279b1f77a68840c6e4a5"
     },
-    "src/discharge_docs/__pycache__/prompt.cpython-38.pyc": {
-      "checksum": "c7b429ea350a7f733ea4b44eb3266981"
+    "src/discharge_docs/dashboard/helper.py": {
+      "checksum": "a25b18afbd23065302e63cd1115ae2d7"
     },
-    "src/discharge_docs/dashboard_helper.py": {
-      "checksum": "64a5a7bcadc9a393de3aac7720cc4d3d"
+    "src/discharge_docs/dashboard/prompt.py": {
+      "checksum": "0f9523aac264855cfadf0c1f581682ce"
     },
-    "src/discharge_docs/prompt.py": {
-      "checksum": "fa2e8fc1e5d875fd08cc5eb27a0dc804"
+    "src/discharge_docs/database/models.py": {
+      "checksum": "1776d9bfe64068ed610008e1e5838afa"
+    },
+    "src/discharge_docs/evaluate/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/evaluate/evaluate_prompt.py": {
+      "checksum": "cd392c95e6d2e3d137a093bf0cfb0a55"
+    },
+    "src/discharge_docs/processing/processing.py": {
+      "checksum": "0e2f204eb5ef64c4291de082032576e0"
+    },
+    "src/discharge_docs/prompts/CAR_template_prompt.txt": {
+      "checksum": "7b181e661f57ce57dcd37556e027f3f0"
+    },
+    "src/discharge_docs/prompts/IC_template_prompt.txt": {
+      "checksum": "cf5db083a6f2c7e60926d0bac0a7a52b"
+    },
+    "src/discharge_docs/prompts/NICU_template_prompt.txt": {
+      "checksum": "13b1d22e9513bf6a124451ff905bc9f7"
+    },
+    "src/discharge_docs/prompts/evaluatie_prompt.txt": {
+      "checksum": "d0ffcee3174350d0b96fbfd2b421560e"
+    },
+    "src/discharge_docs/prompts/system_prompt.txt": {
+      "checksum": "2c1a1c97aa33641f6b57d489f0f94701"
+    },
+    "src/discharge_docs/prompts/user_prompt.txt": {
+      "checksum": "ba9dcbc4e1e1dbda4c1f8ea7f349f8fd"
     }
   }
 }

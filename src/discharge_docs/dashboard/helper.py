@@ -1,7 +1,12 @@
+import json
+import logging
 import re
 
 import pandas as pd
 from dash import html
+from flask import Request
+
+logger = logging.getLogger(__name__)
 
 
 def highlight(text, selected_words: str) -> list:
@@ -40,6 +45,41 @@ def highlight(text, selected_words: str) -> list:
             else:
                 flat_list.append(sublist)
         return flat_list
+
+
+def get_authorization(req: Request, authorization_dict: dict) -> tuple[str, list[str]]:
+    """
+    Get the RStudio Connect credentials from the request headers.
+    Credentials are of the form: {user: "email", groups: ["group1", "group2"]}
+    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+
+    Parameters
+    ----------
+    req : Request
+        The request object.
+    authorization_dict : Dict
+        A dictionary containing the user's email and their authorization groups.
+        see auth_example.toml for an example.
+
+    Returns
+    -------
+    Tuple[str, List[str]]
+        A tuple containing the user's email
+        and a list of authorization groups for the user.
+    """
+    credential_header = req.headers.get("RStudio-Connect-Credentials")
+    if not credential_header:
+        logger.warning("No credentials found in request headers")
+        return "", []
+
+    credential_header = json.loads(credential_header)
+    user = credential_header.get("user").lower()
+    for value in authorization_dict["users"].values():
+        if value["email"] == user:
+            return user, value["groups"]
+
+    logger.warning(f"No authorization groups found for user {user}")
+    return "", []
 
 
 def get_data_from_patient_admission(

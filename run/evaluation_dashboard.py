@@ -1,17 +1,24 @@
+import logging
 import os
+from datetime import datetime
 from pathlib import Path
 
 import dash
 import dash_bootstrap_components as dbc
+import flask
 import pandas as pd
+import tomli
 from dash import ctx, dcc, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from openai import AzureOpenAI
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from discharge_docs.dashboard.evaluate_dashboard_layout import get_layout
 from discharge_docs.dashboard.helper import (
+    get_authorization,
     get_data_from_patient_admission,
     get_template_prompt,
     highlight,
@@ -21,10 +28,18 @@ from discharge_docs.dashboard.prompt import (
     load_pompts,
     load_template_prompt,
 )
+from discharge_docs.database.models import (
+    Base,
+    DashEvaluation,
+    DashSession,
+    DashUserPrompt,
+)
 from discharge_docs.processing.processing import (
     get_patient_discharge_docs,
     get_patient_file,
 )
+
+logger = logging.getLogger(__name__)
 
 # initialise Azure
 load_dotenv()
@@ -35,6 +50,24 @@ client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_KEY"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
 )
+
+# Authorization config
+with open(Path(__file__).parent / "config" / "auth.toml", "rb") as f:
+    authorization_dict = tomli.load(f)
+
+# Database config
+with open(Path(__file__).parents[1] / "pyproject.toml", "rb") as f:
+    project_info = tomli.load(f)
+
+API_VERSION = project_info["project"]["version"]
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    execution_options={"schema_translate_map": {"aiva-discharge": None}},
+)
+Base.metadata.create_all(engine)
 
 # load data
 df_metavision = pd.read_parquet(
@@ -70,9 +103,42 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
-app.layout = get_layout(
-    patient_1_NICU, user_prompt, system_prompt, template_prompt_NICU
+app.layout = get_layout(user_prompt, system_prompt)
+
+
+@app.callback(
+    Output("patient_admission_dropdown", "options"),
+    Output("patient_admission_dropdown", "value"),
+    Output("logged_in_user", "children"),
+    Input("navbar", "children"),
 )
+def load_patient_selection_dropdown(_) -> tuple[list, str, list]:
+    """
+    Load the patient admission dropdown with the available patient admissions when
+    the app is starting. Available patients are based on the user's authorization.
+
+    Returns
+    -------
+    tuple[list, str]
+        The list of options for the patient admission dropdown and the first patient
+        value.
+    """
+    user, authorization_group = get_authorization(flask.request, authorization_dict)
+    if os.getenv("ENV", "") == "development":
+        logger.warning("Running in development mode, overriding authorization group.")
+        # Never add this in production!
+        authorization_group = ["NICU", "IC", "CAR"]
+    values_list = {
+        "NICU": {"label": "Patient 1 (NICU 6 dagen)", "value": "patient_1_nicu"},
+        "IC": {"label": "Patient 1 (IC 2 dagen)", "value": "patient_1_ic"},
+        "CAR": {"label": "Patient 1 (CAR 2 dagen)", "value": "patient_1_car"},
+    }
+    authorized_patients = [
+        value for key, value in values_list.items() if key in authorization_group
+    ]
+    fist_patient = authorized_patients[0]["value"] if authorized_patients else None
+
+    return authorized_patients, fist_patient, [f"Ingelogd als: {user}"]
 
 
 @app.callback(
@@ -111,6 +177,8 @@ def update_date_dropdown_combined(
         First element is the list of options for the date dropdown.
         Second element is the selected (or updated) value for the date dropdown.
     """
+    if selected_patient_admission is None:
+        raise PreventUpdate
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
     date_options = [
         {"label": date.date(), "value": date} for date in data["date"].unique()
@@ -156,6 +224,8 @@ def update_description_dropdown(selected_patient_admission: str) -> list:
     list
         The updated list of options for the description dropdown.
     """
+    if selected_patient_admission is None:
+        raise PreventUpdate
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
     _, patient_file_df = get_patient_file(df=data)
     description_options = patient_file_df["description"].sort_values().unique()
@@ -214,25 +284,25 @@ def display_value(
     sort_dropdown_choice: str,
     search_bar_input: str,
 ) -> list:
-    """_summary_
+    """Display the discharge documentation for the selected patient admission.
 
     Parameters
     ----------
     selected_patient_admission : str
-        _description_
+        The selected patient admission.
     selected_date : str
-        _description_
+        The selected date.
     selected_all_dates : bool
-        _description_
+        Flag indicating whether all dates are selected.
     selected_description : list
-        _description_
+        The selected descriptions.
     sort_dropdown_choice: str
-        _description_
+        The choice for sorting the discharge documentation.
 
     Returns
     -------
     list
-        _description_
+        The discharge documentation for the selected patient admission.
     """
     if (
         selected_description is None
@@ -313,9 +383,11 @@ def display_discharge_documentation(selected_patient_admission: str) -> list:
     [Input("patient_admission_dropdown", "value")],
 )
 def update_shown_template_prompt(selected_patient_admission: str) -> list:
-    template_prompt = get_template_prompt(
+    if selected_patient_admission is None:
+        return [""]
+    template_prompt, _ = get_template_prompt(
         selected_patient_admission, template_prompt_dict
-    )[0]
+    )
     return [template_prompt]
 
 
@@ -398,9 +470,15 @@ def display_GPT_discharge_documentation(
 @app.callback(
     Output("evaluation_saved_label", "children"),
     [Input("evaluate_button", "n_clicks")],
-    [State("evaluation_slider", "value"), State("evaluation_text", "value")],
+    [
+        State("evaluation_slider", "value"),
+        State("evaluation_text", "value"),
+        State("addition_prompt", "value"),
+    ],
 )
-def gather_feedback(n_clicks: int, evaluation_slider: int, evaluation_text: str) -> str:
+def gather_feedback(
+    n_clicks: int, evaluation_slider: int, evaluation_text: str, additional_prompt: str
+) -> str:
     """
     Gather feedback from the user.
 
@@ -412,11 +490,13 @@ def gather_feedback(n_clicks: int, evaluation_slider: int, evaluation_text: str)
         The score given by the user on the evaluation slider.
     evaluation_text : str
         The feedback text provided by the user.
+    additional_prompt : str
+        The additional prompt provided by the user.
 
     Returns
     -------
     str
-        A string containing the user's score and feedback.
+        A string indicating that the feedback was saved.
 
     Raises
     ------
@@ -426,9 +506,59 @@ def gather_feedback(n_clicks: int, evaluation_slider: int, evaluation_text: str)
     """
     if n_clicks is None:
         raise PreventUpdate
-    # TODO add functionality to save the feedback to database
-    # using evaluation slider and evaluation text
+
+    # Save the feedback to database
+    user, authorized_groups = get_authorization(flask.request, authorization_dict)
+    dash_session = DashSession(
+        timestamp=datetime.now(),
+        user=user,
+        groups=str(authorized_groups),
+        version=API_VERSION,
+    )
+    custom_prompt = DashUserPrompt(
+        prompt=additional_prompt, session_relation=dash_session
+    )
+    evaluation_user_score = DashEvaluation(
+        evaluation_metric="slider-score",
+        evaluation_value=str(evaluation_slider),
+    )
+    evaluation_remarks = DashEvaluation(
+        evaluation_metric="remarks",
+        evaluation_value=evaluation_text,
+    )
+    custom_prompt.evaluation_relation.append(evaluation_user_score)
+    custom_prompt.evaluation_relation.append(evaluation_remarks)
+
+    with Session(engine) as session:
+        session.add(custom_prompt)
+        session.commit()
+
     return "De feedback is opgeslagen, bedankt!"
+
+
+@app.callback(
+    Output("offcanvas", "is_open"),
+    Input("show_prompt_button", "n_clicks"),
+    State("offcanvas", "is_open"),
+)
+def show_prompts(n: int, is_open: bool) -> bool:
+    """Toggle the offcanvas menu.
+
+    Parameters
+    ----------
+    n : int
+        the number of times the button was clicked.
+    is_open : bool
+        if the offcanvas menu is open.
+
+    Returns
+    -------
+    bool
+        if the offcanvas menu should be open.
+    """
+    if n:
+        return not is_open
+    return is_open
 
 
 # Run the app

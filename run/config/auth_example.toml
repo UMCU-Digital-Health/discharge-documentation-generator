@@ -1,0 +1,9 @@
+[users]
+
+[users.name]
+email="name@umcutrecht.nl"
+groups=["NICU", "IC", "CAR", "PSY"]
+
+[users.name2]
+email="name2@umcutrecht.nl"
+groups=["IC"]
