@@ -19,7 +19,16 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
         The layout for the discharge documentation dashboard.
     """
     navbar = dbc.NavbarSimple(
-        children=[dbc.NavItem(html.Div(id="logged_in_user", className="text-white"))],
+        children=[
+            dbc.NavItem(html.Div(id="logged_in_user", className="text-white me-5")),
+            dbc.DropdownMenu(
+                children=[
+                    dbc.DropdownMenuItem("Export db", id="export-db"),
+                ],
+                nav=True,
+                in_navbar=True,
+            ),
+        ],
         brand=[
             html.Img(
                 src="https://www.umcutrecht.nl/images/logo-umcu.svg", className="mb-2"
@@ -170,16 +179,6 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                     dbc.CardHeader(html.H3("GPT settings:")),
                     dbc.CardBody(
                         [
-                            html.Label(
-                                "Temperatuur (0 is het minst creatief, 1 het meest)"
-                            ),
-                            dcc.Slider(
-                                id="temperature_slider",
-                                min=0,
-                                max=1,
-                                step=0.1,
-                                value=0.1,
-                            ),
                             html.H5("Extra instructies:"),
                             dbc.Label(
                                 "Voer hier extra instructies in die meegegeven "
@@ -239,7 +238,11 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                         step=1,
                         value=6,
                     ),
-                    dbc.Label("Opmerkingen:"),
+                    html.H5("Opmerkingen"),
+                    dbc.Label(
+                        "Staat alle informatie erin? Zo nee: staat de informatie"
+                        " wel in het dossier? Is de verwoording acceptabel? etc."
+                    ),
                     dbc.Textarea(
                         id="evaluation_text",
                         value="",
@@ -282,6 +285,34 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
         is_open=False,
     )
 
+    # Temporary popup to download all logged metadata
+    export_popup = dbc.Modal(
+        [
+            dbc.ModalTitle(html.H2("Download lokale database")),
+            dbc.ModalBody(
+                [
+                    dcc.Input(type="password", id="export-passwd", className="me-1"),
+                    dbc.Button(
+                        "Download Logs",
+                        id="download-logs-btn",
+                        color="primary",
+                        class_name="me-1",
+                    ),
+                    dbc.Alert(
+                        "Wachtwoord is fout",
+                        id="alert-passwd",
+                        is_open=False,
+                        color="danger",
+                        duration=5000,
+                    ),
+                ]
+            ),
+        ],
+        id="export-modal",
+        size="lg",
+        is_open=False,
+    )
+
     layout = html.Div(
         children=[
             navbar,
@@ -308,6 +339,8 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                 ],
             ),
             show_prompts_div,
+            export_popup,
+            dcc.Download(id="download-db"),
         ]
     )
     return layout

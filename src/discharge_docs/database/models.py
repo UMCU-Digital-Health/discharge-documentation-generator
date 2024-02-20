@@ -56,7 +56,9 @@ class DashEvaluation(Base):
     __table_args__ = {"schema": "aiva-discharge"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    user_prompt_id = mapped_column(Integer, ForeignKey(DashUserPrompt.id), init=False)
+    user_prompt_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(DashUserPrompt.id), init=False
+    )
     evaluation_metric: Mapped[str]
     evaluation_value: Mapped[str]
 

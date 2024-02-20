@@ -6,14 +6,16 @@ from pathlib import Path
 import dash
 import dash_bootstrap_components as dbc
 import flask
+import numpy as np
 import pandas as pd
 import tomli
 from dash import ctx, dcc, html
+from dash._callback import NoUpdate
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from openai import AzureOpenAI
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
 from discharge_docs.dashboard.evaluate_dashboard_layout import get_layout
@@ -44,11 +46,12 @@ logger = logging.getLogger(__name__)
 # initialise Azure
 load_dotenv()
 deployment_name = "aiva-gpt"
+TEMPERATURE = 0.2
 
 client = AzureOpenAI(
     api_version="2023-05-15",
     api_key=os.getenv("AZURE_OPENAI_KEY"),
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
 )
 
 # Authorization config
@@ -79,7 +82,7 @@ patient_1_IC = df_metavision[df_metavision["enc_id"] == 48]
 df_HIX = pd.read_parquet(
     Path(__file__).parents[1] / "data" / "processed" / "HiX_data.parquet"
 )
-patient_1_CAR = df_HIX[df_HIX["enc_id"] == 1001374101]
+patient_1_CAR = df_HIX[df_HIX["enc_id"] == 1012]
 
 data_dict = {
     "patient_1_nicu": patient_1_NICU,
@@ -112,7 +115,7 @@ app.layout = get_layout(user_prompt, system_prompt)
     Output("logged_in_user", "children"),
     Input("navbar", "children"),
 )
-def load_patient_selection_dropdown(_) -> tuple[list, str, list]:
+def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
     """
     Load the patient admission dropdown with the available patient admissions when
     the app is starting. Available patients are based on the user's authorization.
@@ -209,7 +212,7 @@ def update_date_dropdown_combined(
     Output("description_dropdown", "options"),
     [Input("patient_admission_dropdown", "value")],
 )
-def update_description_dropdown(selected_patient_admission: str) -> list:
+def update_description_dropdown(selected_patient_admission: str) -> np.ndarray:
     """
     Update the options for the description dropdown based on the selected patient
     admission.
@@ -333,11 +336,9 @@ def display_value(
         for index in patient_file.index:
             returnable.append(
                 html.B(
-                    str(
-                        patient_file.loc[index, "description"]
-                        + " - "
-                        + str(patient_file.loc[index, "date"].date())
-                    )
+                    str(patient_file.loc[index, "description"])
+                    + " - "
+                    + str(patient_file.loc[index, "date"].date())
                 )
             )
             returnable.append(html.Br())
@@ -356,7 +357,7 @@ def display_value(
         Input("patient_admission_dropdown", "value"),
     ],
 )
-def display_discharge_documentation(selected_patient_admission: str) -> list:
+def display_discharge_documentation(selected_patient_admission: str) -> str:
     """
     Display the discharge documentation for the selected patient admission.
 
@@ -371,7 +372,7 @@ def display_discharge_documentation(selected_patient_admission: str) -> list:
         The discharge documentation for the selected patient admission.
     """
     if selected_patient_admission is None:
-        return [""]
+        return ""
 
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
     discharge_documentation = get_patient_discharge_docs(df=data)
@@ -393,19 +394,13 @@ def update_shown_template_prompt(selected_patient_admission: str) -> list:
 
 @app.callback(
     Output("output_GPT_discharge_documentation", "children"),
-    [
-        Input("update_discharge_button", "n_clicks"),
-    ],
-    [
-        State("patient_admission_dropdown", "value"),
-        State("temperature_slider", "value"),
-        State("addition_prompt", "value"),
-    ],
+    Input("update_discharge_button", "n_clicks"),
+    State("patient_admission_dropdown", "value"),
+    State("addition_prompt", "value"),
 )
 def display_GPT_discharge_documentation(
     n_clicks: int,
     selected_patient_admission: str,
-    temperature: float,
     addition_prompt: str,
 ) -> list:
     """
@@ -438,7 +433,7 @@ def display_GPT_discharge_documentation(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             template_prompt=template_prompt,
-            temperature=temperature,
+            temperature=TEMPERATURE,
             engine=deployment_name,
             client=client,
         )
@@ -448,7 +443,7 @@ def display_GPT_discharge_documentation(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             template_prompt=template_prompt,
-            temperature=temperature,
+            temperature=TEMPERATURE,
             engine=deployment_name,
             client=client,
             addition_prompt=addition_prompt,
@@ -561,6 +556,85 @@ def show_prompts(n: int, is_open: bool) -> bool:
     return is_open
 
 
+@app.callback(
+    Output("export-modal", "is_open"),
+    Input("export-db", "n_clicks"),
+)
+def toggle_export_modal(n_clicks: int) -> bool:
+    """Simple function to toggle the export modal
+
+    Parameters
+    ----------
+    n_clicks : int
+        number of times a user clicked on the export data button
+
+    Returns
+    -------
+    bool
+        If the modal should be displayed
+    """
+    if not n_clicks:
+        return False
+    else:
+        return True
+
+
+@app.callback(
+    Output("download-db", "data"),
+    Output("alert-passwd", "is_open"),
+    Input("download-logs-btn", "n_clicks"),
+    State("export-passwd", "value"),
+)
+def export_entire_database(n_clicks: int, passwd: str) -> tuple[dict | NoUpdate, bool]:
+    """Temporary function to download all the logging
+
+    TODO: Remove when we switch to external db.
+
+    Parameters
+    ----------
+    n_clicks : int
+        The amount of times a user pressed the export button
+    passwd : str
+        The password needed to access the logs (env variable)
+
+    Returns
+    -------
+    tuple[Dict | NoUpdate, dict | NoUpdate, dict | NoUpdate, bool]
+        A tuple containing the content and filename for each exported file,
+        and a boolean indicating if the password is incorrect.
+
+    """
+    if not n_clicks:
+        return dash.no_update, False
+
+    if passwd != os.environ["LOGGING_PASSWD"]:
+        return dash.no_update, True
+
+    with Session(engine) as session:
+        dash_total_df = pd.DataFrame(
+            session.execute(
+                select(
+                    DashSession.user,
+                    DashSession.groups,
+                    DashSession.timestamp,
+                    DashSession.version,
+                    DashUserPrompt.prompt,
+                    DashEvaluation.evaluation_metric,
+                    DashEvaluation.evaluation_value,
+                )
+                .join(DashUserPrompt, DashUserPrompt.session == DashSession.id)
+                .join(
+                    DashEvaluation, DashEvaluation.user_prompt_id == DashUserPrompt.id
+                )
+            ).all()
+        )
+
+    return (
+        {"content": dash_total_df.to_csv(index=False), "filename": "db_export.csv"},
+        False,
+    )
+
+
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8051)
+    app.run_server(debug=True, port=8055)

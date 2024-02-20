@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2024-02-19
+
+### Added
+- Added option to download local SQLite database as temporary solution until external DB is in place
+- Added a warning message when deploying warning the user to export the database
+
+### Fixed
+- Fixed some small static typing errors
+- Set temperature to 0.2 in dashboard to prevent users from changing it
+
 ## [0.3.0] - 2024-02-16
 
 ### Added
