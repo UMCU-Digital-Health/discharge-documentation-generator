@@ -77,17 +77,30 @@ df_metavision = pd.read_parquet(
     Path(__file__).parents[1] / "data" / "processed" / "metavision_new_data.parquet"
 )
 patient_1_NICU = df_metavision[df_metavision["enc_id"] == 107]
+patient_2_NICU = df_metavision[df_metavision["enc_id"] == 20]
+patient_3_NICU = df_metavision[df_metavision["enc_id"] == 150]
+
 patient_1_IC = df_metavision[df_metavision["enc_id"] == 48]
+patient_2_IC = df_metavision[df_metavision["enc_id"] == 55]
+patient_3_IC = df_metavision[df_metavision["enc_id"] == 63]
 
 df_HIX = pd.read_parquet(
     Path(__file__).parents[1] / "data" / "processed" / "HiX_data.parquet"
 )
 patient_1_CAR = df_HIX[df_HIX["enc_id"] == 1012]
+patient_2_CAR = df_HIX[df_HIX["enc_id"] == 1010]
+patient_3_CAR = df_HIX[df_HIX["enc_id"] == 1062]
 
 data_dict = {
     "patient_1_nicu": patient_1_NICU,
+    "patient_2_nicu": patient_2_NICU,
+    "patient_3_nicu": patient_3_NICU,
     "patient_1_ic": patient_1_IC,
+    "patient_2_ic": patient_2_IC,
+    "patient_3_ic": patient_3_IC,
     "patient_1_car": patient_1_CAR,
+    "patient_2_car": patient_2_CAR,
+    "patient_3_car": patient_3_CAR,
 }
 
 # load prompts
@@ -132,13 +145,29 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         # Never add this in production!
         authorization_group = ["NICU", "IC", "CAR"]
     values_list = {
-        "NICU": {"label": "Patient 1 (NICU 6 dagen)", "value": "patient_1_nicu"},
-        "IC": {"label": "Patient 1 (IC 2 dagen)", "value": "patient_1_ic"},
-        "CAR": {"label": "Patient 1 (CAR 2 dagen)", "value": "patient_1_car"},
+        "NICU": [
+            {"label": "Patient 1 (NICU 6 dagen)", "value": "patient_1_nicu"},
+            {"label": "Patient 2 (NICU 9 dagen)", "value": "patient_2_nicu"},
+            {"label": "Patient 3 (NICU 2 dagen)", "value": "patient_3_nicu"},
+        ],
+        "IC": [
+            {"label": "Patient 1 (IC 2 dagen)", "value": "patient_1_ic"},
+            {"label": "Patient 2 (IC 1 dag)", "value": "patient_2_ic"},
+            {"label": "Patient 3 (IC 1 dagen)", "value": "patient_3_ic"},
+        ],
+        "CAR": [
+            {"label": "Patient 1 (CAR 2 dagen)", "value": "patient_1_car"},
+            {"label": "Patient 2 (CAR 4 dagen)", "value": "patient_2_car"},
+            {"label": "Patient 3 (CAR 5 dagen)", "value": "patient_3_car"},
+        ],
     }
     authorized_patients = [
-        value for key, value in values_list.items() if key in authorization_group
+        item
+        for key, values in values_list.items()
+        if key in authorization_group
+        for item in values
     ]
+
     fist_patient = authorized_patients[0]["value"] if authorized_patients else None
 
     return authorized_patients, fist_patient, [f"Ingelogd als: {user}"]

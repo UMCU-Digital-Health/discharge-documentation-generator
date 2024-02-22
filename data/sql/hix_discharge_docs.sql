@@ -28,9 +28,10 @@ WHERE
     enc1.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpname'
     AND enc1.status = 'finished'
     AND enc1.period_end >= '2023-11-01'
+    AND enc1.period_end < '2023-12-01'
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
-    AND enc2.specialty_Organization_value = 'CAR'
+    AND enc2.specialty_Organization_value IN ('CAR', 'NEO')
     AND dr.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixDocument'
     AND dr.type2_code_original IN (
         '1000100089',  -- Ontslagbericht

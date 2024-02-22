@@ -47,15 +47,6 @@
     "run/evaluation_dashboard.py": {
       "checksum": "37e30270d3df37800569f3fb59f8b3af"
     },
-    "run/visualise_patient_file.py": {
-      "checksum": "8f78ae0d5b363d28dc54b6f98f4edbf1"
-    },
-    "run/visualise_patient_file_HIX.py": {
-      "checksum": "b50d9ee0e008452102ff88dcf17f075a"
-    },
-    "run/visualise_patient_file_metavision.py": {
-      "checksum": "3e68fb8a8d91066502a010cdc6fda473"
-    },
     "src/discharge_docs/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },

@@ -11,6 +11,9 @@
 # Authentication config
 auth.toml
 
+# Pseudonomise by hand config
+pseudo.toml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

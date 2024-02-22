@@ -102,7 +102,7 @@ app.layout = html.Div(
         dcc.Checklist(
             id="date_checklist",
             options=["Bekijk de data van de gehele opname (alle datums)"],
-            value=[],
+            value=["Bekijk de data van de gehele opname (alle datums)"],
         ),
         html.Br(),
         html.Label(

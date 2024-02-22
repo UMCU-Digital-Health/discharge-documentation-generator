@@ -201,6 +201,11 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                                 class_name="mt-2 me-2",
                                 outline=True,
                             ),
+                            dbc.Label(
+                                "Het kan zijn dat de gegenereerde ontslagbrief soms "
+                                + "niet goed laadt. Probeer het dan opnieuw door nog "
+                                + "een keer op de knop te drukken."
+                            ),
                         ]
                     ),
                 ]

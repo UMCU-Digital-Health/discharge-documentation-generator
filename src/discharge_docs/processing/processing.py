@@ -4,6 +4,7 @@ from typing import Tuple
 
 import pandas as pd
 import tiktoken
+import tomli
 
 os.environ["TIKTOKEN_CACHE_DIR"] = ""
 
@@ -72,13 +73,16 @@ def process_data_metavision(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
+def process_data_metavision_new(
+    df: pd.DataFrame, df_discharge_docs_dp: pd.DataFrame
+) -> pd.DataFrame:
     """
     Process the given DataFrame containing metavision data.
     The steps were:
     1. include enc_id per admission
     2. remove columns not necessary
     3. Rename columns
+    3.5 add full discharge docs from dataplatform export (TODO)
     4. include date column
     5. add length of stay
     6. remove patients with length of stay 0 days
@@ -87,11 +91,16 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     9. rename ontslagbrief
     10. remove the MS Probleemlijst Date as it is the same as MS Probleemlijst Print but
          formatted worse
+    11. pseudonomise by hand
+
+
 
     Parameters
     ----------
     df : pandas.DataFrame
         The DataFrame containing metavision data.
+    df_discharge_docs_dp : pandas.DataFrame
+        The DataFrame containing full discharge documentation from the dataplatform.
 
     Returns
     -------
@@ -114,6 +123,9 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
             "enc_id": "enc_id",
         }
     )
+
+    # add full discharge docs from dataplatform export
+    # TODO
 
     # include date column
     df["time"] = pd.to_datetime(df["time"])
@@ -151,6 +163,9 @@ def process_data_metavision_new(df: pd.DataFrame) -> pd.DataFrame:
     # remove the MS Probleemlijst Date in description column
     df = df[df["description"] != "MS Probleemlijst Date"]
 
+    # pseudonomise by hand
+    df["value"] = df["value"].apply(pseudonomise_by_hand)
+
     return df
 
 
@@ -185,6 +200,7 @@ def process_data_HiX(
     8. Calculates the length of stay for each encounter in the merged data.
     9. Rename ontslagbrief
     10. start with a 1000 index in enc_id
+    11. pseudonomise by hand
 
     """
     # remove encounters that are not in both datasets
@@ -275,6 +291,9 @@ def process_data_HiX(
         enc_id: 1000 + i for i, enc_id in enumerate(patient_file.enc_id.unique())
     }
     patient_file["enc_id"] = patient_file["enc_id"].map(enc_id_map)
+
+    # pseudonomise by hand
+    patient_file["value"] = patient_file["value"].apply(pseudonomise_by_hand)
 
     return patient_file
 
@@ -427,8 +446,11 @@ def pseudonomise_by_hand(string):
     str
         The pseudonomised string.
     """
-    string = string.replace("Goerge", "<PERSOON>")
-    string = string.replace("VUGHT", "<LOCATIE>")
+    with open(Path(__file__).parent / "pseudo.toml", "rb") as f:
+        pseudo_dict = tomli.load(f)
+
+    for key, value in pseudo_dict["Pseudonomise_dict"].items():
+        string = string.replace(key, value)
     return string
 
 
@@ -476,7 +498,9 @@ def combine_hix_and_metavision_for_visualisation(
     df = pd.concat([df_metavision, df_HIX], axis=0)
     # map enc_id to start from 0
     enc_id_map = {enc_id: i for i, enc_id in enumerate(df.enc_id.unique())}
+    df["og_enc_id"] = df["enc_id"]
     df["enc_id"] = df["enc_id"].map(enc_id_map)
+
     # remove Intensive Care Kinderen and High Care Kinderen
     df = df[~df.department.isin(["Intensive Care Kinderen", "High Care Kinderen"])]
     df["label"] = (
@@ -487,6 +511,8 @@ def combine_hix_and_metavision_for_visualisation(
         + ": "
         + df["length_of_stay"].astype(str)
         + " dagen opname)"
+        + " ; voorheen "
+        + df["og_enc_id"].astype(str)
     )
     # sort by department
     df = df.sort_values(by=["department", "enc_id", "date"])
@@ -495,13 +521,6 @@ def combine_hix_and_metavision_for_visualisation(
 
 if __name__ == "__main__":
     data_folder = Path(__file__).parents[3] / "data"
-
-    df_metavision = pd.read_parquet(
-        data_folder / "raw" / "pseudonomised_metavision_data.parquet"
-    ).pipe(process_data_metavision)
-    df_metavision_new = pd.read_parquet(
-        data_folder / "raw" / "pseudonomised_new_metavision_data.parquet"
-    ).pipe(process_data_metavision_new)
 
     # load and process HIX data
     df_HiX_patient_files = pd.read_parquet(
@@ -512,8 +531,18 @@ if __name__ == "__main__":
     )
     df_HiX = process_data_HiX(df_HiX_patient_files, df_HiX_discharge)
 
+    # load and process metavision data
+    df_metavision = pd.read_parquet(
+        data_folder / "raw" / "pseudonomised_metavision_data.parquet"
+    ).pipe(process_data_metavision)
+    df_metavision_new = pd.read_parquet(
+        data_folder / "raw" / "pseudonomised_new_metavision_data.parquet"
+    ).pipe(lambda df: process_data_metavision_new(df, df_HiX_discharge))
+
     # combined data for visualisation
-    df_combined = combine_hix_and_metavision_for_visualisation(df_HiX, df_metavision)
+    df_combined = combine_hix_and_metavision_for_visualisation(
+        df_HiX, df_metavision_new
+    )
 
     # Store the processed data
     df_metavision.to_parquet(data_folder / "processed" / "metavision_data.parquet")
