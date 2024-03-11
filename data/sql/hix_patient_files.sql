@@ -1,4 +1,4 @@
-SELECT
+SELECT DISTINCT
     CONVERT(
         VARCHAR(64),
         HASHBYTES(
@@ -8,13 +8,11 @@ SELECT
         2
     ) AS pseudo_id,
     enc1.subject_Patient_value,  -- Only used in datamanager folder
+    enc2.specialty_Organization_value,
     enc1.identifier_value AS enc_id,
     enc1.period_start,
     enc1.period_end,
     enc1.[status],
-    enc2.identifier_value AS enc2_id,
-    enc2.specialty_Organization_value,
-    enc2.location_Location_value,
     qn.identifier_value as qn_id,
     qn.category_display,
     qn.name,
@@ -42,14 +40,17 @@ WHERE
     AND enc1.period_end < '2023-12-01'
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
-    AND enc2.specialty_Organization_value = 'CAR'
+    AND enc2.specialty_Organization_value IN ('PSY', 'GGZ', 'CAR')
     AND qn.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixVragenlijst'
-    AND qn.name = 'CAR Consult'
-    AND qri.item_text in (
-        'Anamnese',
-        'Lichamelijk onderzoek',
-        'Aanvullend onderzoek',
-        'Conclusie',
-        'Beleid',
-        'Overweging/ differentiële diagnose'
-    );
+    AND qn.identifier_value IN (
+        'CS00000407',  -- PSY decursus
+        'CS00004942',  -- PSY brief decursus
+        '1000012314',  -- PSY decursus samenvatting
+        'CS00000891'   -- CAR consult
+    )
+    AND qri.item_text NOT IN (
+        'Datum',
+        'Datum en tijd op nu zetten',
+        'Supervisor',
+        'Tijd'
+    )
