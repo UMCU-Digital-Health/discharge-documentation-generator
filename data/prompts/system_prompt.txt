@@ -1,2 +1,0 @@
-Schrijf je antwoord altijd als JSON-object met als keys: `Categorie`, `Beloop tijdens opname` en `Bron`. Geef als bron altijd de exactie zinnen waaruit het beloop is gehaald.
-Schrijf je antwoord in medische taal.

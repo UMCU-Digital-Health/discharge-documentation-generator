@@ -176,17 +176,20 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
         children=[
             dbc.Card(
                 [
-                    dbc.CardHeader(html.H3("GPT settings:")),
+                    dbc.CardHeader(html.H3("GPT instellingen:")),
                     dbc.CardBody(
                         [
-                            html.H5("Extra instructies:"),
+                            html.H5("Template prompt:"),
                             dbc.Label(
-                                "Voer hier extra instructies in die meegegeven "
-                                + "worden aan GPT (experimenteel):"
+                                """Hierin wordt de afdeling specifieke vraag gesteld.
+                                 De huidige versie is vooringevuld. Pas deze aan om
+                                 te experimenteren wat wel en niet goed werkt voor jou.
+                                 """
                             ),
-                            dbc.Input(
-                                id="addition_prompt",
-                                type="text",
+                            dbc.Textarea(
+                                id="template_prompt_field",
+                                value="",
+                                style={"height": "250px"},
                             ),
                             dbc.Button(
                                 "Update en genereer onstlagbrief",

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2024-03-18
+- update dashboard with authentications
+- update dashboard with psychiatry
+- included demo patient in dashbaord
+- removal of old demo dashboard
+
 ## [0.3.1] - 2024-02-19
 
 ### Added
@@ -70,3 +76,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - demo dashboard
+
+

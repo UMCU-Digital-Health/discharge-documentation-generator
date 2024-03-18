@@ -1,10 +1,11 @@
 """This module contains the SQLAlchemy models for the database.
 The main function of this database is to store logging, feedback and evaluation data.
 """
+
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Integer
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -32,13 +33,14 @@ class DashSession(Base):
 
 
 class DashUserPrompt(Base):
-    """Table that stores the user prompt for the dashboard"""
+    """Table that stores the input (user prompt & selected patient) for the dashboard"""
 
     __tablename__ = "dashuserprompt"
     __table_args__ = {"schema": "aiva-discharge"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     prompt: Mapped[str]
+    patient: Mapped[str] = mapped_column(String)
     session: Mapped[int] = mapped_column(
         Integer, ForeignKey(DashSession.id), init=False
     )
@@ -47,10 +49,14 @@ class DashUserPrompt(Base):
     evaluation_relation: Mapped[List["DashEvaluation"]] = relationship(
         init=False, back_populates="user_prompt_relation"
     )
+    output_relation: Mapped[List["DashOutput"]] = relationship(
+        init=False, back_populates="user_prompt_relation"
+    )
 
 
 class DashEvaluation(Base):
-    """Table that stores different performance metrics of the custom user prompt"""
+    """Table that stores the output and the different performance metrics
+    of the custom user prompt."""
 
     __tablename__ = "dashevaluation"
     __table_args__ = {"schema": "aiva-discharge"}
@@ -64,4 +70,22 @@ class DashEvaluation(Base):
 
     user_prompt_relation: Mapped["DashUserPrompt"] = relationship(
         init=False, back_populates="evaluation_relation"
+    )
+
+
+class DashOutput(Base):
+    """Table that stores the output of the GPT call."""
+
+    __tablename__ = "dashoutput"
+    __table_args__ = {"schema": "aiva-discharge"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    user_prompt_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(DashUserPrompt.id), init=False
+    )
+
+    gpt_output_value: Mapped[str]
+
+    user_prompt_relation: Mapped["DashUserPrompt"] = relationship(
+        init=False, back_populates="output_relation"
     )

@@ -285,6 +285,9 @@ def process_data_HiX(
     patient_file["description"] = patient_file["description"].replace(
         "Ontslagbericht", "Ontslagbrief"
     )
+    patient_file["description"] = patient_file["description"].replace(
+        "Klinische Brief", "Ontslagbrief"
+    )
 
     # map enc_id to start with 1000
     enc_id_map = {
