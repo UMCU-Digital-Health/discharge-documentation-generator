@@ -220,10 +220,10 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                         [
                             dbc.Spinner(
                                 html.Div(
-                                    ["Placeholder for GPTdischarge letter"],
+                                    [""],
                                     id="output_GPT_discharge_documentation",
-                                )
-                            ),
+                                ),
+                            )
                         ]
                     ),
                 ],

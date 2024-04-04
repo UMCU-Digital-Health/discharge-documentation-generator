@@ -72,16 +72,13 @@ def evaluate_prompt(
             )
         )
         reply_beloop = [
-            f"# {x['Categorie']}\n{x['Beloop tijdens opname']}"
-            for x in reply_beloop
+            f"# {x['Categorie']}\n{x['Beloop tijdens opname']}" for x in reply_beloop
         ]
         reply_beloop = "\n\n".join(reply_beloop)
 
         # Score using ROUGE metric
         scorer = rouge_scorer.RougeScorer(["rouge1"], use_stemmer=True)
-        scores = scorer.score(
-            target=patient_discharge, prediction=reply_beloop
-        )
+        scores = scorer.score(target=patient_discharge, prediction=reply_beloop)
 
         live.log_metric("rouge1_precision", scores["rouge1"].precision)
         live.log_metric("rouge1_recall", scores["rouge1"].recall)
@@ -93,27 +90,21 @@ if __name__ == "__main__":
     temperature = 0.8
 
     client = AzureOpenAI(
-        api_version="2023-05-15",
+        api_version="2024-02-01",
         api_key=os.getenv("AZURE_OPENAI_KEY"),
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
     )
 
-    with open(
-        project_dir / "data" / "prompts" / "system_prompt.txt", "r"
-    ) as f:
+    with open(project_dir / "data" / "prompts" / "system_prompt.txt", "r") as f:
         system_prompt = f.read().replace("\n", "")
 
     with open(project_dir / "data" / "prompts" / "user_prompt1.txt", "r") as f:
         user_prompt = f.read().replace("\n", "")
 
-    with open(
-        project_dir / "data" / "raw" / "example_patient_file_gpt.txt"
-    ) as f:
+    with open(project_dir / "data" / "raw" / "example_patient_file_gpt.txt") as f:
         patient_file = f.read().replace("\n", "")
 
-    with open(
-        project_dir / "data" / "raw" / "example_patient_discharge.txt"
-    ) as f:
+    with open(project_dir / "data" / "raw" / "example_patient_discharge.txt") as f:
         patient_discharge = f.read().replace("\n", "")
 
     evaluate_prompt(

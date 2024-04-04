@@ -1,7 +1,11 @@
-Hieronder volgt het dossier van een patiënt met onder andere dagstatussen voor de opname van een patiënt in het ziekenhuis.
+Hieronder volgen twee documenten:
+1. De huidige conceptversie van de ontslagdocumentatie (indien beschikbaar, anders is dit *None*)
+2. De huidige dagstatus van de patient
 
 Schrijf een samenvatting over het beloop, waarbij je chronologisch aangeeft wat er gebeurd is met de patient tijdens de opname.
 Gebruik datums om gebeurtenissen aan te geven.
+Gebruik de informatie uit de conceptversie van de ontslagdocumentatie en vul die aan met de informatie uit de huidige dagstatus.
+Zorg dat je belangrijke informatie uit de ontslagdocumentatie behoudt, tenzij nieuwe informatie dit tegenspreekt, neem bij twijfel alle informatie mee.
 Vat de informatie zo goed mogelijk samen, zonder informatie te verliezen. 
 Gebruik lopende zinnen om het beloop te omschrijven.
 

@@ -1,6 +1,10 @@
 # Editor files
 .vscode
 
+# Rye lock files (for now)
+requirements.lock
+requirements-dev.lock
+
 # Data files
 *.parquet
 *.pickle

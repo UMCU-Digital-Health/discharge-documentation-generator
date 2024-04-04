@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2024-03-11
+
+### Added
+- Notebook to test incremental creation of the discharge documents
+- Created a template for the API
+
+### Changed
+- Updated the evaluation dashboard to optionally use incremental creation instead of direct, by default this is turned off (uses the ITERATIVE constant)
+
+### Fixed
+- Use OpenAI API version `2024-02-1` instead of the outdated version, due to deprecation from Azure
+
 ## [0.3.2] - 2024-03-18
 - update dashboard with authentications
 - update dashboard with psychiatry

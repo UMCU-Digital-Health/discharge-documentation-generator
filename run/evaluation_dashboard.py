@@ -25,11 +25,6 @@ from discharge_docs.dashboard.helper import (
     get_template_prompt,
     highlight,
 )
-from discharge_docs.dashboard.prompt import (
-    get_GPT_discharge_docs,
-    load_pompts,
-    load_template_prompt,
-)
 from discharge_docs.database.models import (
     Base,
     DashEvaluation,
@@ -41,6 +36,11 @@ from discharge_docs.processing.processing import (
     get_patient_discharge_docs,
     get_patient_file,
 )
+from discharge_docs.prompts.prompt import (
+    load_prompts,
+    load_template_prompt,
+)
+from discharge_docs.prompts.prompt_builder import PromptBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +48,10 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 deployment_name = "aiva-gpt"
 TEMPERATURE = 0.2
+ITERATIVE = False
 
 client = AzureOpenAI(
-    api_version="2023-05-15",
+    api_version="2024-02-01",
     api_key=os.getenv("AZURE_OPENAI_KEY"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
 )
@@ -114,7 +115,7 @@ data_dict = {
 }
 
 # load prompts
-user_prompt, system_prompt = load_pompts()
+user_prompt, system_prompt = load_prompts()
 template_prompt_NICU = load_template_prompt("NICU")
 template_prompt_IC = load_template_prompt("IC")
 template_prompt_CAR = load_template_prompt("CAR")
@@ -128,7 +129,10 @@ template_prompt_dict = {
 }
 
 # define the app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+)
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
@@ -447,7 +451,7 @@ def update_template_prompt(selected_patient_admission: str) -> tuple[list[str], 
     State("patient_admission_dropdown", "value"),
     State("template_prompt_field", "value"),
 )
-def display_GPT_discharge_documentation(
+def display_generated_discharge_doc(
     n_clicks: int,
     selected_patient_admission: str,
     template_prompt: str,
@@ -469,22 +473,37 @@ def display_GPT_discharge_documentation(
     if selected_patient_admission is None or n_clicks is None:
         return [""]
 
-    data = get_data_from_patient_admission(selected_patient_admission, data_dict)
-    patient_file_string, _ = get_patient_file(df=data)
-
-    GPT_reply = get_GPT_discharge_docs(
-        patient_file=patient_file_string,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        template_prompt=template_prompt,
-        temperature=TEMPERATURE,
-        engine=deployment_name,
-        client=client,
+    patient_data = get_data_from_patient_admission(
+        selected_patient_admission, data_dict
     )
 
-    GPT_output = []
-    for category_pair in GPT_reply:
-        GPT_output.append(
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE, deployment_name=deployment_name, client=client
+    )
+
+    if ITERATIVE:
+        user_prompt_iterative, _ = load_prompts(iterative=True)
+        discharge_letters = prompt_builder.iterative_simulation(
+            patient_data=patient_data,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt_iterative,
+            template_prompt=template_prompt,
+        )
+
+        generated_doc = discharge_letters[-1]
+    else:
+        patient_file_string, _ = get_patient_file(patient_data)
+        discharge_letter = prompt_builder.generate_discharge_doc(
+            patient_file=patient_file_string,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            template_prompt=template_prompt,
+        )
+        generated_doc = discharge_letter
+
+    generated_output = []
+    for category_pair in generated_doc:
+        generated_output.append(
             html.Div(
                 [
                     html.Strong(category_pair["Categorie"]),
@@ -492,7 +511,7 @@ def display_GPT_discharge_documentation(
                 ]
             )
         )
-    return GPT_output
+    return generated_output
 
 
 @app.callback(
@@ -560,7 +579,7 @@ def gather_feedback(
         session_relation=dash_session,
     )
 
-    gpt_output_save = DashOutput(GPT_output_value=str(gpt_output))
+    gpt_output_save = DashOutput(gpt_output_value=str(gpt_output))
 
     evaluation_user_score = DashEvaluation(
         evaluation_metric="slider_score",

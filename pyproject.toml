@@ -4,42 +4,55 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "0.3.2"
+version = "0.3.3"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
 ]
 description = "Tool that uses LLM's to automatically generate discharge documentation. Part of the 'AI for administration load' project."
 readme = "README.md"
-requires-python = "~=3.10.2"
+requires-python = ">= 3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 dependencies =[
-  "openai~=1.8",
-  "python-dotenv~=1.0",
-  "deduce~=3.0.1",
-  "matplotlib~=3.8",
-  "plotly~=5.18",
-  "dash~=2.14",
-  "dash-bootstrap-components~=1.5",
-  "pandas~=2.1",
-  "SQLAlchemy~=2.0",
-  "tiktoken~=0.5",
-  "tomli~=2.0",
-  "pyarrow~=14.0"
+    "openai~=1.8",
+    "python-dotenv~=1.0",
+    "deduce~=3.0.1",
+    "matplotlib~=3.8",
+    "plotly~=5.18",
+    "dash-bootstrap-components~=1.5",
+    "pandas~=2.1",
+    "SQLAlchemy~=2.0",
+    "tiktoken~=0.5",
+    "tomli~=2.0",
+    "pyarrow~=14.0",
+    "dash~=2.16",
+    "dvclive~=3.44",
+    "rouge-score~=0.1",
+    "fastapi~=0.110",
 ]
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
-dev = ["black", "ruff", "rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5"]
+dev = ["rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5", "ipykernel"]
+
+[tool]
+rye = { dev-dependencies = [
+    "ipykernel>=6.29.2",
+    "nbstripout>=0.7.1",
+    "pytest>=8.0.2",
+    "uvicorn>=0.27.1",
+] }
 
 [tool.isort]
 profile = "black"
 
 [tool.ruff]
 src = ["src"]
+
+[tool.ruff.lint]
 select = [
     "B",
     "E",

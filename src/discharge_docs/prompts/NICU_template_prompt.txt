@@ -1,8 +1,20 @@
-De categorieen zijn: Respiratie, Circulatie, Neurologie, Infectie, VB/Nierfunctie, Milieu interieure , Gastro-intestinaal , Psych/SOC , Overig , Extr/huid.
+De categorieen zijn: 
+- Respiratie
+- Circulatie
+- Neurologie
+- Infectie
+- VB/Nierfunctie
+- Milieu interieure
+- Gastro-intestinaal
+- Psych/SOC
+- Overig
+- Extr/huid
+
 Benoem voor elke categorie de volgende zaken:
-    Wanneer er een complicatie optrad in verhouding tot de eerste dag van de opname
-    Wat deze complicatie was
-    Hoe deze complicatie behandeld is
-    Hoe lang er nog last van heeft gehad
-    De huidige status van de complicatie
+- Wanneer er een complicatie plaatsvond
+- Wat deze complicatie was
+- Hoe deze complicatie behandeld is
+- Hoe lang de patient er nog last van heeft gehad
+- De huidige status van de complicatie
+
 Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie.
