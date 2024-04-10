@@ -2,3 +2,10 @@ Er is een categorie: 'Beloop'.
 
 Schrijf onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid. Wees duidelijk in welke beweegredenen belangrijk waren. Schrijf beknopt en focus op diagnoses in plaatst van symptomen.
 Het is belangrijk dat zowel wat over de respiratie als de hemodynamiek gedocumenteerd wordt.
+
+Doe het in het volgende format: 
+Bovengenoemde patiënt werd postoperatief opgenomen na een [ongecompliceerde (alleen indien zonder complicaties)] [naam ingreep] vanwege [grondlijden/indicatie voor OK]. 
+[Bij hartchirurgie altijd, bij andere chirurgie indien beschreven: Peroperatief werd er echografisch een goede/redelijke/matige/slechte linkerventrikelfunctie gezien en een goede/redelijke/matige/slechte rechterventrikelfunctie.] 
+Op de Intensive Care was het beloop [zonder problemen of werd het beloop gekenmerkt door ….. ]; [indien ongecompliceerd: de patiënt kon vlot en met goed gevolg worden gedetubeerd en de hemodynamiek behoefde slechts kortdurend ondersteuning. Indien gecomplicerd anders beschrijven afhankelijk van het probleem] Het postoperatieve ECG toonde [zie beschrijving ECG in circulatie, medische status, nog over nadenken hoe dit moet als niet beschreven], het CK-MB bedroeg maximaal xx µg/ltr (uit labwaarden). De thoraxdrains produceerden normaal (kunnen we grenzen voor vaststellen, nog mondeling bespreken hoe AI dit moet interpreteren). 
+De postoperatieve X-thorax vertoonde [een normaal postoperatief beeld/ afwijkingen beschrijven] (verslag radiologie in PACS/HiX, getructureerde beschrijving foto waaruit AI kan concluderen wat een normaal postop beeld is bij hartchrirugie/electieve chirurgie.) 
+Op [datum van ontslag] kon de patiënt voor verder herstel worden overgeplaatst naar de [Medium Care/ verpleegafdeling van de [ontslagspecialisme.]]  

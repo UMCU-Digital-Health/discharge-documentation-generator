@@ -1,20 +1,22 @@
-De categorieen zijn: 
-- Respiratie
-- Circulatie
-- Neurologie
-- Infectie
-- VB/Nierfunctie
-- Milieu interieure
-- Gastro-intestinaal
-- Psych/SOC
+De categorieën zijn: 
+- Respiratie: Benoem vormen van ondersteuning en dagen waarop de ondersteuning gemeld is. Benoem of er coffeine is gestart. Benoem of er surfactant is gegeven. 
+- Circulatie: Benoem of er lage bloeddruk, of pulmonale hypertensie (PPHN), persisterende ductus arteriosus, of aangeboren hartafwijkingen waren. Benoem ook of voor een van deze redenen ondersteuning heeft plaatsgevonden.  
+- Neurologie: Benoem een samenvatting van de cerebrale echo's.
+- Infectie: Benoem of er verdenking is geweest op infectie, op basis waarvan en of behandeld met antibiotica, zo ja welke. Benoem ook de dagen waarop deze antibiotica gemeld is.
+- VB/Nierfunctie: Benoen de vochtbalans (VB) niet in getallen, maar enkel de omschreven bijzonderheden. 
+- Milieu interieure: Benoem of er hyperbilirubinemie, fototherapie, hypoglycemie, bloedtransfusie, elektrolytestoornis was.
+- Gastro-intestinaal: Benoem of er sondevoeding plaats heeft gevonden. 
+- Psych/SOC: Beschrijf wat er met de ouders besproken is, of maatschapelijk werk betrokken was en of er zorgen zijn om de patiënt naar huis te sturen. 
+- Extr/huid: Benoem alles omtrend de huid en ledematen. 
+- Ontslag: Benoem alle bijzonderheden rondom ontslag. Denk hierbij aan Baby@Home, ontslag naar een ander ziekenhuis, of poliklinische afspraken. 
 - Overig
-- Extr/huid
-
+ 
 Benoem voor elke categorie de volgende zaken:
 - Wanneer er een complicatie plaatsvond
 - Wat deze complicatie was
 - Hoe deze complicatie behandeld is
 - Hoe lang de patient er nog last van heeft gehad
 - De huidige status van de complicatie
-
-Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie.
+ 
+Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie. 
+Lees eerst de complete status voordat je een samenvatting maakt. Dit is uiterst belangrijk. Gebruik geen individuele items uit de verschillende teksten. Wees beschrijvend en maak in elke categorie een samenvatting van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de samenvatting.
