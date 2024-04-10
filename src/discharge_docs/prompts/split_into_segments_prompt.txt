@@ -1,0 +1,12 @@
+Je krijgt hierna een deel van een brief te zien. 
+Deze brief bevat tekst over verschillende onderwerpen. 
+Deel de brief op in losse strings waarbij je de splitsing maakt op basis van de informatie. 
+Geef deze strings terug in een lijst. Dus ["deel 1", "deel 2", "etc."]
+Zorg ervoor dat alle zinnen in de originele brief in deze lijst terugkomen.
+Gebruik 5 tot 10 woorden per stuk informatie.
+Splits stukken informatie die groter zijn op in kleinere stukken.
+
+ter voorbeeld, gegeven de volgende tekst:
+BESPREKING\r\nBovengenoemde [LEEFTIJD-1]-jarige vrouw werd opgenomen met een septische shock a.g.v. een uterus empyeem obv obstructie door een groot cervixcarcinoom met tevens meerdere vergrote lymfeklieren. Dit is recent vastgesteld in het [ZIEKENHUIS-1] alwaar nog geen behandeling was gestart. Zij werd overgenomen  voor percutane drainage met achterlaten van drains t.b.v. spoeling.  In afwachting van kweekuitslagen werd het empyeem behandeld met meropenem gezien het feit dat zij reeds uitgebreid was voorbehandeld met andere antibiotica. Het IC-beloop was zonder problemen; de hemodynamiek werd kortdurend ondersteund met vasopressie, respiratoir waren er geen problemen.
+Zou de juiste output zijn:
+["opgenomen met een septische shock a.g.v. een uterus empyeem obv obstructie door een groot cervixcarcinoom", "tevens meerdere vergrote lymfeklieren", "recent vastgesteld in ZIEKENHUIS-1", "in ZIEKENHUIS-1 nog geen behandeling gestart", "overgenomen  voor percutane drainage met achterlaten van drains t.b.v. spoeling", "In afwachting van kweekuitslagen werd het empyeem behandeld met meropenem gezien het feit dat zij reeds uitgebreid was voorbehandeld met andere antibiotica", "IC-beloop was zonder problemen", "hemodynamiek werd kortdurend ondersteund met vasopressie", "respiratoir waren er geen problemen"]

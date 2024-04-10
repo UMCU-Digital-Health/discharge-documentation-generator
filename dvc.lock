@@ -3,23 +3,43 @@ stages:
   evaluate_gpt:
     cmd: python src/discharge_docs/evaluate/evaluate_prompt.py
     deps:
-    - path: data/prompts/system_prompt.txt
+    - path: data/processed/HiX_data.parquet
       hash: md5
-      md5: 2c3aa80de42460bad3ce1583cb349423
-      size: 212
-    - path: data/prompts/user_prompt1.txt
+      md5: 9ad423d07a84110f2da04180500747fa
+      size: 2292086
+    - path: data/processed/metavision_data.parquet
       hash: md5
-      md5: b7277afbbfefb6c0ba6e71e507ec79d6
-      size: 1190
-    - path: data/raw/example_patient_discharge.txt
-      hash: md5
-      md5: d38c541564b41865eb1b17255a235862
-      size: 1538
-    - path: data/raw/example_patient_file_gpt.txt
-      hash: md5
-      md5: 1700b1e448015cd097cdf2cfbef528ed
-      size: 2179
+      md5: f24c8a13d81db654ed131857be2b9fdc
+      size: 5719420
     - path: src/discharge_docs/evaluate/evaluate_prompt.py
       hash: md5
-      md5: cd392c95e6d2e3d137a093bf0cfb0a55
-      size: 3716
+      md5: 66f45837c37ad189e122e9b0e4df2160
+      size: 11268
+    - path: src/discharge_docs/prompts/CAR_template_prompt.txt
+      hash: md5
+      md5: 7b181e661f57ce57dcd37556e027f3f0
+      size: 449
+    - path: src/discharge_docs/prompts/IC_template_prompt.txt
+      hash: md5
+      md5: cf5db083a6f2c7e60926d0bac0a7a52b
+      size: 351
+    - path: src/discharge_docs/prompts/NICU_template_prompt.txt
+      hash: md5
+      md5: 13b1d22e9513bf6a124451ff905bc9f7
+      size: 539
+    - path: src/discharge_docs/prompts/PSY_template_prompt.txt
+      hash: md5
+      md5: 9ad286d824b70e72b5ab988897105ce6
+      size: 266
+    - path: src/discharge_docs/prompts/evaluatie_prompt.txt
+      hash: md5
+      md5: 8850dc98ab66f044c300d8fb285353a3
+      size: 1054
+    - path: src/discharge_docs/prompts/system_prompt.txt
+      hash: md5
+      md5: 2c1a1c97aa33641f6b57d489f0f94701
+      size: 762
+    - path: src/discharge_docs/prompts/user_prompt.txt
+      hash: md5
+      md5: ba9dcbc4e1e1dbda4c1f8ea7f349f8fd
+      size: 457

@@ -16,6 +16,7 @@ fi
 
 rsconnect deploy manifest manifest.json \
     --server https://rsc.ds.umcutrecht.nl/ \
+    -i \
     --api-key $API_KEY \
     --app-id $APP_ID \
     --title "$APP_NAME"

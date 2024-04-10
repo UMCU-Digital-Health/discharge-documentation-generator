@@ -327,12 +327,15 @@ def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.Data
         ~patient_file.description.str.contains("ontslag", case=False)
     ]
 
-    patient_file_string = "\n".join(
+    patient_file_string = "\n\n".join(
         patient_file.apply(
-            lambda row: (f"{row['description']} ( {row['date']} ): {row['value']}"),
+            lambda row: (
+                rf"## {row['description']}\n### Datum: {row['date']}\n\n{row['value']}"
+            ),
             axis=1,
         )
     )
+    patient_file_string = "# Patienten dossier\n\n" + patient_file_string
 
     return patient_file_string, patient_file
 

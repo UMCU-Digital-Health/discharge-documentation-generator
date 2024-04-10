@@ -88,7 +88,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                     dbc.Switch(
                         id="date_checklist",
                         label="Bekijk de data van de gehele opname (alle datums)",
-                        value=False,
+                        value=True,
                     ),
                     html.Br(),
                     dbc.Label("Selecteer patiëntendossier type:"),

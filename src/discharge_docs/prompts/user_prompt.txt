@@ -1,10 +1,14 @@
-Hieronder volgt het dossier van een patiënt met onder andere dagstatussen voor de opname van een patiënt in het ziekenhuis.
+# Instructie​
 
-Schrijf een samenvatting over het beloop, waarbij je chronologisch aangeeft wat er gebeurd is met de patient tijdens de opname.
-Gebruik datums om gebeurtenissen aan te geven.
-Vat de informatie zo goed mogelijk samen, zonder informatie te verliezen. 
-Gebruik lopende zinnen om het beloop te omschrijven.
+Hieronder volgt het dossier van een ziekenhuisopname van een patiënt. ​
+Je taak is om een deel van de ontslagbrief te schrijven over het beloop van de opname aan de hand van het dossier. ​
+Je moet een gedetailleerde samenvatting schrijven, zonder informatie te verliezen. ​
+Je moet dit in chronologische volgorde schrijven. 
+Je moet de datum vermelden indien beschikbaar, bijvoorbeeld 31-01-2024.​
+Gebruik lopende zinnen om het beloop te omschrijven.​​
 
-Antwoord in een enkel JSON formaat per categorie van de vorm:
-[{"Categorie": *Categorie*, "Beloop tijdens opname": *Beloop tijdens opname*}].
-Waarbij Categorie hieronder wordt uitgelegd en Beloop tijdens opname een tekstuele samenvatting is van het beloop voor deze categorie.
+## Format​​
+
+Het antwoord moet in het volgende JSON format gegeven worden:​
+[{"Categorie": *Categorie*, "Beloop tijdens opname": *Beloop tijdens opname*}].​
+"Categorie" wordt hieronder uitgelegd en "Beloop tijdens opname" is een tekstuele samenvatting van het beloop voor deze categorie.

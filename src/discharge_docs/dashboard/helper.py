@@ -125,3 +125,49 @@ def get_template_prompt(
     """
     department = patient_admission.split("_")[-1]
     return template_prompt_dict[department], department
+
+
+def get_patients_from_list_names(
+    df_dict: dict, enc_ids_dict: dict
+) -> tuple[dict, dict]:
+    """
+    Get patients' data and values list from a dictionary of dataframes and a dictionary
+    of enc_ids.
+
+    Parameters
+    ----------
+    df_dict : dict
+        A dictionary containing dataframes for different departments.
+    enc_ids_dict : dict
+        A dictionary containing enc_ids for different departments.
+
+    Returns
+    -------
+    tuple[dict, dict]
+        A tuple containing patients' data and values list.
+        The patients' data is a dictionary with patient keys as keys and corresponding
+        dataframes as values.
+        The values list is a dictionary with department names as keys and a list of
+        patients as values.
+    """
+    patients_data = {}
+    values_list = {}
+
+    for department, enc_ids in enc_ids_dict.items():
+        patients_list = []
+        for idx, enc_id in enumerate(enc_ids, start=1):
+            df = df_dict.get(department, None)
+            if df is not None:
+                patient_key = f"patient_{idx}_{department.lower()}"
+                patients_data[patient_key] = df[df["enc_id"] == enc_id]
+                label_days = patients_data[patient_key]["length_of_stay"].values[0]
+                patients_list.append(
+                    {
+                        "label": f"Patiënt {idx} ({department} {label_days} dagen)",
+                        "value": patient_key,
+                    }
+                )
+        if patients_list:
+            values_list[department] = patients_list
+
+    return patients_data, values_list

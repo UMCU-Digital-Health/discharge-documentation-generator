@@ -65,3 +65,59 @@ def load_template_prompt(department: str) -> str:
     ) as file:
         template_prompt = file.read()
     return template_prompt
+
+
+def load_missing_information_prompt():
+    """loads the missing information evaluation prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "missing_information_prompt.txt", "r"
+    ) as file:
+        evaluatie_prompt = file.read()
+    return evaluatie_prompt
+
+
+def load_additional_information_prompt():
+    """loads the additional information evaluation prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "additional_information_prompt.txt", "r"
+    ) as file:
+        evaluatie_prompt = file.read()
+    return evaluatie_prompt
+
+
+def load_information_union_prompt():
+    """loads the information union prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "information_union_prompt.txt", "r"
+    ) as file:
+        evaluatie_prompt = file.read()
+    return evaluatie_prompt
+
+
+def load_information_intersection_prompt():
+    """loads the information intersection prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "information_intersection_prompt.txt",
+        "r",
+    ) as file:
+        evaluatie_prompt = file.read()
+    return evaluatie_prompt
+
+
+def load_information_correction_prompt():
+    """loads the information correction prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "information_correction_prompt.txt",
+        "r",
+    ) as file:
+        evaluatie_prompt = file.read()
+    return evaluatie_prompt
+
+
+def load_segment_prompt():
+    """loads the segment prompt from the prompts folder"""
+    with open(
+        Path(__file__).parents[1] / "prompts" / "split_into_segments_prompt.txt", "r"
+    ) as file:
+        segment_prompt = file.read()
+    return segment_prompt

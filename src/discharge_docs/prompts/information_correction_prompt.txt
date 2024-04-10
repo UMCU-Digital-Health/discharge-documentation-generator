@@ -1,0 +1,8 @@
+Vergelijk de volgende twee lijsten met informatie (lijst A en lijst B) met elkaar.
+
+Geef de informatie terug die alleen in lijst A staat en dus niet in lijst B staat.
+Wees kort en bondig in je antwoord, geef alleen een lijst terug met de informatie: ["stuk informatie 1", "stuk informatie 2", ...].
+Geef geen verdere informatie over hoe de twee lijsten aan elkaar relateren.
+Als er geen informatie in lijst A staat die niet in lijst B staat, geef dan een lege lijst als antwoord: []
+Gebruik 5 tot 10 woorden per stuk informatie.
+Splits stukken informatie die groter zijn op in kleinere stukken.
