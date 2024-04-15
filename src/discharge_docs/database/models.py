@@ -23,7 +23,7 @@ class DashSession(Base):
     """Table that stores information about the current session of the dashboard"""
 
     __tablename__ = "dashsession"
-    __table_args__ = {"schema": "aiva-discharge"}
+    __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime)
@@ -36,7 +36,7 @@ class DashUserPrompt(Base):
     """Table that stores the input (user prompt & selected patient) for the dashboard"""
 
     __tablename__ = "dashuserprompt"
-    __table_args__ = {"schema": "aiva-discharge"}
+    __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     prompt: Mapped[str]
@@ -59,7 +59,7 @@ class DashEvaluation(Base):
     of the custom user prompt."""
 
     __tablename__ = "dashevaluation"
-    __table_args__ = {"schema": "aiva-discharge"}
+    __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     user_prompt_id: Mapped[int] = mapped_column(
@@ -77,7 +77,7 @@ class DashOutput(Base):
     """Table that stores the output of the GPT call."""
 
     __tablename__ = "dashoutput"
-    __table_args__ = {"schema": "aiva-discharge"}
+    __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     user_prompt_id: Mapped[int] = mapped_column(

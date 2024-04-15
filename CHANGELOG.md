@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2024-04-11
+
+### Changed
+- changed database to the Posit Connect database
+- Updated the department prompts
+- automatic evaluation using GPT first version
+
 ## [0.3.3] - 2024-03-11
 
 ### Added

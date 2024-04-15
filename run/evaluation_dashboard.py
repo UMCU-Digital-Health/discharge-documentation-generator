@@ -66,12 +66,27 @@ with open(Path(__file__).parents[1] / "pyproject.toml", "rb") as f:
     project_info = tomli.load(f)
 
 API_VERSION = project_info["project"]["version"]
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+
+DB_USER = os.getenv("DB_USER", "")
+DB_PASSWD = os.getenv("DB_PASSWD", "")
+DB_HOST = os.getenv("DB_HOST", "")
+DB_PORT = os.getenv("DB_PORT", 1433)
+DB_DATABASE = os.getenv("DB_DATABASE", "")
+
+if DB_USER == "":
+    logging.warning("Using debug SQLite database...")
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+    execution_options = {"schema_translate_map": {"discharge_aiva": None}}
+else:
+    SQLALCHEMY_DATABASE_URL = (
+        rf"mssql+pymssql://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
+    )
+    execution_options = None
+
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    execution_options={"schema_translate_map": {"aiva-discharge": None}},
+    execution_options=execution_options,
 )
 Base.metadata.create_all(engine)
 
@@ -125,6 +140,7 @@ demo_item = {
 }
 values_list = {**demo_item, **values_list}
 
+logger.info("data loaded")
 
 # load prompts
 user_prompt, system_prompt = load_prompts()

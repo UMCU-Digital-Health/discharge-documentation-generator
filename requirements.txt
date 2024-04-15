@@ -31,9 +31,11 @@ anyio==4.3.0
     # via starlette
 appdirs==1.4.4
     # via iterative-telemetry
+async-timeout==4.0.3
+    # via aiohttp
 asyncssh==2.14.2
     # via scmrepo
-atpublic==4.0
+atpublic==4.1.0
     # via flufl-lock
 attrs==23.2.0
     # via aiohttp
@@ -120,7 +122,7 @@ dvc-http==2.32.0
 dvc-objects==5.1.0
     # via dvc
     # via dvc-data
-dvc-render==1.0.1
+dvc-render==1.0.2
     # via dvc
     # via dvclive
 dvc-studio-client==0.20.0
@@ -132,9 +134,11 @@ dvclive==3.45.0
     # via discharge-docs
 entrypoints==0.4
     # via gto
-fastapi==0.110.0
+exceptiongroup==1.2.0
+    # via anyio
+fastapi==0.110.1
     # via discharge-docs
-filelock==3.13.3
+filelock==3.13.4
     # via iterative-telemetry
 flask==3.0.2
     # via dash
@@ -166,7 +170,7 @@ funcy==2.0
     # via scmrepo
 gitdb==4.0.11
     # via gitpython
-gitpython==3.1.42
+gitpython==3.1.43
     # via scmrepo
 grandalf==0.8
     # via dvc
@@ -188,7 +192,7 @@ idna==3.6
     # via httpx
     # via requests
     # via yarl
-importlib-metadata==7.1.0
+importlib-metadata==7.0.2
     # via dash
 iterative-telemetry==0.0.8
     # via dvc
@@ -200,7 +204,7 @@ joblib==1.3.2
     # via nltk
 kiwisolver==1.4.5
     # via matplotlib
-kombu==5.3.6
+kombu==5.3.7
     # via celery
     # via dvc
     # via dvc-task
@@ -218,7 +222,7 @@ multidict==6.0.5
     # via yarl
 nest-asyncio==1.6.0
     # via dash
-networkx==3.2.1
+networkx==3.3
     # via dvc
 nltk==3.8.1
     # via rouge-score
@@ -232,9 +236,9 @@ numpy==1.26.4
 omegaconf==2.3.0
     # via dvc
     # via hydra-core
-openai==1.14.3
+openai==1.14.1
     # via discharge-docs
-orjson==3.9.15
+orjson==3.10.0
     # via sqltrie
 packaging==24.0
     # via dvc
@@ -261,7 +265,7 @@ psutil==5.9.8
     # via flufl-lock
 pyarrow==14.0.2
     # via discharge-docs
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydantic==2.6.4
     # via fastapi
@@ -280,6 +284,8 @@ pygtrie==2.5.0
     # via dvc-data
     # via scmrepo
     # via sqltrie
+pymssql==2.3.0
+    # via discharge-docs
 pynvml==11.5.0
     # via dvclive
 pyparsing==3.1.2
@@ -314,6 +320,7 @@ retrying==1.3.4
 rich==13.7.1
     # via dvc
     # via gto
+    # via typer
 rouge-score==0.1.2
     # via discharge-docs
 ruamel-yaml==0.18.6
@@ -331,6 +338,8 @@ semver==3.0.2
 setuptools==69.2.0
     # via dash
     # via zc-lockfile
+shellingham==1.5.4
+    # via typer
 shortuuid==1.0.13
     # via dvc
     # via dvc-task
@@ -348,11 +357,11 @@ sniffio==1.3.1
     # via anyio
     # via httpx
     # via openai
-sqlalchemy==2.0.29
+sqlalchemy==2.0.28
     # via discharge-docs
 sqltrie==0.11.0
     # via dvc-data
-starlette==0.36.3
+starlette==0.37.2
     # via fastapi
 tabulate==0.9.0
     # via dvc
@@ -372,9 +381,10 @@ tqdm==4.66.2
     # via nltk
     # via openai
     # via scmrepo
-typer==0.11.0
+typer==0.12.3
     # via gto
 typing-extensions==4.10.0
+    # via anyio
     # via asyncssh
     # via dash
     # via fastapi
