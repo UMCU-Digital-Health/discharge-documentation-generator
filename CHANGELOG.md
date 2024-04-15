@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2024-04-15
+
+### Added
+- Added endpoint to the API for deleting old generated discharge documents
+- Added unit tests
+
 ## [0.4.1] - 2024-04-12
 
 ### Changed

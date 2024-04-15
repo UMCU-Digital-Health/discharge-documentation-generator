@@ -5,13 +5,12 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-import tiktoken
 import tomli
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.security.api_key import APIKeyHeader
 from openai import AzureOpenAI
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from discharge_docs.database.models import (
@@ -121,20 +120,19 @@ async def update_discharge_docs(
         department = patient_df["department"].values[0]
         template_prompt = load_template_prompt(department)
 
-        # Calculate token length, TODO add this to promptbuilder class
-        encoding = tiktoken.get_encoding("cl100k_base")
-        token_length = len(
-            encoding.encode(
-                patient_file_string + template_prompt + user_prompt + system_prompt
-            )
+        token_length = prompt_builder.get_token_length(
+            patient_file_string, system_prompt, user_prompt, template_prompt
         )
 
+        logger.info(
+            f"Generating discharge doc for encounter {enc_id} "
+            f"and department {department}..."
+        )
         discharge_letter = prompt_builder.generate_discharge_doc(
             patient_file=patient_file_string,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             template_prompt=template_prompt,
-            addition_prompt=None,
         )
 
         api_encounter = ApiEncounter(
@@ -154,6 +152,50 @@ async def update_discharge_docs(
     api_request.response_code = 200
     db.add(api_request)
     db.commit()
+    return {"message": "Success"}
+
+
+@app.post("/remove_old_discharge_docs")
+async def remove_old_discharge_docs(
+    max_date: datetime,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(check_api_key),
+) -> dict:
+    """Remove all discharge documentation generated before the given date.
+
+    Parameters
+    ----------
+    max_date : datetime
+        The maximum date for which discharge documentation should be kept.
+    """
+    start_time = datetime.now()
+    api_request = ApiRequest(
+        timestamp=datetime.now(),
+        endpoint="/remove_old_discharge_docs",
+        api_version=API_VERSION,
+    )
+
+    # Get IDs of all ApiDischargeDocs that are older than max_date
+    encounter_id_subquery = (
+        select(ApiEncounter.id)
+        .join(ApiRequest)
+        .where(ApiRequest.timestamp < max_date)
+        .scalar_subquery()
+    )
+
+    # Delete all ApiDischargeDocs that are older than max_date
+    rows_deleted = db.execute(
+        delete(ApiGeneratedDoc).where(
+            ApiGeneratedDoc.encounter_id.in_(encounter_id_subquery)
+        )
+    )
+    logger.warning(f"Deleted {rows_deleted.rowcount} rows from ApiGeneratedDoc")
+
+    api_request.response_code = 200
+    api_request.runtime = (datetime.now() - start_time).total_seconds()
+    db.add(api_request)
+    db.commit()
+
     return {"message": "Success"}
 
 
