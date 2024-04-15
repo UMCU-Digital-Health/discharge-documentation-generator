@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2024-04-12
+
+### Changed
+- First working version of the API including database tables
+
+### Added
+- Added unit tests for the API
+
 ## [0.4.0] - 2024-04-11
 
 ### Changed
