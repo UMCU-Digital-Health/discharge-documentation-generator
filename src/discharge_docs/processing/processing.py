@@ -147,13 +147,15 @@ def process_data_metavision_new(
 
     # Function to replace 1899 dates with the most recent date in the group
     # as the 1899 dates are not valid and contain the discharge docs
-    def replace_1899_dates(group):
-        # Replace 1899 dates with the most recent date in the group
-        group.loc[group["date"].dt.year == 1899, "date"] = group["date"].max()
-        return group
+    def replace_1899_dates(dates):
+        # Replace 1899 dates with the most recent date in the series
+        mask = dates.dt.year == 1899
+        if mask.any():
+            max_date = dates.max()
+            dates = dates.where(~mask, max_date)
+        return dates
 
-    # Group by 'enc_id' and apply the function
-    df = df.groupby("enc_id").apply(replace_1899_dates).reset_index(drop=True)
+    df["date"] = df.groupby("enc_id")["date"].transform(replace_1899_dates)
 
     # rename ontslagbrief
     df["description"] = df["description"].replace(
@@ -166,6 +168,107 @@ def process_data_metavision_new(
     # pseudonomise by hand
     df["value"] = df["value"].apply(pseudonomise_by_hand)
 
+    # subset the data based on the names for sections in patient file
+    df = df[
+        ~(
+            (df["department"] == "Intensive Care Centrum")
+            & (
+                ~df["description"].isin(
+                    [
+                        "Dagstatus Print Afspraken",  # afspraken
+                        "Korte Termijn Beleid (ms)",  # korte termijn beleid
+                        "Lange termijn beleid (ms)",  # lange termijn beleid
+                        "Medische ontslagbrief - Beloop Dictionary",  # ontslagbrief
+                        "MS Diagnose 1",  # diagnose code
+                        "MS Probleemlijst Print",  # probleemlijst
+                        "Opname Toedracht (ms)",  # reden van opname
+                        "Overige afspraken",  # overige afspraken
+                        "Print Behandeldoelen",  # behandeldoelen
+                        "Print Chronologie Eventlijst",  # beloop (events)
+                        "Print Chronologie Titels",  # de titels van de events beloop
+                        "Thuismedicatie (ms)",  # Thuismedicatie
+                        "Tractus 12 Conclusie",  # conclusie
+                        "Tractus 13 Opm dagdienst",  # opmerkingen van de dagdienst
+                        "Tractus 14 Opm A/N dienst",  # opmerkingen van de nachtdienst
+                        "VG Overzicht (ms)",  # Voorgeschiedenis Overzicht
+                        "Ontslagbrief",  # ontslagbrief
+                    ]
+                )
+            )
+        )
+    ]
+    df = df.sort_values(by=["department", "description"])
+    df = df[
+        ~(
+            (df["department"] == "Neonatologie")
+            & (
+                ~df["description"].isin(
+                    [
+                        "Anamnese (ms)",
+                        "Chronologie Eventlijst Data",
+                        "Dagstatus Print Afspraken",
+                        "Dec Item Tekst (ms)",
+                        "Evaluatie Gemaakte Afspraken (ms)",
+                        "Gesprek Item Tekst (ms)",
+                        "Korte Termijn Beleid (ms)",
+                        "Lange termijn beleid (ms)",
+                        "Medicatie bij Opname (ms)",
+                        "Medische ontslagbrief - Beloop Dictionary",
+                        "MS Diagnose 1",
+                        "MS Diagnose 2",
+                        "MS Probleemlijst Print",
+                        "OntslagCriteria (ms)",
+                        "Ontslagbrief",
+                        "Opname Toedracht (ms)",
+                        "Print Behandeldoelen",
+                        "Print Chronologie Eventlijst",
+                        "Print Chronologie Titels",
+                        "Reden (isol)",
+                        "Samenvatting MS onderzoeken",
+                        "Thuismedicatie (ms)",
+                        "Tractus 01 Lichamelijk Onderzoek",
+                        "Tractus 02 Respiratie",
+                        "Tractus 03 Circulatie",
+                        "Tractus 04 Neurologie",
+                        "Tractus 05 Infectie",
+                        "Tractus 06 VB/nierfunctie",
+                        "Tractus 07 Gastro-Intestinaal",
+                        "Tractus 08 Milieu Interieur",
+                        "Tractus 09 Extr/huid",
+                        "Tractus 10 Psych/soc",
+                        "Tractus 11 Overig",
+                        "Tractus 12 Conclusie",
+                        "Tractus 13 Opm dagdienst",
+                        "Tractus 14 Opm A/N dienst",
+                        "VG Overzicht (ms)",
+                    ]
+                )
+            )
+        )
+    ]
+
+    # rename Opname Toedracht (ms) to Reden van Opname
+    df["description"] = (
+        df["description"]
+        .replace("Opname Toedracht (ms)", "Reden van Opname")
+        .replace("VG Overzicht (ms)", "Voorgeschiedenis Overzicht")
+        .replace("Korte Termijn Beleid (ms)", "Korte Termijn Beleid")
+        .replace("Lange termijn beleid (ms)", "Lange Termijn Beleid")
+        .replace("Print Behandeldoelen", "Behandeldoelen")
+        .replace("MS Probleemlijst Print", "Probleemlijst")
+        .replace("Tractus 12 Conclusie", "Conclusie")
+        .replace("Tractus 13 Opm dagdienst", "Opmerkingen dagdienst")
+        .replace("Tractus 14 Opm A/N dienst", "Opmerkingen nachtdienst")
+        .replace("Print Chronologie Eventlijst", "Eventlijst")
+        .replace("Print Chronologie Titels", "Eventlijst Titels")
+        .replace("MS Diagnose 1", "Diagnosecode 1")
+        .replace("MS Diagnose 2", "Diagnosecode 2")
+        .replace("Thuismedicatie (ms)", "Thuismedicatie")
+        .replace("Dagstatus Print Afspraken", "Dagstatus afspraken")
+        .replace("Gesprek Item Tekst (ms)", "Oudergesprek")
+        .replace("Anamnese (ms)", "Anamnese")
+        .replace(r"Tractus \d\d", "Dagstatus", regex=True)
+    )
     return df
 
 

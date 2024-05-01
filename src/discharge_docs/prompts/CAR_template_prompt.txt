@@ -1,9 +1,11 @@
-
-De twee categorieen zijn: Beloop en Conclusie. 
-
+De twee categorieën zijn: Beloop en Conclusie.
 Je moet onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid schrijven.
-Het is uitermate belangrijk dat de beweegredenen goed gedocumenteerd zijn. 
-
-Onder 'Conclusie' moet je puntsgewijs de diagnoses die zijn vastgesteld tijdens de opname en de behandelingen die zijn uitgevoerd tijdens de opname, bijvoorbeeld operaties.
-
-Geef het format terug: [{"Beloop": "*Beloop van de opname*, "Conclusie": "*Conclusie*"}]
+Het is uitermate belangrijk dat de beweegredenen goed gedocumenteerd zijn.
+Schrijf in verleden tijd. 
+Begin met "Bovengenoemde patiënt werd [electief/ongepland] opgenomen voor [reden van komst]."
+Eindig met "De patiënt is ontslagen naar ['thuis', 'verpleeghuis', 'revalidatieinstelling', 'overplaatsing naar andere afdeling']".
+Onder 'Conclusie' moet je genummerd de hoofdproblemen die speelden tijdens deze opname, inclusief de behandelingen die zijn uitgevoerd tijdens de opname, zoals bijvoorbeeld operaties of het starten van medicatie. Haal deze informatie uit de stukken getiteld 'Conclusie'.  Schrijf alle afkortingen uit. 
+Start met het eerste punt: "Reden van opname: [reden van opname, noem hierbij of het electief was of niet.]".
+ 
+## Format 
+Geef het format terug: [{"Categorie": "Beloop", "Beloop tijdens opname": "*Beloop van de opname*, "Categorie": "Conclusie","Beloop tijdens opname": "*Conclusie van de opname*"}]

@@ -25,6 +25,7 @@ from discharge_docs.dashboard.helper import (
     get_patients_from_list_names,
     get_template_prompt,
     highlight,
+    load_stored_discharge_letters,
 )
 from discharge_docs.database.models import (
     Base,
@@ -47,7 +48,6 @@ logger = logging.getLogger(__name__)
 
 # initialise Azure
 load_dotenv()
-deployment_name = "aiva-gpt"
 TEMPERATURE = 0.2
 ITERATIVE = False
 
@@ -56,6 +56,7 @@ client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_KEY"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
 )
+deployment_name = "aiva-gpt"
 
 # Authorization config
 with open(Path(__file__).parent / "config" / "auth.toml", "rb") as f:
@@ -66,12 +67,27 @@ with open(Path(__file__).parents[1] / "pyproject.toml", "rb") as f:
     project_info = tomli.load(f)
 
 API_VERSION = project_info["project"]["version"]
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+
+DB_USER = os.getenv("DB_USER", "")
+DB_PASSWD = os.getenv("DB_PASSWD", "")
+DB_HOST = os.getenv("DB_HOST", "")
+DB_PORT = os.getenv("DB_PORT", 1433)
+DB_DATABASE = os.getenv("DB_DATABASE", "")
+
+if DB_USER == "":
+    logging.warning("Using debug SQLite database...")
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+    execution_options = {"schema_translate_map": {"discharge_aiva": None}}
+else:
+    SQLALCHEMY_DATABASE_URL = (
+        rf"mssql+pymssql://{DB_USER}:{DB_PASSWD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
+    )
+    execution_options = None
+
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    execution_options={"schema_translate_map": {"aiva-discharge": None}},
+    execution_options=execution_options,
 )
 Base.metadata.create_all(engine)
 
@@ -92,6 +108,14 @@ df_dict = {
     "PSY": df_HIX,
 }
 
+# load stored discharge letters
+df_discharge4 = pd.read_csv(
+    Path(__file__).parents[1] / "data" / "processed" / "bulk_generated_docs_gpt4.csv"
+)
+
+df_discharge35 = pd.read_csv(
+    Path(__file__).parents[1] / "data" / "processed" / "bulk_generated_docs_gpt35.csv"
+)
 
 # load used enc_ids
 with open(
@@ -125,6 +149,7 @@ demo_item = {
 }
 values_list = {**demo_item, **values_list}
 
+logger.info("data loaded")
 
 # load prompts
 user_prompt, system_prompt = load_prompts()
@@ -422,6 +447,42 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
 
 
 @app.callback(
+    Output("output_stored_generated_discharge_documentation35", "children"),
+    Output("output_stored_generated_discharge_documentation4", "children"),
+    [
+        Input("patient_admission_dropdown", "value"),
+    ],
+)
+def display_stored_discharge_documentation(
+    selected_patient_admission: str,
+) -> tuple[list, list]:
+    """
+    Display the discharge documentation for the selected patient admission.
+
+    Parameters:
+    ----------
+    selected_patient_admission : str
+        The selected patient admission.
+
+    Returns:
+    -------
+    tuple[list, list]
+        A tuple containing two lists:
+        - The discharge docs for the selected patient admission from discharge35
+        - The discharge docs for the selected patient admission from discharge4
+    """
+    if selected_patient_admission is None:
+        return ""
+
+    output_35 = load_stored_discharge_letters(
+        df_discharge35, selected_patient_admission
+    )
+    output_4 = load_stored_discharge_letters(df_discharge4, selected_patient_admission)
+
+    return output_35, output_4
+
+
+@app.callback(
     Output("template_prompt_space", "children"),
     Output("template_prompt_field", "value"),
     [Input("patient_admission_dropdown", "value")],
@@ -438,7 +499,7 @@ def update_template_prompt(selected_patient_admission: str) -> tuple[list[str], 
 @app.callback(
     Output("output_GPT_discharge_documentation", "children"),
     Input("update_discharge_button", "n_clicks"),
-    State("patient_admission_dropdown", "value"),
+    Input("patient_admission_dropdown", "value"),
     State("template_prompt_field", "value"),
 )
 def display_generated_discharge_doc(
@@ -589,7 +650,17 @@ def gather_feedback(
         session.add(custom_prompt)
         session.commit()
 
-    return "De feedback is opgeslagen, bedankt!"
+    return (
+        f"De feedback is opgeslagen voor patient {selected_patient_admission}, bedankt!"
+    )
+
+
+@app.callback(
+    Output("evaluation_text", "value"), [Input("patient_admission_dropdown", "value")]
+)
+def clear_feedback(_):
+    # This function clears the feedback field whenever a new patient is selected
+    return ""
 
 
 @app.callback(

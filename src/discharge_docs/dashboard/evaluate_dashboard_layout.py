@@ -146,7 +146,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                                             "value": "sort_by_code",
                                         },
                                     ],
-                                    value="sort_by_code",
+                                    value="sort_by_date",
                                 ),
                             ),
                         ]
@@ -162,7 +162,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
         ]
     )
 
-    original_dischare_docu_tab = dbc.Card(
+    original_discharge_docu_tab = dbc.Card(
         dbc.CardBody(
             dcc.Markdown(
                 ["Placeholder for original discharge letter"],
@@ -179,7 +179,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                     dbc.CardHeader(html.H3("GPT instellingen:")),
                     dbc.CardBody(
                         [
-                            html.H5("Template prompt:"),
+                            html.H5("Afdeling prompt:"),
                             dbc.Label(
                                 """Hierin wordt de afdeling specifieke vraag gesteld.
                                  De huidige versie is vooringevuld. Pas deze aan om
@@ -192,7 +192,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                                 style={"height": "250px"},
                             ),
                             dbc.Button(
-                                "Update en genereer onstlagbrief",
+                                "Update en genereer onstlagbrief met GPT 3.5",
                                 id="update_discharge_button",
                                 color="primary",
                                 class_name="mt-2 me-2",
@@ -248,6 +248,12 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                     ),
                     html.H5("Opmerkingen"),
                     dbc.Label(
+                        html.Strong(
+                            "Benoem in de opmerkingen of het over de GPT4 brief gaat of"
+                            + " over de zelf gegenereerde GPT 3.5 brief."
+                        )
+                    ),
+                    dbc.Label(
                         "Staat alle informatie erin? Zo nee: staat de informatie"
                         " wel in het dossier? Is de verwoording acceptabel? etc."
                     ),
@@ -266,6 +272,29 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
             ),
         ],
         class_name="mt-2",
+    )
+
+    generate_docs_tab = dbc.Card(
+        dbc.CardBody(
+            [GPT_div],
+        ),
+    )
+
+    view_docs4_tab = dbc.Card(
+        dbc.CardBody(
+            html.Div(
+                [""],
+                id="output_stored_generated_discharge_documentation4",
+            ),
+        )
+    )
+    view_docs35_tab = dbc.Card(
+        dbc.CardBody(
+            html.Div(
+                [""],
+                id="output_stored_generated_discharge_documentation35",
+            ),
+        )
     )
 
     show_prompts_div = dbc.Offcanvas(
@@ -331,7 +360,7 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                         dbc.Tabs(
                             [
                                 dbc.Tab(
-                                    original_dischare_docu_tab,
+                                    original_discharge_docu_tab,
                                     label="Originele ontslagbrief",
                                 ),
                                 dbc.Tab(patient_file_tab, label="Patiëntendossier"),
@@ -341,7 +370,30 @@ def get_layout(user_prompt: str, system_prompt: str) -> html.Div:
                         width=6,
                     ),
                     dbc.Col(
-                        [GPT_div, eval_div],
+                        [
+                            dbc.Tabs(
+                                [
+                                    dbc.Tab(
+                                        generate_docs_tab,
+                                        label="Genereer zelf ontslagbrieven",
+                                        tab_id="generate_docs_tab",
+                                    ),
+                                    dbc.Tab(
+                                        view_docs35_tab,
+                                        label="Opgeslagen GPT3.5 brieven",
+                                        tab_id="view_docs3.5_tab",
+                                    ),
+                                    dbc.Tab(
+                                        view_docs4_tab,
+                                        label="Opgeslagen GPT4 brieven",
+                                        tab_id="view_docs4_tab",
+                                    ),
+                                ],
+                                class_name="mt-2",
+                                active_tab="view_docs4_tab",
+                            ),
+                            eval_div,
+                        ],
                         width=6,
                     ),
                 ],

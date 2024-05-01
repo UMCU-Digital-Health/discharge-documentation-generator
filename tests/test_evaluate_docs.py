@@ -17,7 +17,7 @@ class MockAzureOpenAI(AzureOpenAI):
     def completions(self):
         return self
 
-    def create(self, model, messages):
+    def create(self, model, messages, temperature):
         return MockAzureOpenAIResponse()
 
 

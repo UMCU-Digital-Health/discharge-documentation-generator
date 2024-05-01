@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "0.3.3"
+version = "0.4.3"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
@@ -32,10 +32,12 @@ dependencies =[
     "dvclive~=3.44",
     "rouge-score~=0.1",
     "fastapi~=0.110",
+    "pymssql>=2.3.0",
+    "striprtf>=0.0.26",
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "pytest-cov"]
+test = ["pytest", "pytest-cov", "pytest-asyncio"]
 dev = ["rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5", "ipykernel"]
 
 [tool]
@@ -44,6 +46,7 @@ rye = { dev-dependencies = [
     "nbstripout>=0.7.1",
     "pytest>=8.0.2",
     "uvicorn>=0.27.1",
+    "pytest-asyncio~=0.23.6",
 ] }
 
 [tool.isort]
@@ -60,4 +63,12 @@ select = [
     "W",
     "C90",
     "I",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "Depends",
+    "fastapi.Depends",
+    "fastapi.params.Depends",
+    "Security",
 ]
