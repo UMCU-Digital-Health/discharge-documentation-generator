@@ -3,7 +3,7 @@ import logging
 import re
 
 import pandas as pd
-from dash import html
+from dash import dcc, html
 from flask import Request
 
 logger = logging.getLogger(__name__)
@@ -100,6 +100,9 @@ def get_data_from_patient_admission(
     pd.DataFrame
         The data associated with the patient admission.
     """
+    if patient_admission not in data_dict:
+        logger.warning(f"Patient admission {patient_admission} not found in data_dict")
+
     return data_dict[patient_admission]
 
 
@@ -171,3 +174,39 @@ def get_patients_from_list_names(
             values_list[department] = patients_list
 
     return patients_data, values_list
+
+
+def load_stored_discharge_letters(
+    df: pd.DataFrame, patient_name: str
+) -> list[html.Div]:
+    """Load discharge letters for a specific patient.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing the discharge letters data.
+    patient_name : str
+        The name of the patient.
+
+    Returns
+    -------
+    list[html.Div]
+        A list of HTML Div elements representing the discharge letters for the patient.
+    """
+    if patient_name not in df["name"].values:
+        return "Er is geen opgeslagen documentatie voor deze patient."
+
+    discharge_document = df.loc[df["name"] == patient_name, "generated_doc"].values[0]
+    discharge_document = eval(discharge_document)
+
+    output = []
+    for category_pair in discharge_document:
+        output.append(
+            html.Div(
+                [
+                    html.Strong(category_pair["Categorie"]),
+                    dcc.Markdown(category_pair["Beloop tijdens opname"]),
+                ]
+            )
+        )
+    return output

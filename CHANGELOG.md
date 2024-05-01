@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2024-04-18
+
+### Added
+- Added filtering on the data to remove duplicated data in patient file. 
+- Added a dashboard to communicate with the Posit database. 
+- Added functionality to show stored GPT4 letter in eval dashboard
+- Added 'refresh' functionality when switching to a new patient in eval dashboard 
+
+
 ## [0.4.2] - 2024-04-15
 
 ### Added

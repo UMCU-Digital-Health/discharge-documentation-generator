@@ -22,13 +22,22 @@ class PromptBuilder:
         deployment_name: str,
         client: AzureOpenAI,
         token_encoding: str = "cl100k_base",
-        max_context_length: int = 16384,
     ):
         self.temperature = temperature
         self.deployment_name = deployment_name
         self.client = client
         self.token_encoding = token_encoding
-        self.max_context_length = max_context_length
+        self.max_context_length = self.determine_context_length(deployment_name)
+
+    def determine_context_length(self, deployment_name):
+        context_length_by_deployment = {
+            "aiva-gpt": 16384,
+            "aiva-gpt4": 120000,
+        }
+        if deployment_name in context_length_by_deployment:
+            return context_length_by_deployment[deployment_name]
+        else:
+            raise ValueError(f"Unknown deployment name: {deployment_name}")
 
     def get_token_length(
         self,
@@ -126,6 +135,13 @@ class PromptBuilder:
         )
         if token_length > self.max_context_length:
             logger.error(f"Token length {token_length} exceeds maximum context length")
+            return [
+                {
+                    "Categorie": "Error",
+                    "Beloop tijdens opname": "Token length exceeds maximum context "
+                    + "length for this model.",
+                }
+            ]
         logger.info("Sending request to GPT model...")
         response = self.client.chat.completions.create(
             model=self.deployment_name,
@@ -133,13 +149,32 @@ class PromptBuilder:
             temperature=self.temperature,
         )
         logger.info("Parsing response to JSON...")
-        reply = json.loads(
-            re.sub(
-                "```(json)?",
-                "",
-                response.model_dump()["choices"][0]["message"]["content"],
+        try:
+            content = response.model_dump()["choices"][0]["message"]["content"]
+            cleaned_content = (
+                re.sub(
+                    "```(json)?",
+                    "",
+                    content,
+                ),
             )
-        )
+            cleaned_content = re.sub(r"\]\s*\.*\s*$", "]", cleaned_content[0])
+            logger.info(cleaned_content)
+            reply = json.loads(cleaned_content, strict=False)
+            success = True
+        except json.JSONDecodeError:
+            success = False
+
+        if not success:
+            logger.error("Failed to parse response to JSON.")
+            logger.error(str(response))
+            return [
+                {
+                    "Categorie": "Error",
+                    "Beloop tijdens opname": "No response from GPT model.",
+                }
+            ]
+
         return reply
 
     def iterative_simulation(
