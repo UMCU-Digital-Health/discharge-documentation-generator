@@ -10,7 +10,7 @@ import flask
 import numpy as np
 import pandas as pd
 import tomli
-from dash import ctx, dcc, html
+from dash import callback_context, ctx, dcc, html
 from dash._callback import NoUpdate
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
@@ -264,31 +264,40 @@ def display_generated_discharge_documentation(
 
 
 @app.callback(
-    Output("output_discharge_documentation", "children"),
+    [
+        Output("output_discharge_documentation", "value"),
+        Output("next_button", "style"),
+    ],
     [
         Input("patient_admission_dropdown", "value"),
         Input("next_button", "n_clicks"),
     ],
-    State("output_discharge_documentation", "children"),
+    State("output_discharge_documentation", "value"),
 )
 def display_chosen_discharge_documentation(
     selected_patient_admission: str, n_clicks: int, current_text: str
-) -> str:
+) -> tuple:
     """
-    Display the chosen discharge documentation for the selected patient admission.
+    Display the chosen discharge documentation for the selected patient admission and
+      control next button visibility.
 
     Parameters:
     ----------
     selected_patient_admission : str
         The selected patient admission.
+    n_clicks : int
+        Number of times the next button has been clicked.
+    current_text : str
+        Currently displayed text.
 
     Returns:
     -------
-    list
-        The discharge documentation for the selected patient admission.
+    tuple
+        The discharge documentation for the selected patient admission and the button
+        style.
     """
     if selected_patient_admission is None:
-        return ""
+        return "", {"display": "none"}
 
     text_GPT = str(
         load_stored_discharge_letters(df_discharge4, selected_patient_admission)
@@ -297,21 +306,42 @@ def display_chosen_discharge_documentation(
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
     text_ORG = str(get_patient_discharge_docs(df=data).values[0])
 
-    # Check if we're displaying the first or the second text
-    if n_clicks % 2 == 0:
-        # Even clicks - show first text
-        if current_text != text_GPT and current_text != text_ORG:
-            # Randomize initial text if it's not already one of them
-            return random.choice([text_GPT, text_ORG])
-        return current_text
-    else:
-        # Odd clicks - show second text
-        if current_text == text_GPT:
-            return text_ORG
-        else:
-            return text_GPT
+    # Initialize the button style where you do show the button
+    button_style = {"display": "block"}
 
-    return ""
+    # Check the triggering input
+    triggered_input = callback_context.triggered[0]["prop_id"].split(".")[0]
+
+    if triggered_input == "patient_admission_dropdown":
+        # reset the button style when a new patient is selected
+        return random.choice([text_GPT, text_ORG]), button_style
+
+    if triggered_input == "next_button" and n_clicks is not None:
+        # hide the button after the first click
+        if current_text == text_GPT:
+            return text_ORG, {"display": "none"}
+        else:
+            return text_GPT, {"display": "none"}
+
+    return current_text, button_style
+
+
+# JavaScript to control the size of the textarea
+app.clientside_callback(
+    """
+    function(n_intervals) {
+        var textarea = document.getElementById('output_discharge_documentation');
+        if (textarea) {
+            textarea.style.width = '100%';
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+        return {};
+    }
+    """,
+    Output("output_discharge_documentation", "style"),
+    Input("interval", "n_intervals"),
+)
 
 
 # JavaScript to capture the highlighted text and store it in the hidden input

@@ -64,31 +64,29 @@ def get_layout() -> html.Div:
             dbc.CardHeader(html.H3("Bekijk ontslagbrief")),
             dbc.CardBody(
                 [
-                    html.Div(
-                        ["Placeholder for shown discharge letter"],
+                    dcc.Textarea(
+                        value="Placeholder for original discharge letter",
                         id="output_discharge_documentation",
-                        className="bg-light",
+                        readOnly=True,
+                        style={
+                            "width": "100%",
+                            "whiteSpace": "pre-line",
+                            "overflow": "hidden",  # To hide the scrollbar
+                        },
                     ),
-                    html.Button(
+                    dcc.Interval(  # To update the textarea
+                        id="interval", interval=1000, n_intervals=0
+                    ),
+                    dbc.Button(
                         "Volgende",
                         id="next_button",
                         n_clicks=0,
-                        # style={"display": "none"},
+                        class_name="mt-2",
                     ),
                 ]
             ),
         ]
     )
-
-    # original_discharge_docs_tab = dbc.Card(
-    #     dbc.CardBody(
-    #         dcc.Markdown(
-    #             ["Placeholder for original discharge letter"],
-    #             id="output_original_discharge_documentation",
-    #             className="bg-light",
-    #         )
-    #     ),
-    # )
 
     original_discharge_docs_tab = dbc.Card(
         dbc.CardBody(
