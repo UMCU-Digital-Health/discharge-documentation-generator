@@ -29,7 +29,6 @@ WHERE
     AND enc.[serviceProvider_Organization_value] IN ('W', 'U')
     AND enc.[location_Location_value_original] IN (
         'Neonatologie',
-        'Intensive Care Kinderen',
         'Intensive Care Centrum'
     )
     AND obs.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionVrijeTekstMeting'
