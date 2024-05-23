@@ -5,7 +5,7 @@ The main function of this database is to store logging, feedback and evaluation 
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -135,3 +135,21 @@ class ApiGeneratedDoc(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     discharge_letter: Mapped[str]
     encounter_id: Mapped[str] = mapped_column(ForeignKey(ApiEncounter.id), init=False)
+
+
+class EvalPhase1(Base):
+    """Table that stores the evaluation data for phase 1."""
+
+    __tablename__ = "evalphase1"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    user: Mapped[str] = mapped_column(String, nullable=False)
+    timestamp: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    patientid: Mapped[str] = mapped_column(String, nullable=False)
+    letter_evaluated: Mapped[str] = mapped_column(String, nullable=False)
+    highlighted_missings: Mapped[str] = mapped_column(String, nullable=True)
+    highlighted_halucinations: Mapped[str] = mapped_column(String, nullable=True)
+    highlighted_trivial_information: Mapped[str] = mapped_column(String, nullable=True)
+    usability_likert: Mapped[int] = mapped_column(Integer, nullable=False)
+    comments: Mapped[str] = mapped_column(String, nullable=True)

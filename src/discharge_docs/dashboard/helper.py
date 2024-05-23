@@ -82,6 +82,31 @@ def get_authorization(req: Request, authorization_dict: dict) -> tuple[str, list
     return "", []
 
 
+def get_user(req: Request) -> str:
+    """
+    Get the user email from RStudio credentials.
+    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+
+    Parameters
+    ----------
+    req : Request
+        The request object.
+
+    Returns
+    -------
+    str
+        the user's email
+    """
+    credential_header = req.headers.get("RStudio-Connect-Credentials")
+    if not credential_header:
+        logger.warning("No credentials found in request headers")
+        return "No user"
+
+    credential_header = json.loads(credential_header)
+    user = credential_header.get("user").lower()
+    return user
+
+
 def get_data_from_patient_admission(
     patient_admission: str, data_dict: dict
 ) -> pd.DataFrame:
