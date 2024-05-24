@@ -35,7 +35,10 @@ logger = logging.getLogger(__name__)
 
 # load data
 df_metavision = pd.read_parquet(
-    Path(__file__).parents[1] / "data" / "processed" / "metavision_new_data.parquet"
+    Path(__file__).parents[1]
+    / "data"
+    / "processed"
+    / "metavision_data_april_dp.parquet"
 )
 
 df_HIX = pd.read_parquet(
@@ -56,16 +59,12 @@ with open(
     / "src"
     / "discharge_docs"
     / "dashboard"
-    / "enc_ids_dashboard.toml",
+    / "enc_ids_pre_release_phase1_1.toml",
     "rb",
 ) as f:
     enc_ids_dict = tomli.load(f)
     for key in enc_ids_dict:
         enc_ids_dict[key] = enc_ids_dict[key]["ids"]
-
-for key in enc_ids_dict:
-    if key != "PSY":  # TODO verwijderen na check saskia
-        enc_ids_dict[key] = enc_ids_dict[key][:25]
 
 data_dict, values_list = get_patients_from_list_names(df_dict, enc_ids_dict)
 
@@ -98,8 +97,10 @@ Base.metadata.create_all(engine)
 
 # load stored discharge letters
 df_discharge4 = pd.read_csv(
-    Path(__file__).parents[1] / "data" / "processed" / "bulk_generated_docs_gpt4.csv"
-    # TODO change to pre-release export
+    Path(__file__).parents[1]
+    / "data"
+    / "processed"
+    / "bulk_generated_docs_gpt4_PReval.csv"
 )
 
 # define the app
@@ -175,6 +176,7 @@ def display_patient_file(
     if patient_file.empty:
         return ["Er is geen patientendossier voor deze patient."]
     else:
+        patient_file = patient_file[patient_file["description"] != "Ontslagbrief"]
         patient_file_string = "\n\n".join(
             patient_file.apply(
                 lambda row: (
