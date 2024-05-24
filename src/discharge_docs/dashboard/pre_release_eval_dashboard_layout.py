@@ -49,10 +49,31 @@ def get_layout() -> html.Div:
                 [
                     html.H2("Patiëntendossier:"),
                     html.Br(),
-                    html.Div(
-                        ["Placeholder for patient file"],
+                    dcc.Textarea(
+                        value="Placeholder for patient file",
                         id="output_value",
-                        className="bg-light",
+                        readOnly=True,
+                        style={
+                            "width": "100%",
+                            "whiteSpace": "pre-line",
+                            "height": "900px",
+                        },
+                    ),
+                    html.Br(),
+                    dcc.Store(id="missings_store", data=[]),
+                    dbc.Button(
+                        "Sla gemarkeerde missings op",
+                        id="save_missings-button",
+                        n_clicks=0,
+                    ),
+                    dcc.Input(
+                        id="hidden-input_missings",
+                        type="text",
+                        style={"display": "none"},
+                    ),
+                    html.Div(
+                        id="output-container_missings",
+                        children="",
                     ),
                 ]
             ),
@@ -64,6 +85,7 @@ def get_layout() -> html.Div:
             dbc.CardHeader(html.H3("Bekijk ontslagbrief")),
             dbc.CardBody(
                 [
+                    dcc.Store(data="", id="letter_shown"),
                     dcc.Textarea(
                         value="Placeholder for original discharge letter",
                         id="output_discharge_documentation",
@@ -71,70 +93,48 @@ def get_layout() -> html.Div:
                         style={
                             "width": "100%",
                             "whiteSpace": "pre-line",
-                            "overflow": "hidden",  # To hide the scrollbar
+                            "overflow": "scroll",
+                            "height": "600px",
                         },
                     ),
-                    dcc.Interval(  # To update the textarea
-                        id="interval", interval=1000, n_intervals=0
-                    ),
                     dbc.Button(
-                        "Volgende",
+                        "Volgende ontslagbrief",
                         id="next_button",
                         n_clicks=0,
                         class_name="mt-2",
                     ),
+                    html.Br(),
+                    dcc.Store(id="hall_store", data=[]),
+                    dbc.Button(
+                        "Sla gemarkeerde halucinaties op",
+                        id="save_hall-button",
+                        n_clicks=0,
+                    ),
+                    dcc.Store(id="trivial_store", data=[]),
+                    dbc.Button(
+                        "Sla gemarkeerde triviale informatie op",
+                        id="save_trivial-button",
+                        n_clicks=0,
+                    ),
+                    dcc.Input(
+                        id="hidden-input_trivial",
+                        type="text",
+                        style={"display": "none"},
+                    ),
+                    dcc.Input(
+                        id="hidden-input_hall", type="text", style={"display": "none"}
+                    ),
+                    html.Div(
+                        id="output-container_hall",
+                        children="",
+                    ),
+                    html.Div(
+                        id="output-container_trivial",
+                        children="",
+                    ),
                 ]
             ),
         ]
-    )
-
-    original_discharge_docs_tab = dbc.Card(
-        dbc.CardBody(
-            [
-                dcc.Textarea(
-                    value="Placeholder for original discharge letter",
-                    id="output_original_discharge_documentation",
-                    readOnly=True,
-                    style={
-                        "width": "100%",
-                        "whiteSpace": "pre-line",
-                        "height": "1000px",
-                    },
-                ),
-                dbc.Button(
-                    "Sla gemarkeerde halucinaties op", id="save_hall-button", n_clicks=0
-                ),
-                dbc.Button(
-                    "Sla gemarkeerde triviale informatie op",
-                    id="save_trivial-button",
-                    n_clicks=0,
-                ),
-                dcc.Input(
-                    id="hidden-input_trivial", type="text", style={"display": "none"}
-                ),
-                dcc.Input(
-                    id="hidden-input_hall", type="text", style={"display": "none"}
-                ),
-                html.Div(
-                    id="output-container_hall",
-                    children="",
-                ),
-                html.Div(
-                    id="output-container_trivial",
-                    children="",
-                ),
-            ]
-        ),
-    )
-
-    generated_discharge_docs_tab = dbc.Card(
-        dbc.CardBody(
-            html.Div(
-                ["Placeholder for generated discharge letter"],
-                id="output_generated_discharge_documentation",
-                className="bg-light",
-            )
-        ),
     )
 
     eval_div = dbc.Card(
@@ -191,20 +191,9 @@ def get_layout() -> html.Div:
             dbc.Row(
                 children=[
                     dbc.Col(
-                        dbc.Tabs(
-                            [
-                                dbc.Tab(patient_file_tab, label="Patiëntendossier"),
-                                dbc.Tab(
-                                    original_discharge_docs_tab,
-                                    label="Originele brief",
-                                ),
-                                dbc.Tab(
-                                    generated_discharge_docs_tab,
-                                    label="Gegenereerde brief",
-                                ),
-                            ],
-                            class_name="mt-2",
-                        ),
+                        [
+                            patient_file_tab,
+                        ],
                         width=6,
                     ),
                     dbc.Col(

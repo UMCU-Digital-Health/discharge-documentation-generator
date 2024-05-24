@@ -235,3 +235,37 @@ def load_stored_discharge_letters(
             )
         )
     return output
+
+
+def load_stored_discharge_letters_pre_release(
+    df: pd.DataFrame, patient_name: str
+) -> list[html.Div]:
+    """Load discharge letters for a specific patient formatting according to pre-release
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing the discharge letters data.
+    patient_name : str
+        The name of the patient.
+
+    Returns
+    -------
+    list[html.Div]
+        A list of HTML Div elements representing the discharge letters for the patient.
+    """
+    if patient_name not in df["name"].values:
+        return "Er is geen opgeslagen documentatie voor deze patient."
+
+    discharge_document = df.loc[df["name"] == patient_name, "generated_doc"].values[0]
+    discharge_document = eval(discharge_document)
+
+    outputstring = ""
+    for category_pair in discharge_document:
+        formatted_string = (
+            f"{category_pair['Categorie'].upper()}"
+            + f" \n{category_pair['Beloop tijdens opname']}"
+        )
+        outputstring += formatted_string + "\n\n"
+
+    return outputstring

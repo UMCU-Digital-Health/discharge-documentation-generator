@@ -5,7 +5,7 @@ The main function of this database is to store logging, feedback and evaluation 
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,

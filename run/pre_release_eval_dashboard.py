@@ -7,22 +7,19 @@ from pathlib import Path
 import dash
 import dash_bootstrap_components as dbc
 import flask
-import numpy as np
 import pandas as pd
 import tomli
-from dash import callback_context, ctx, dcc, html
-from dash._callback import NoUpdate
+from dash import callback_context, ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
     get_patients_from_list_names,
     get_user,
-    highlight,
-    load_stored_discharge_letters,
+    load_stored_discharge_letters_pre_release,
 )
 from discharge_docs.dashboard.pre_release_eval_dashboard_layout import get_layout
 from discharge_docs.database.models import (
@@ -31,7 +28,6 @@ from discharge_docs.database.models import (
 )
 from discharge_docs.processing.processing import (
     get_patient_discharge_docs,
-    get_patient_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -106,11 +102,6 @@ df_discharge4 = pd.read_csv(
     # TODO change to pre-release export
 )
 
-# storage for highlighted text
-highlighted_missings = []
-highlighted_halucinations = []
-highlighted_trivial = []
-
 # define the app
 app = dash.Dash(
     __name__,
@@ -153,12 +144,12 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
 
 
 @app.callback(
-    Output("output_value", "children"),
+    Output("output_value", "value"),
     [
         Input("patient_admission_dropdown", "value"),
     ],
 )
-def display_value(
+def display_patient_file(
     selected_patient_admission: str,
 ) -> list:
     """Display the discharge documentation for the selected patient admission.
@@ -182,100 +173,38 @@ def display_value(
     patient_file = patient_file.sort_values(by=["date", "description"])
 
     if patient_file.empty:
-        return ["De geselecteerde data is niet ingevuld voor deze patient."]
+        return ["Er is geen patientendossier voor deze patient."]
     else:
-        returnable = []
-        for index in patient_file.index:
-            returnable.append(
-                html.B(
-                    str(patient_file.loc[index, "description"])
-                    + " - "
-                    + str(patient_file.loc[index, "date"].date())
-                )
+        patient_file_string = "\n\n".join(
+            patient_file.apply(
+                lambda row: (
+                    f"{row['description'].upper()} -"
+                    + f" {row['date'].date()} \n{row['value']}"
+                ),
+                axis=1,
             )
-            returnable.append(html.Br())
-            returnable.append(patient_file.loc[index, "value"])
-            returnable.append(html.Br())
-
-        return returnable
-
-
-@app.callback(
-    Output("output_original_discharge_documentation", "value"),
-    [
-        Input("patient_admission_dropdown", "value"),
-    ],
-)
-def display_original_discharge_documentation(selected_patient_admission: str) -> str:
-    """
-    Display the discharge documentation for the selected patient admission.
-
-    Parameters:
-    ----------
-     selected_patient_admission : str
-        The selected patient admission.
-
-    Returns:
-    -------
-    list
-        The discharge documentation for the selected patient admission.
-    """
-    if selected_patient_admission is None:
-        return ""
-
-    data = get_data_from_patient_admission(selected_patient_admission, data_dict)
-    discharge_documentation = get_patient_discharge_docs(df=data)
-    # patient_file, _ = get_patient_file(data)
-    # print(patient_file)
-    # return str(patient_file)
-    return str(discharge_documentation.values[0])
-
-
-@app.callback(
-    Output("output_generated_discharge_documentation", "children"),
-    [
-        Input("patient_admission_dropdown", "value"),
-    ],
-)
-def display_generated_discharge_documentation(
-    selected_patient_admission: str,
-) -> tuple[list, list]:
-    """
-    Display the generated discharge documentation for the selected patient admission.
-
-    Parameters:
-    ----------
-    selected_patient_admission : str
-        The selected patient admission.
-
-    Returns:
-    -------
-    tuple[list, list]
-        A tuple containing two lists:
-        - The discharge docs for the selected patient admission from discharge35
-        - The discharge docs for the selected patient admission from discharge4
-    """
-    if selected_patient_admission is None:
-        return ""
-
-    output_4 = load_stored_discharge_letters(df_discharge4, selected_patient_admission)
-
-    return output_4
+        )
+        return patient_file_string
 
 
 @app.callback(
     [
         Output("output_discharge_documentation", "value"),
         Output("next_button", "style"),
+        Output("letter_shown", "data"),
     ],
     [
         Input("patient_admission_dropdown", "value"),
         Input("next_button", "n_clicks"),
     ],
     State("output_discharge_documentation", "value"),
+    State("letter_shown", "data"),
 )
 def display_chosen_discharge_documentation(
-    selected_patient_admission: str, n_clicks: int, current_text: str
+    selected_patient_admission: str,
+    n_clicks: int,
+    current_text: str,
+    current_letter: str,
 ) -> tuple:
     """
     Display the chosen discharge documentation for the selected patient admission and
@@ -289,6 +218,8 @@ def display_chosen_discharge_documentation(
         Number of times the next button has been clicked.
     current_text : str
         Currently displayed text.
+    current_letter : str
+        The currently displayed letter label
 
     Returns:
     -------
@@ -297,10 +228,12 @@ def display_chosen_discharge_documentation(
         style.
     """
     if selected_patient_admission is None:
-        return "", {"display": "none"}
+        return "", {"display": "none"}, ""
 
     text_GPT = str(
-        load_stored_discharge_letters(df_discharge4, selected_patient_admission)
+        load_stored_discharge_letters_pre_release(
+            df_discharge4, selected_patient_admission
+        )
     )
 
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
@@ -314,34 +247,20 @@ def display_chosen_discharge_documentation(
 
     if triggered_input == "patient_admission_dropdown":
         # reset the button style when a new patient is selected
-        return random.choice([text_GPT, text_ORG]), button_style
+        choice = random.choice([0, 1])
+        if choice == 0:
+            return text_GPT, button_style, "GPT letter"
+        else:
+            return text_ORG, button_style, "ORG letter"
 
     if triggered_input == "next_button" and n_clicks is not None:
         # hide the button after the first click
         if current_text == text_GPT:
-            return text_ORG, {"display": "none"}
+            return text_ORG, {"display": "none"}, "ORG letter"
         else:
-            return text_GPT, {"display": "none"}
+            return text_GPT, {"display": "none"}, "GPT letter"
 
-    return current_text, button_style
-
-
-# JavaScript to control the size of the textarea
-app.clientside_callback(
-    """
-    function(n_intervals) {
-        var textarea = document.getElementById('output_discharge_documentation');
-        if (textarea) {
-            textarea.style.width = '100%';
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        }
-        return {};
-    }
-    """,
-    Output("output_discharge_documentation", "style"),
-    Input("interval", "n_intervals"),
-)
+    return current_text, button_style, current_letter
 
 
 # JavaScript to capture the highlighted text and store it in the hidden input
@@ -358,20 +277,6 @@ app.clientside_callback(
     Input("save_hall-button", "n_clicks"),
 )
 
-
-# Callback to update output and save highlighted text to DataFrame
-@app.callback(
-    Output("output-container_hall", "children"),
-    Input("hidden-input_hall", "value"),
-    prevent_initial_call=True,
-)
-def update_hallucination_markings(text):
-    if text:
-        highlighted_halucinations.append(text)
-        return f'Geselecteerde hallucinaties: "{str(highlighted_halucinations)}"'
-    return "Nog geen hallucinaties gemarkeerd."
-
-
 # JavaScript to capture the highlighted text and store it in the hidden input
 app.clientside_callback(
     """
@@ -387,17 +292,129 @@ app.clientside_callback(
 )
 
 
-# Callback to update output and save highlighted text to DataFrame
-@app.callback(
-    Output("output-container_trivial", "children"),
-    Input("hidden-input_trivial", "value"),
-    prevent_initial_call=True,
+# JavaScript to capture the highlighted text and store it in the hidden input
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        const textarea = document.getElementById('text-area');
+        const text = document.getSelection().toString();
+        document.getElementById('hidden-input_missings').value = text;
+        return text;
+    }
+    """,
+    Output("hidden-input_missings", "value"),
+    Input("save_missings-button", "n_clicks"),
 )
-def update_trivial_markings(text):
-    if text:
-        highlighted_trivial.append(text)
-        return f'Geselecteerde hallucinaties: "{str(highlighted_trivial)}"'
-    return "Nog geen triviale informatie gemarkeerd."
+
+
+# Expanded combined callback for updates, clear actions, and button press
+@app.callback(
+    [
+        Output("evaluation_text", "value"),
+        Output("likert_slider", "value"),
+        Output("output-container_hall", "children"),
+        Output("hall_store", "data"),
+        Output("output-container_trivial", "children"),
+        Output("trivial_store", "data"),
+        Output("output-container_missings", "children"),
+        Output("missings_store", "data"),
+    ],
+    [
+        Input("hidden-input_hall", "value"),
+        Input("hidden-input_trivial", "value"),
+        Input("hidden-input_missings", "value"),
+        Input("patient_admission_dropdown", "value"),
+        Input("evaluate_button", "n_clicks"),
+        Input("next_button", "n_clicks"),
+    ],
+    [
+        State("hall_store", "data"),
+        State("trivial_store", "data"),
+        State("missings_store", "data"),
+    ],
+)
+def handle_markings(
+    hall_text,
+    trivial_text,
+    missings_text,
+    patient_value,
+    evaluate_clicks,
+    next_clicks,
+    stored_hall,
+    stored_trivial,
+    stored_missings,
+):
+    if not ctx.triggered:
+        # No trigger - unlikely but includes as a safeguard
+        raise PreventUpdate
+
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    # Clearing all data either on new patient selection or evaluate button pressed
+    if trigger_id in ["patient_admission_dropdown", "evaluate_button", "next_button"]:
+        return (
+            "",
+            3,
+            "Nog geen hallucinaties gemarkeerd.",
+            [],
+            "Nog geen triviale informatie gemarkeerd.",
+            [],
+            "Nog geen missings gemarkeerd.",
+            [],
+        )
+
+    # Updating stored hallucinations
+    if trigger_id == "hidden-input_hall" and hall_text:
+        stored_hall.append(hall_text)
+        return (
+            dash.no_update,
+            dash.no_update,
+            f'Geselecteerde hallucinaties: "{str(stored_hall)}"',
+            stored_hall,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+        )
+
+    # Updating stored trivial information
+    if trigger_id == "hidden-input_trivial" and trivial_text:
+        stored_trivial.append(trivial_text)
+        return (
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            f'Geselecteerde triviale informatie: "{str(stored_trivial)}"',
+            stored_trivial,
+            dash.no_update,
+            dash.no_update,
+        )
+
+    # Updating stored missings
+    if trigger_id == "hidden-input_missings" and missings_text:
+        stored_missings.append(missings_text)
+        return (
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            f'Geselecteerde missings: "{str(stored_missings)}"',
+            stored_missings,
+        )
+
+    return (
+        dash.no_update,
+        dash.no_update,
+        "Nog geen hallucinaties gemarkeerd.",
+        stored_hall,
+        "Nog geen triviale informatie gemarkeerd.",
+        stored_trivial,
+        "Nog geen missings gemarkeerd.",
+        stored_missings,
+    )
 
 
 @app.callback(
@@ -407,6 +424,10 @@ def update_trivial_markings(text):
         State("likert_slider", "value"),
         State("evaluation_text", "value"),
         State("patient_admission_dropdown", "value"),
+        State("letter_shown", "data"),
+        State("missings_store", "data"),
+        State("hall_store", "data"),
+        State("trivial_store", "data"),
     ],
 )
 def gather_feedback(
@@ -414,9 +435,13 @@ def gather_feedback(
     evaluation_slider: int,
     evaluation_text: str,
     selected_patient_admission: str,
+    letter_shown: str,
+    highlighted_missings: list,
+    highlighted_halucinations: list,
+    highlighted_trivial: list,
 ) -> str:
     """
-    Gather feedback from the user.
+    Save the evaluation/feedback from the user.
 
     Parameters
     ----------
@@ -428,6 +453,14 @@ def gather_feedback(
         The feedback text provided by the user.
     selected_patient_admission : str
         The selected patient admission.
+    letter_shown : str
+        The letter that was shown to the user.
+    highlighted_missings : list
+        The list of highlighted missings.
+    highlighted_halucinations : list
+        The list of highlighted hallucinations.
+    highlighted_trivial : list
+        The list of highlighted trivial information.
 
     Returns
     -------
@@ -449,7 +482,7 @@ def gather_feedback(
         user=user,
         timestamp=datetime.now(),
         patientid=selected_patient_admission,
-        letter_evaluated="test letter GPT",
+        letter_evaluated=letter_shown,
         highlighted_missings=str(highlighted_missings),
         highlighted_halucinations=str(highlighted_halucinations),
         highlighted_trivial_information=str(highlighted_trivial),
@@ -461,15 +494,7 @@ def gather_feedback(
         session.add(evaluation_instance)
         session.commit()
 
-    return "De feedback is opgeslagen voor deze patiënt, bedankt!"
-
-
-# @app.callback(
-#     Output("evaluation_text", "value"), [Input("patient_admission_dropdown", "value")]
-# )
-# def clear_feedback(_):
-#     # This function clears the feedback field whenever a new patient is selected
-#     return ""
+    return "De feedback is opgeslagen voor deze brief, bedankt!"
 
 
 # Run the app
