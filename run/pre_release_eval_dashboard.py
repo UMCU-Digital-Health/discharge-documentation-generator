@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 import flask
 import pandas as pd
 import tomli
-from dash import callback_context, ctx
+from dash import callback_context, ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from sqlalchemy import create_engine
@@ -323,31 +323,79 @@ app.clientside_callback(
     ],
     [
         Input("hidden-input_hall", "value"),
+        Input("remove_hall_button", "n_clicks"),
         Input("hidden-input_trivial", "value"),
+        Input("remove_trivial_button", "n_clicks"),
         Input("hidden-input_missings", "value"),
+        Input("remove_missings_button", "n_clicks"),
         Input("patient_admission_dropdown", "value"),
         Input("evaluate_button", "n_clicks"),
         Input("next_button", "n_clicks"),
     ],
     [
         State("hall_store", "data"),
+        State("hall_remove_index", "value"),
         State("trivial_store", "data"),
+        State("trivial_remove_index", "value"),
         State("missings_store", "data"),
+        State("missings_remove_index", "value"),
     ],
 )
 def handle_markings(
-    hall_text,
-    trivial_text,
-    missings_text,
-    patient_value,
-    evaluate_clicks,
-    next_clicks,
-    stored_hall,
-    stored_trivial,
-    stored_missings,
-):
+    hall_text: str,
+    remove_hall_clicks: int,
+    trivial_text: str,
+    remove_trivial_clicks: int,
+    missings_text: str,
+    remove_missings_clicks: int,
+    patient_value: str,
+    evaluate_clicks: int,
+    next_clicks: int,
+    stored_hall: list,
+    hall_remove_index: int,
+    stored_trivial: list,
+    trivial_remove_index: int,
+    stored_missings: list,
+    missings_remove_index: int,
+) -> tuple:
+    """Handle the markings made by the user.
+
+    This function handles the markings made by the user in the evaluation dashboard.
+    It updates the stored hallucinations, trivial information, and missings based on
+    the user's input it also updates the shown text containing the marked text.
+
+    Also it resets the stored values when a new patient is selected or the evaluate
+    button is pressed.
+
+    Parameters
+    ----------
+    hall_text : str
+        The text of the hallucinations marked by the user.
+    trivial_text : str
+        The text of the trivial information marked by the user.
+    missings_text : str
+        The text of the missings marked by the user.
+    patient_value : str
+        The value of the selected patient.
+    evaluate_clicks : int
+        The number of times the evaluate button has been clicked.
+    next_clicks : int
+        The number of times the next button has been clicked.
+    stored_hall : list
+        The list of stored hallucinations.
+    stored_trivial : list
+        The list of stored trivial information.
+    stored_missings : list
+        The list of stored missings.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the updated values of the stored hallucinations,
+        trivial information, and missings.
+
+    """
     if not ctx.triggered:
-        # No trigger - unlikely but includes as a safeguard
         raise PreventUpdate
 
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
@@ -357,7 +405,7 @@ def handle_markings(
         return (
             "",
             3,
-            "Nog geen hallucinaties gemarkeerd.",
+            "Nog geen hallucinaties/fouten gemarkeerd.",
             [],
             "Nog geen triviale informatie gemarkeerd.",
             [],
@@ -365,19 +413,48 @@ def handle_markings(
             [],
         )
 
+    def format_list(items):
+        return html.Ol([html.Li(item) for item in items])
+
+    no_update_returnable = (
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+        dash.no_update,
+    )
+
     # Updating stored hallucinations
-    if trigger_id == "hidden-input_hall" and hall_text:
+    if trigger_id == "hidden-input_hall":
         stored_hall.append(hall_text)
         return (
             dash.no_update,
             dash.no_update,
-            f'Geselecteerde hallucinaties: "{str(stored_hall)}"',
+            format_list(stored_hall),
             stored_hall,
             dash.no_update,
             dash.no_update,
             dash.no_update,
             dash.no_update,
         )
+    elif trigger_id == "remove_hall_button" and hall_remove_index is not None:
+        if 1 <= hall_remove_index <= len(stored_hall):
+            stored_hall.pop(hall_remove_index - 1)
+            return (
+                dash.no_update,
+                dash.no_update,
+                format_list(stored_hall),
+                stored_hall,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+            )
+        else:
+            return no_update_returnable
 
     # Updating stored trivial information
     if trigger_id == "hidden-input_trivial" and trivial_text:
@@ -387,11 +464,26 @@ def handle_markings(
             dash.no_update,
             dash.no_update,
             dash.no_update,
-            f'Geselecteerde triviale informatie: "{str(stored_trivial)}"',
+            format_list(stored_trivial),
             stored_trivial,
             dash.no_update,
             dash.no_update,
         )
+    elif trigger_id == "remove_trivial_button" and trivial_remove_index is not None:
+        if 1 <= trivial_remove_index <= len(stored_trivial):
+            stored_trivial.pop(trivial_remove_index - 1)
+            return (
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                format_list(stored_trivial),
+                stored_trivial,
+                dash.no_update,
+                dash.no_update,
+            )
+        else:
+            return no_update_returnable
 
     # Updating stored missings
     if trigger_id == "hidden-input_missings" and missings_text:
@@ -403,20 +495,26 @@ def handle_markings(
             dash.no_update,
             dash.no_update,
             dash.no_update,
-            f'Geselecteerde missings: "{str(stored_missings)}"',
+            format_list(stored_missings),
             stored_missings,
         )
+    elif trigger_id == "remove_missings_button" and missings_remove_index is not None:
+        if 1 <= missings_remove_index <= len(stored_missings):
+            stored_missings.pop(missings_remove_index - 1)
+            return (
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                format_list(stored_missings),
+                stored_missings,
+            )
+        else:
+            return no_update_returnable
 
-    return (
-        dash.no_update,
-        dash.no_update,
-        "Nog geen hallucinaties gemarkeerd.",
-        stored_hall,
-        "Nog geen triviale informatie gemarkeerd.",
-        stored_trivial,
-        "Nog geen missings gemarkeerd.",
-        stored_missings,
-    )
+    return no_update_returnable
 
 
 @app.callback(
@@ -501,4 +599,4 @@ def gather_feedback(
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8050)
+    app.run_server(debug=True, port=8052)

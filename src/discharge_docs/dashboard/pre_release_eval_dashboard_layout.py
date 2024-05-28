@@ -56,7 +56,7 @@ def get_layout() -> html.Div:
                         style={
                             "width": "100%",
                             "whiteSpace": "pre-line",
-                            "height": "900px",
+                            "height": "700px",
                         },
                     ),
                     html.Br(),
@@ -73,8 +73,16 @@ def get_layout() -> html.Div:
                     ),
                     html.Div(
                         id="output-container_missings",
-                        children="",
+                        children="Nog geen missings gemarkeerd.",
                     ),
+                    dbc.Button(
+                        "Verwijder missings",
+                        id="remove_missings_button",
+                        n_clicks=0,
+                        class_name="mt-2",
+                        color="secondary",
+                    ),
+                    dcc.Input(id="missings_remove_index", type="number", min=0),
                 ]
             ),
         ]
@@ -106,10 +114,25 @@ def get_layout() -> html.Div:
                     html.Br(),
                     dcc.Store(id="hall_store", data=[]),
                     dbc.Button(
-                        "Sla gemarkeerde halucinaties op",
+                        "Sla gemarkeerde halucinaties/fouten op",
                         id="save_hall-button",
                         n_clicks=0,
                     ),
+                    dcc.Input(
+                        id="hidden-input_hall", type="text", style={"display": "none"}
+                    ),
+                    html.Div(
+                        id="output-container_hall",
+                        children="Nog geen hallucinaties/fouten gemarkeerd.",
+                    ),
+                    dbc.Button(
+                        "Verwijder hallunicatie",
+                        id="remove_hall_button",
+                        n_clicks=0,
+                        class_name="mt-2",
+                        color="secondary",
+                    ),
+                    dcc.Input(id="hall_remove_index", type="number", min=0),
                     dcc.Store(id="trivial_store", data=[]),
                     dbc.Button(
                         "Sla gemarkeerde triviale informatie op",
@@ -121,17 +144,18 @@ def get_layout() -> html.Div:
                         type="text",
                         style={"display": "none"},
                     ),
-                    dcc.Input(
-                        id="hidden-input_hall", type="text", style={"display": "none"}
-                    ),
-                    html.Div(
-                        id="output-container_hall",
-                        children="",
-                    ),
                     html.Div(
                         id="output-container_trivial",
-                        children="",
+                        children="Nog geen triviale informatie gemarkeerd.",
                     ),
+                    dbc.Button(
+                        "Verwijder triviale informatie",
+                        id="remove_trivial_button",
+                        n_clicks=0,
+                        class_name="mt-2",
+                        color="secondary",
+                    ),
+                    dcc.Input(id="trivial_remove_index", type="number", min=0),
                 ]
             ),
         ]
@@ -143,7 +167,12 @@ def get_layout() -> html.Div:
             dbc.CardBody(
                 [
                     html.H5("Geef scores aan de ontslagbriefbrief:"),
-                    html.Label('Vraag 1 hier: "Hoe duidelijk is de brief?"'),
+                    html.Label(
+                        "Ben je het eens met de volgende stelling: Deze ontslagbrief "
+                        + "is geschikt om te worden ingezet als basis voor een "
+                        + "ontslagbrief die met kleine aanpassingen van een arts in "
+                        + "de praktijk kan worden gebruikt"
+                    ),
                     dcc.Slider(
                         id="likert_slider",
                         min=1,
@@ -174,7 +203,7 @@ def get_layout() -> html.Div:
                     dbc.Button(
                         "Sla evaluatie op",
                         id="evaluate_button",
-                        color="primary",
+                        color="danger",
                         class_name="mt-2",
                     ),
                     dbc.Label("", id="evaluation_saved_label"),
