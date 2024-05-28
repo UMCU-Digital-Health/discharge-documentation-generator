@@ -417,103 +417,46 @@ def handle_markings(
     def format_list(items):
         return html.Ol([html.Li(item) for item in items])
 
-    no_update_returnable = (
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-        dash.no_update,
-    )
+    no_update_returnable = (dash.no_update,) * 8
 
-    # Updating stored hallucinations
-    if trigger_id == "hidden-input_hall":
-        stored_hall.append(hall_text)
-        return (
-            dash.no_update,
-            dash.no_update,
-            format_list(stored_hall),
-            stored_hall,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-        )
-    elif trigger_id == "remove_hall_button" and hall_remove_index is not None:
-        if 1 <= hall_remove_index <= len(stored_hall):
-            stored_hall.pop(hall_remove_index - 1)
-            return (
-                dash.no_update,
-                dash.no_update,
-                format_list(stored_hall),
-                stored_hall,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-            )
-        else:
-            return no_update_returnable
+    def handle_trigger(
+        trigger_id, text, remove_index, stored_list, update_index, store_index
+    ):
+        if trigger_id == f"hidden-input_{trigger_id.split('_')[1]}" and text:
+            stored_list.append(text)
+            updates = list(no_update_returnable)
+            updates[update_index] = format_list(stored_list)
+            updates[store_index] = stored_list
+            return tuple(updates)
+        elif (
+            trigger_id == f"remove_{trigger_id.split('_')[1]}_button"
+            and remove_index is not None
+        ):
+            if 1 <= remove_index <= len(stored_list):
+                stored_list.pop(remove_index - 1)
+                updates = list(no_update_returnable)
+                if not stored_list:
+                    updates[update_index] = "Alle markeeringen zijn verwijderd."
+                else:
+                    updates[update_index] = format_list(stored_list)
+                updates[store_index] = stored_list
+                return tuple(updates)
+            else:
+                return no_update_returnable
+        return no_update_returnable
 
-    # Updating stored trivial information
-    if trigger_id == "hidden-input_trivial" and trivial_text:
-        stored_trivial.append(trivial_text)
-        return (
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            format_list(stored_trivial),
-            stored_trivial,
-            dash.no_update,
-            dash.no_update,
+    if trigger_id in ["hidden-input_hall", "remove_hall_button"]:
+        return handle_trigger(
+            trigger_id, hall_text, hall_remove_index, stored_hall, 2, 3
         )
-    elif trigger_id == "remove_trivial_button" and trivial_remove_index is not None:
-        if 1 <= trivial_remove_index <= len(stored_trivial):
-            stored_trivial.pop(trivial_remove_index - 1)
-            return (
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                format_list(stored_trivial),
-                stored_trivial,
-                dash.no_update,
-                dash.no_update,
-            )
-        else:
-            return no_update_returnable
-
-    # Updating stored missings
-    if trigger_id == "hidden-input_missings" and missings_text:
-        stored_missings.append(missings_text)
-        return (
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            format_list(stored_missings),
-            stored_missings,
+    elif trigger_id in ["hidden-input_trivial", "remove_trivial_button"]:
+        return handle_trigger(
+            trigger_id, trivial_text, trivial_remove_index, stored_trivial, 4, 5
         )
-    elif trigger_id == "remove_missings_button" and missings_remove_index is not None:
-        if 1 <= missings_remove_index <= len(stored_missings):
-            stored_missings.pop(missings_remove_index - 1)
-            return (
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                format_list(stored_missings),
-                stored_missings,
-            )
-        else:
-            return no_update_returnable
+    elif trigger_id in ["hidden-input_missings", "remove_missings_button"]:
+        return handle_trigger(
+            trigger_id, missings_text, missings_remove_index, stored_missings, 6, 7
+        )
 
     return no_update_returnable
 

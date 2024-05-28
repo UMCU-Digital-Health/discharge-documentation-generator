@@ -110,8 +110,9 @@ def get_layout() -> html.Div:
                         id="next_button",
                         n_clicks=0,
                         class_name="mt-2",
+                        color="warning",
                     ),
-                    html.Br(),
+                    html.Hr(),
                     dcc.Store(id="hall_store", data=[]),
                     dbc.Button(
                         "Sla gemarkeerde halucinaties/fouten op",
@@ -133,6 +134,7 @@ def get_layout() -> html.Div:
                         color="secondary",
                     ),
                     dcc.Input(id="hall_remove_index", type="number", min=0),
+                    html.Hr(),
                     dcc.Store(id="trivial_store", data=[]),
                     dbc.Button(
                         "Sla gemarkeerde triviale informatie op",
