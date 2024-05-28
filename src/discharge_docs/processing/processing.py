@@ -10,19 +10,17 @@ os.environ["TIKTOKEN_CACHE_DIR"] = ""
 
 
 def replace_text(input_text):
-    # Regular expression pattern to capture and replace the format $RepeatedText|...#RepeatedText|...#
+    # Regular expression pattern to capture and replace the format
+    # $RepeatedText|...#RepeatedText|...#
     pattern = r"\$(.*?)(\|.*?#)\1\|.*?#"
 
-    # Function to replace matched patterns with the captured group in uppercase and surrounded by newlines
     def replacement(match):
         return f"\n{match.group(1).upper()}\n"
 
-    # Replace matched patterns using a replacement function
     replaced_text = re.sub(pattern, replacement, input_text)
 
     pattern = r"(.*?)(\|.*?#)\1\|.*?#"
 
-    # Replace matched patterns using a replacement function
     replaced_text = re.sub(pattern, replacement, replaced_text)
     return replaced_text
 
@@ -144,8 +142,10 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
                         "MS VoorGeschiedenis Overzicht",
                         "Medische Ontslagbrief - Beloop",
                         # "Medische ontslagbrief - Beloop Dictionary",
-                        "Ontslagregistratie - Ontslagbestemming - Naam ander ziekenhuis/afdeling (niet UMCU)",
-                        "Ontslagregistratie - Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen",
+                        "Ontslagregistratie - Ontslagbestemming - "
+                        + "Naam ander ziekenhuis/afdeling (niet UMCU)",
+                        "Ontslagregistratie - Ontslagbestemming - "
+                        + "Toelichting bij ontslag naar overige bestemmingen",
                     ]
                 )
             )
@@ -186,8 +186,10 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
                         "MS Gesprek Item Tekst",
                         # "Medische ontslagbrief - Beloop Dictionary",
                         "Medische Ontslagbrief - Beloop",
-                        "Ontslagregistratie - Ontslagbestemming - Naam ander ziekenhuis/afdeling (niet UMCU)",
-                        "Ontslagregistratie - Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen",
+                        "Ontslagregistratie - Ontslagbestemming - "
+                        + "Naam ander ziekenhuis/afdeling (niet UMCU)",
+                        "Ontslagregistratie - Ontslagbestemming - "
+                        + "Toelichting bij ontslag naar overige bestemmingen",
                     ]
                 )
             )
@@ -213,11 +215,13 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
         .replace("MS Gesprek Item Tekst", "Oudergesprek")
         .replace("Medische Ontslagbrief - Beloop", "Ontslagbrief")
         .replace(
-            "Ontslagregistratie - Ontslagbestemming - Naam ander ziekenhuis/afdeling (niet UMCU)",
+            "Ontslagregistratie - Ontslagbestemming - "
+            + "Naam ander ziekenhuis/afdeling (niet UMCU)",
             "Ontslagbestemming - Naam ander ziekenhuis/afdeling",
         )
         .replace(
-            "Ontslagregistratie - Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen",
+            "Ontslagregistratie - Ontslagbestemming - "
+            + "Toelichting bij ontslag naar overige bestemmingen",
             "Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen",
         )
     )

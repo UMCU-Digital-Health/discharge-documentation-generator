@@ -342,7 +342,7 @@ app.clientside_callback(
         State("missings_remove_index", "value"),
     ],
 )
-def handle_markings(
+def handle_markings( # noqa: C901
     hall_text: str,
     remove_hall_clicks: int,
     trivial_text: str,
