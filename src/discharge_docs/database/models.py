@@ -24,7 +24,6 @@ class DashSession(Base):
 
     __tablename__ = "dashsession"
     __table_args__ = {"schema": "discharge_aiva"}
-    __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime)
