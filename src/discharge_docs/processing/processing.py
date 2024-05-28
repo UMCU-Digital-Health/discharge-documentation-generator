@@ -105,7 +105,7 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
     encounters_with_discharge = df.loc[
         df["description"] == "Medische Ontslagbrief - Beloop", "enc_id"
     ].unique()
-    print(encounters_with_discharge)
+
     df = df[df["enc_id"].isin(encounters_with_discharge)]
 
     # Function to replace 1899 dates with the most recent date in the group
@@ -619,7 +619,6 @@ def get_patient_discharge_docs(df: pd.DataFrame, enc_id: int = None) -> str:
     discharge_documentation = df[df["description"].isin(["Ontslagbrief"])].sort_values(
         by=["date", "description"]
     )
-    print(discharge_documentation)
     return discharge_documentation.value
 
 
