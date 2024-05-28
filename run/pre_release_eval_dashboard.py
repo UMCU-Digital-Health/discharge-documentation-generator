@@ -182,6 +182,7 @@ def display_patient_file(
                 lambda row: (
                     f"{row['description'].upper()} -"
                     + f" {row['date'].date()} \n{row['value']}"
+                    + f"\n\n{'#'*50}"
                 ),
                 axis=1,
             )
