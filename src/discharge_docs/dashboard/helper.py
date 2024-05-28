@@ -128,6 +128,9 @@ def get_data_from_patient_admission(
     if patient_admission not in data_dict:
         logger.warning(f"Patient admission {patient_admission} not found in data_dict")
 
+    if patient_admission not in data_dict:
+        logger.warning(f"Patient admission {patient_admission} not found in data_dict")
+
     return data_dict[patient_admission]
 
 
