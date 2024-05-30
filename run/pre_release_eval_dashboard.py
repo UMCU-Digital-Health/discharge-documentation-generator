@@ -12,6 +12,9 @@ import tomli
 from dash import callback_context, ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
     get_patients_from_list_names,
@@ -21,8 +24,6 @@ from discharge_docs.dashboard.helper import (
 from discharge_docs.dashboard.pre_release_eval_dashboard_layout import get_layout
 from discharge_docs.database.models import Base, EvalPhase1
 from discharge_docs.processing.processing import get_patient_discharge_docs
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
