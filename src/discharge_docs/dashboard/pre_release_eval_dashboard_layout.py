@@ -275,6 +275,7 @@ def get_layout() -> html.Div:
                         id="evaluate_button",
                         color="danger",
                         class_name="mt-2",
+                        style={"margin-right": "15px"},
                     ),
                     dbc.Label("", id="evaluation_saved_label"),
                 ]
