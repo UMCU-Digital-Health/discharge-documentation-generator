@@ -165,8 +165,6 @@ def display_patient_file(
     data = get_data_from_patient_admission(selected_patient_admission, data_dict)
     patient_file = data.sort_values(by=["date", "description"])
 
-    patient_file = patient_file.sort_values(by=["date", "description"])
-
     if patient_file.empty:
         return ["Er is geen patientendossier voor deze patient."]
     else:
