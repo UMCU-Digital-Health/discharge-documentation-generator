@@ -6,13 +6,6 @@ def get_layout() -> html.Div:
     """
     Returns the layout for the evaluation dashboard.
 
-    Parameters
-    ----------
-    user_prompt : str
-        The user prompt for generating the discharge documentation.
-    system_prompt : str
-        The system prompt for generating the discharge documentation.
-
     Returns
     -------
     html.Div
@@ -36,7 +29,11 @@ def get_layout() -> html.Div:
             dbc.Col(
                 [
                     dbc.Label("Selecteer patiëntopname:"),
-                    dbc.Select(id="patient_admission_dropdown", class_name="me-2"),
+                    dbc.Select(
+                        id="patient_admission_dropdown",
+                        class_name="me-2",
+                        style={"margin-bottom": "10px"},
+                    ),
                 ],
                 width=4,
             ),
@@ -65,24 +62,49 @@ def get_layout() -> html.Div:
                         "Sla gemarkeerde missings op",
                         id="save_missings-button",
                         n_clicks=0,
+                        style={"margin-top": "10px"},
                     ),
                     dcc.Input(
                         id="hidden-input_missings",
                         type="text",
-                        style={"display": "none"},
+                        style={"display": "none", "margin-top": "10px"},
                     ),
                     html.Div(
                         id="output-container_missings",
                         children="Nog geen missings gemarkeerd.",
+                        style={"margin-top": "10px"},
                     ),
-                    dbc.Button(
-                        "Verwijder missings",
-                        id="remove_missings_button",
-                        n_clicks=0,
-                        class_name="mt-2",
-                        color="secondary",
+                    # Use Row in order to properly space the button and input field
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Verwijder missings",
+                                    id="remove_missings_button",
+                                    n_clicks=0,
+                                    class_name="mt-2",
+                                    color="secondary",
+                                ),
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                html.Div(
+                                    style={"width": "15px"}
+                                ),  # This div acts as the horizontal spacer
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                dcc.Input(
+                                    id="missings_remove_index",
+                                    type="number",
+                                    min=0,
+                                    style={"margin-top": "10px"},
+                                ),
+                                width="auto",
+                            ),
+                        ],
+                        align="center",
                     ),
-                    dcc.Input(id="missings_remove_index", type="number", min=0),
                 ]
             ),
         ]
@@ -126,14 +148,37 @@ def get_layout() -> html.Div:
                         id="output-container_hall",
                         children="Nog geen hallucinaties/fouten gemarkeerd.",
                     ),
-                    dbc.Button(
-                        "Verwijder hallunicatie",
-                        id="remove_hall_button",
-                        n_clicks=0,
-                        class_name="mt-2",
-                        color="secondary",
+                    # Use Row in order to properly space the button and input field
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Verwijder hallunicatie",
+                                    id="remove_hall_button",
+                                    n_clicks=0,
+                                    class_name="mt-2",
+                                    color="secondary",
+                                ),
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                html.Div(
+                                    style={"width": "15px"}
+                                ),  # This div acts as the horizontal spacer
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                dcc.Input(
+                                    id="hall_remove_index",
+                                    type="number",
+                                    min=0,
+                                    style={"margin-top": "10px"},
+                                ),
+                                width="auto",
+                            ),
+                        ],
+                        align="center",
                     ),
-                    dcc.Input(id="hall_remove_index", type="number", min=0),
                     html.Hr(),
                     dcc.Store(id="trivial_store", data=[]),
                     dbc.Button(
@@ -150,14 +195,37 @@ def get_layout() -> html.Div:
                         id="output-container_trivial",
                         children="Nog geen triviale informatie gemarkeerd.",
                     ),
-                    dbc.Button(
-                        "Verwijder triviale informatie",
-                        id="remove_trivial_button",
-                        n_clicks=0,
-                        class_name="mt-2",
-                        color="secondary",
+                    # Use Row in order to properly space the button and input field
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Button(
+                                    "Verwijder triviale informatie",
+                                    id="remove_trivial_button",
+                                    n_clicks=0,
+                                    class_name="mt-2",
+                                    color="secondary",
+                                ),
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                html.Div(
+                                    style={"width": "15px"}
+                                ),  # This div acts as the horizontal spacer
+                                width="auto",
+                            ),
+                            dbc.Col(
+                                dcc.Input(
+                                    id="trivial_remove_index",
+                                    type="number",
+                                    min=0,
+                                    style={"margin-top": "10px"},
+                                ),
+                                width="auto",
+                            ),
+                        ],
+                        align="center",
                     ),
-                    dcc.Input(id="trivial_remove_index", type="number", min=0),
                 ]
             ),
         ]

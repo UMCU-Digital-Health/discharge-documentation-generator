@@ -12,9 +12,6 @@ import tomli
 from dash import callback_context, ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
     get_patients_from_list_names,
@@ -22,13 +19,10 @@ from discharge_docs.dashboard.helper import (
     load_stored_discharge_letters_pre_release,
 )
 from discharge_docs.dashboard.pre_release_eval_dashboard_layout import get_layout
-from discharge_docs.database.models import (
-    Base,
-    EvalPhase1,
-)
-from discharge_docs.processing.processing import (
-    get_patient_discharge_docs,
-)
+from discharge_docs.database.models import Base, EvalPhase1
+from discharge_docs.processing.processing import get_patient_discharge_docs
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -342,7 +336,7 @@ app.clientside_callback(
         State("missings_remove_index", "value"),
     ],
 )
-def handle_markings( # noqa: C901
+def handle_markings(  # noqa: C901
     hall_text: str,
     remove_hall_clicks: int,
     trivial_text: str,
