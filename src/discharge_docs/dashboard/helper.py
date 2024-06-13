@@ -204,6 +204,56 @@ def get_patients_from_list_names(
     return patients_data, values_list
 
 
+def get_patients_from_list_names_pilot(
+    df_dict: dict, enc_ids_dict: dict
+) -> tuple[dict, dict]:
+    """
+    Get patients' data and values list from a dictionary of dataframes and a dictionary
+    of enc_ids.
+
+    Parameters
+    ----------
+    df_dict : dict
+        A dictionary containing dataframes for different departments.
+    enc_ids_dict : dict
+        A dictionary containing enc_ids and their different departments for different
+        users.
+
+    Returns
+    -------
+    tuple[dict, dict]
+        A tuple containing patients' data and values list.
+        The patients' data is a dictionary with patient keys as keys and corresponding
+        dataframes as values.
+        The values list is a dictionary with department names as keys and a list of
+        patients as values.
+    """
+    patients_data = {}
+    values_list = {}
+
+    for user, enc in enc_ids_dict.items():
+        patients_list = []
+
+        for idx, encounter in enumerate(enc, start=1):
+            enc_id = encounter[0]
+            department = encounter[1]
+            df = df_dict.get(department, None)
+            if df is not None:
+                patient_key = f"patient_{idx}_{department.lower()}_{enc_id}"
+                patients_data[patient_key] = df[df["enc_id"] == enc_id]
+                label_days = patients_data[patient_key]["length_of_stay"].values[0]
+                patients_list.append(
+                    {
+                        "label": f"Patiënt {idx} ({department} {label_days} dagen)",
+                        "value": patient_key,
+                    }
+                )
+        if patients_list:
+            values_list[user] = patients_list
+
+    return patients_data, values_list
+
+
 def load_stored_discharge_letters(
     df: pd.DataFrame, patient_name: str
 ) -> list[html.Div]:

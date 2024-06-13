@@ -16,8 +16,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from discharge_docs.dashboard.helper import (
+    get_authorization,
     get_data_from_patient_admission,
-    get_patients_from_list_names,
+    get_patients_from_list_names_pilot,
     get_user,
     load_stored_discharge_letters_pre_release,
 )
@@ -58,10 +59,17 @@ with open(
     "rb",
 ) as f:
     enc_ids_dict = tomli.load(f)
+    id_dep_dict = {}
     for key in enc_ids_dict:
-        enc_ids_dict[key] = enc_ids_dict[key]["ids"]
+        id_dep_dict[key] = list(
+            zip(enc_ids_dict[key]["ids"], enc_ids_dict[key]["department"], strict=False)
+        )
 
-data_dict, values_list = get_patients_from_list_names(df_dict, enc_ids_dict)
+data_dict, values_list = get_patients_from_list_names_pilot(df_dict, id_dep_dict)
+
+# Authorization config
+with open(Path(__file__).parent / "config" / "auth_fase1.toml", "rb") as f:
+    authorization_dict = tomli.load(f)
 
 # Database config
 with open(Path(__file__).parents[1] / "pyproject.toml", "rb") as f:
@@ -95,7 +103,7 @@ df_discharge4 = pd.read_csv(
     Path(__file__).parents[1]
     / "data"
     / "processed"
-    / "bulk_generated_docs_gpt4_PReval.csv"
+    / "bulk_generated_docs_gpt4_PReval_2.csv"
 )
 
 # define the app
@@ -125,7 +133,11 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         The list of options for the patient admission dropdown and the first patient
         value.
     """
-    authorization_group = ["NICU", "IC", "CAR", "PSY", "DEMO"]
+    user, authorization_group = get_authorization(flask.request, authorization_dict)
+    if os.getenv("ENV", "") == "development":
+        logger.warning("Running in development mode, overriding authorization group.")
+        # Never add this in production!
+        authorization_group = ["student_1", "student_2"]
 
     authorized_patients = [
         item

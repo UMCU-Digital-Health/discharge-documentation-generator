@@ -34,6 +34,9 @@ dependencies =[
     "fastapi~=0.110",
     "pymssql>=2.3.0",
     "striprtf>=0.0.26",
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.2.1",
+    "ipykernel>=6.29.4",
 ]
 
 [project.optional-dependencies]

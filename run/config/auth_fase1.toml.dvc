@@ -1,0 +1,5 @@
+outs:
+- md5: 3a16bb1b6b2cf25dd2c0662ff7023c26
+  size: 426
+  hash: md5
+  path: auth_fase1.toml

@@ -12,8 +12,12 @@ requirements-dev.lock
 *.xlsx
 *.db
 
+# Analysis config
+analysis_config.toml
+
 # Authentication config
 auth.toml
+auth_fase1.toml
 
 # Pseudonomise by hand config
 pseudo.toml

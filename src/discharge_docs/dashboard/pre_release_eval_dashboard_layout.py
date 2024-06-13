@@ -115,6 +115,14 @@ def get_layout() -> html.Div:
             dbc.CardHeader(html.H3("Bekijk ontslagbrief")),
             dbc.CardBody(
                 [
+                    dbc.Button(
+                        "Volgende ontslagbrief",
+                        id="next_button",
+                        n_clicks=0,
+                        class_name="mt-2",
+                        color="warning",
+                    ),
+                    html.Br(),
                     dcc.Store(data="", id="letter_shown"),
                     dcc.Textarea(
                         value="Placeholder for original discharge letter",
@@ -127,14 +135,6 @@ def get_layout() -> html.Div:
                             "height": "600px",
                         },
                     ),
-                    dbc.Button(
-                        "Volgende ontslagbrief",
-                        id="next_button",
-                        n_clicks=0,
-                        class_name="mt-2",
-                        color="warning",
-                    ),
-                    html.Hr(),
                     dcc.Store(id="hall_store", data=[]),
                     dbc.Button(
                         "Sla gemarkeerde halucinaties/fouten op",

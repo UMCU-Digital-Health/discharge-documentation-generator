@@ -1,11 +1,7 @@
-[NICU]
-ids = [201, 41, 244]
+[student_1]
+ids = [302, 332, 369, 250, 15, 366, 394, 295, 35, 213, 412, 43, 177, 23, 263, 426, 22, 124, 127, 16, 335, 86, 38, 472, 146, 380, 257, 28, 239, 138, 111, 333, 178, 251, 52, 62]
+department = ['NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC']
 
-[IC]
-ids = [373, 304, 437, 24]
-
-[CAR]
-ids = []
-
-[PSY]
-ids = []
+[student_2]
+ids = [302, 332, 361, 11, 40, 10, 212, 65, 35, 213, 272, 44, 402, 26, 263, 426, 301, 33, 8, 95, 476, 156, 38, 472, 37, 20, 151, 408, 239, 138, 36, 48, 422, 98, 396]
+department = ['NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'NICU', 'IC', 'IC']
