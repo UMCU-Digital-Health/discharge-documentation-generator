@@ -559,6 +559,149 @@ def process_data_HiX(
     return patient_file
 
 
+def process_data_HiX_stg(
+    patient_data: pd.DataFrame, discharge_data: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Process patient data and discharge data from HiX system staging database
+
+    Parameters
+    ----------
+    patient_data : DataFrame
+        DataFrame containing patient data.
+    discharge_data : DataFrame
+        DataFrame containing discharge data.
+
+    Returns
+    -------
+    DataFrame
+        Processed patient file with merged data, sorted by enc ID and time.
+
+    Notes
+    -----
+    This function performs the following steps:
+    1. Remove enc that are not present in both patient_data and discharge_data
+    2. Converts some cols to datetime in both patient_data and discharge_data
+    3. Renames columns in both patient_data and discharge_data.
+    4. Subsets the necessary columns in both patient_data and discharge_data.
+    5. Keeps only the last discharge letter in discharge_data.
+    6. Merges patient_data and discharge_data.
+    7. Adds a "date" column based on the "time" column in the merged data.
+    8. Calculates the length of stay for each encounter in the merged data.
+    9. Rename ontslagbrief
+    10. start with a 1000 index in enc_id
+    11. pseudonomise by hand
+
+    """
+    # remove encounters that are not in both datasets
+    encounters_in_patient_files = patient_data.enc_id.unique()
+    encounter_in_discharge_data = discharge_data.enc_id.unique()
+    encounters_in_both = set(encounters_in_patient_files).intersection(
+        encounter_in_discharge_data
+    )
+
+    # Use copy to avoid SettingWithCopyWarning
+    patient_data = patient_data[patient_data.enc_id.isin(encounters_in_both)].copy()
+    discharge_data = discharge_data[
+        discharge_data.enc_id.isin(encounters_in_both)
+    ].copy()
+
+    # drop rows with empty value in date and time
+    patient_data = patient_data.dropna(subset=["DATE", "TIME"])
+
+    patient_data["DATE"] = patient_data["DATE"].astype(str)
+    patient_data["TIME"] = patient_data["TIME"].astype(str)
+    # Combine DATE and TIME into one column
+    patient_data["time"] = pd.to_datetime(
+        patient_data["DATE"] + " " + patient_data["TIME"]
+    )
+
+    # rename columns
+    discharge_data = discharge_data.rename(
+        columns={
+            "period_end": "dischargeDate",
+            "period_start": "admissionDate",
+            "created": "time",
+            "content_attachment1_plain_data": "value",
+            "specialty_Organization_value": "department",
+            "type2_display_original": "description",
+        }
+    )
+    patient_data = patient_data.rename(
+        columns={
+            "period_end": "dischargeDate",
+            "period_start": "admissionDate",
+            "subcat": "description",
+            "TEXT": "value",
+            "specialty_Organization_value": "department",
+        }
+    )
+
+    # subset the returned columns
+    discharge_data = discharge_data[
+        [
+            "enc_id",
+            "dischargeDate",
+            "admissionDate",
+            "department",
+            "time",
+            "description",
+            "value",
+        ]
+    ]
+    patient_data = patient_data[
+        [
+            "enc_id",
+            "admissionDate",
+            "dischargeDate",
+            "department",
+            "time",
+            "description",
+            "value",
+        ]
+    ]
+
+    # only keep the last discharge letter per encounter
+    discharge_data = discharge_data.sort_values(by=["enc_id", "time"])
+    discharge_data = discharge_data.drop_duplicates(subset=["enc_id"], keep="last")
+
+    # merge
+    patient_file = pd.concat([patient_data, discharge_data], axis=0)
+
+    # add cols date and length of stay
+    patient_file["date"] = pd.to_datetime(patient_file.time.dt.date)
+
+    # add length of stay
+    patient_file["length_of_stay"] = (
+        patient_file.dischargeDate - patient_file.admissionDate
+    ).dt.days
+
+    # drop rows with empty value
+    patient_file = patient_file[~patient_file["value"].isna()]
+    patient_file = patient_file[patient_file["value"] != ""]
+
+    # sorting
+    patient_file = patient_file.sort_values(by=["enc_id", "time"]).reset_index(
+        drop=True
+    )
+
+    # rename ontslagbrief
+    patient_file["description"] = patient_file["description"].replace(
+        "Ontslagbericht", "Ontslagbrief"
+    )
+    patient_file["description"] = patient_file["description"].replace(
+        "Klinische Brief", "Ontslagbrief"
+    )
+
+    # map enc_id to start with 1000
+    enc_id_map = {
+        enc_id: 1000 + i for i, enc_id in enumerate(patient_file.enc_id.unique())
+    }
+    patient_file["enc_id"] = patient_file["enc_id"].map(enc_id_map)
+
+    return patient_file
+
+
 def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves the patient file for a given encounter ID from a DataFrame.
@@ -794,6 +937,17 @@ if __name__ == "__main__":
     )
     df_HiX = process_data_HiX(df_HiX_patient_files, df_HiX_discharge)
 
+    # load and process HIX CAR data for pre-pilot
+    df_HiX_patient_files = pd.read_parquet(
+        data_folder
+        / "raw"
+        / "pseudonomised_HiX_patient_files_CAR_april_rtf_decoded.parquet"
+    )
+    df_HiX_discharge = pd.read_parquet(
+        data_folder / "raw" / "pseudonomised_HiX_discharge_docs_CAR_april.parquet"
+    )
+    df_HiX_CAR_pp = process_data_HiX_stg(df_HiX_patient_files, df_HiX_discharge)
+
     # load and process metavision data
     df_metavision_dp = pd.read_parquet(
         data_folder / "raw" / "pseudonomised_metavision_data_april.parquet"
@@ -817,4 +971,8 @@ if __name__ == "__main__":
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
     df_combined.to_parquet(
         data_folder / "processed" / "combined_data_for_visualisation.parquet"
+    )
+
+    df_HiX_CAR_pp.to_parquet(
+        data_folder / "processed" / "HiX_CAR_data_pre_pilot.parquet"
     )

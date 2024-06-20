@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.4.4] - 2024-06-19
+
+### Added
+- demo dashboard in english
+
+### Changed
+- restructuring of the notebooks
+- updating of sql queries
+
+
 ## [0.4.3] - 2024-04-18
 
 ### Added

@@ -13,7 +13,7 @@ SELECT DISTINCT
     enc1.period_start,
     enc1.period_end,
     enc1.[status],
-    dr.[description],
+    dr.type2_display_original,
     dr.created,
     dr.docStatus,
     dr.content_attachment1_plain_data
@@ -25,11 +25,11 @@ FROM
 WHERE
     enc1.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpname'
     AND enc1.status = 'finished'
-    AND enc1.period_end >= '2023-11-01'
-    AND enc1.period_end < '2023-12-01'
+    AND enc1.period_end >= '2024-04-01' -- change these to the desired date range
+    AND enc1.period_end < '2024-05-01' -- change these to the desired date range
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
-    AND enc2.specialty_Organization_value IN ('PSY', 'GGZ', 'CAR', 'NEO')
+    AND enc2.specialty_Organization_value IN ('CAR') -- for later: 'PSY', 'GGZ', 'NEO'
     AND dr.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixDocument'
     AND dr.type2_code_original IN (
         '1000100089',  -- Ontslagbericht
