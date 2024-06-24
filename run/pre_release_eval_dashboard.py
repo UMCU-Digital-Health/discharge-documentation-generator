@@ -38,7 +38,7 @@ df_metavision = pd.read_parquet(
 )
 
 df_HIX = pd.read_parquet(
-    Path(__file__).parents[1] / "data" / "processed" / "HiX_data.parquet"
+    Path(__file__).parents[1] / "data" / "processed" / "HiX_CAR_data_pre_pilot.parquet"
 )
 
 # Define your DataFrames for each department
@@ -103,7 +103,7 @@ df_discharge4 = pd.read_csv(
     Path(__file__).parents[1]
     / "data"
     / "processed"
-    / "bulk_generated_docs_gpt4_PReval_2.csv"
+    / "bulk_generated_docs_gpt4_PReval_3.csv"
 )
 
 # define the app
