@@ -103,7 +103,7 @@ df_discharge4 = pd.read_csv(
     Path(__file__).parents[1]
     / "data"
     / "processed"
-    / "bulk_generated_docs_gpt4_PReval_3.csv"
+    / "bulk_generated_docs_gpt4_PReval_4.csv"
 )
 
 # define the app
