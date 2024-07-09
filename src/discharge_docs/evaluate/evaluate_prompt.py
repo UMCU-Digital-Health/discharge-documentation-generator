@@ -19,7 +19,7 @@ from discharge_docs.processing.processing import (
     get_patient_file,
 )
 from discharge_docs.prompts.prompt import (
-    load_evaluatie_prompt,
+    load_evaluation_prompt,
     load_information_correction_prompt,
     load_information_intersection_prompt,
     load_information_union_prompt,
@@ -148,14 +148,14 @@ def evaluate_prompt_rouge_and_OG_GPT(  # TODO not working
                     "Volledigheid Percentage van GPT brief": [],
                     "Overlap Percentage": [],
                 }
-                evaluatie_prompt = load_evaluatie_prompt()
+                evaluation_prompt = load_evaluation_prompt()
 
                 n_runs = 10
                 for _i in range(n_runs):
                     eval = compare_GPT_output_with_EPD_output(
                         GPT_letter,
                         OG_letter,
-                        evaluatie_prompt,
+                        evaluation_prompt,
                         engine=deployment_name,
                         client=client,
                         temperature=0,

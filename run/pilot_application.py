@@ -28,8 +28,8 @@ app.layout = html.Div(
         html.H1("Dashboard for Discharge Documentation"),
         dcc.Dropdown(
             id="encounter-dropdown",
-            options=[],  # Options will be dynamically populated
-            value=None,  # Default value
+            options=[],
+            value=None,
             clearable=False,
         ),
         html.Div(id="discharge-letter-display"),

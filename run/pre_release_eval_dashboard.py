@@ -15,14 +15,18 @@ from dash.exceptions import PreventUpdate
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from discharge_docs.dashboard.dashboard_layout import (
+    get_layout_pre_release_eval,
+)
 from discharge_docs.dashboard.helper import (
     get_authorization,
+    get_authorized_patients,
     get_data_from_patient_admission,
     get_patients_from_list_names_pilot,
+    get_suitable_enc_ids,
     get_user,
     load_stored_discharge_letters_pre_release,
 )
-from discharge_docs.dashboard.pre_release_eval_dashboard_layout import get_layout
 from discharge_docs.database.models import Base, EvalPhase1
 from discharge_docs.processing.processing import get_patient_discharge_docs
 
@@ -30,16 +34,12 @@ logger = logging.getLogger(__name__)
 
 
 # load data
-df_metavision = pd.read_parquet(
-    Path(__file__).parents[1]
-    / "data"
-    / "processed"
-    / "metavision_data_april_dp.parquet"
-)
+data_folder = Path(__file__).parents[1] / "data" / "processed" / "pre-pilot"
 
-df_HIX = pd.read_parquet(
-    Path(__file__).parents[1] / "data" / "processed" / "HiX_CAR_data_pre_pilot.parquet"
-)
+df_metavision = pd.read_parquet(data_folder / "metavision_data_april_dp.parquet")
+
+df_HIX = pd.read_parquet(data_folder / "HiX_CAR_data_pre_pilot.parquet")
+
 
 # Define your DataFrames for each department
 df_dict = {
@@ -50,20 +50,9 @@ df_dict = {
 }
 
 # load used enc_ids
-with open(
-    Path(__file__).parents[1]
-    / "src"
-    / "discharge_docs"
-    / "dashboard"
-    / "enc_ids_pre_release_phase1_1.toml",
-    "rb",
-) as f:
-    enc_ids_dict = tomli.load(f)
-    id_dep_dict = {}
-    for key in enc_ids_dict:
-        id_dep_dict[key] = list(
-            zip(enc_ids_dict[key]["ids"], enc_ids_dict[key]["department"], strict=False)
-        )
+id_dep_dict = get_suitable_enc_ids(
+    "enc_ids_pre_release_phase1_1.toml", "department_user"
+)
 
 data_dict, values_list = get_patients_from_list_names_pilot(df_dict, id_dep_dict)
 
@@ -99,6 +88,7 @@ engine = create_engine(
 Base.metadata.create_all(engine)
 
 # load stored discharge letters
+
 df_discharge4 = pd.read_csv(
     Path(__file__).parents[1]
     / "data"
@@ -114,7 +104,7 @@ app = dash.Dash(
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
-app.layout = get_layout()
+app.layout = get_layout_pre_release_eval()
 
 
 @app.callback(
@@ -133,21 +123,14 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         The list of options for the patient admission dropdown and the first patient
         value.
     """
-    user, authorization_group = get_authorization(flask.request, authorization_dict)
-    if os.getenv("ENV", "") == "development":
-        logger.warning("Running in development mode, overriding authorization group.")
-        # Never add this in production!
-        authorization_group = ["student_1", "student_2"]
-
-    authorized_patients = [
-        item
-        for key, values in values_list.items()
-        if key in authorization_group
-        for item in values
-    ]
-
-    fist_patient = authorized_patients[0]["value"] if authorized_patients else None
-
+    _, authorization_group = get_authorization(
+        flask.request,
+        authorization_dict,
+        development_authorizations=["student_1", "student_2"],
+    )
+    authorized_patients, fist_patient = get_authorized_patients(
+        authorization_group, values_list
+    )
     return authorized_patients, fist_patient
 
 

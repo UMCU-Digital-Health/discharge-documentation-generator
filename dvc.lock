@@ -7,10 +7,6 @@ stages:
       hash: md5
       md5: 9ad423d07a84110f2da04180500747fa
       size: 2292086
-    - path: data/processed/metavision_data.parquet
-      hash: md5
-      md5: f24c8a13d81db654ed131857be2b9fdc
-      size: 5719420
     - path: src/discharge_docs/evaluate/evaluate_prompt.py
       hash: md5
       md5: 209f45e2bb679f36be69da888119f945

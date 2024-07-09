@@ -10,19 +10,20 @@ import numpy as np
 import pandas as pd
 import tomli
 from dash import ctx, dcc, html
-from dash._callback import NoUpdate
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 from openai import AzureOpenAI
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from discharge_docs.dashboard.evaluate_dashboard_layout import get_layout
+from discharge_docs.dashboard.dashboard_layout import get_layout_evaluation_dashboard
 from discharge_docs.dashboard.helper import (
     get_authorization,
+    get_authorized_patients,
     get_data_from_patient_admission,
     get_patients_from_list_names,
+    get_suitable_enc_ids,
     get_template_prompt,
     highlight,
     load_stored_discharge_letters,
@@ -39,8 +40,8 @@ from discharge_docs.processing.processing import (
     get_patient_file,
 )
 from discharge_docs.prompts.prompt import (
+    load_all_templates_prompts_into_dict,
     load_prompts,
-    load_template_prompt,
 )
 from discharge_docs.prompts.prompt_builder import PromptBuilder
 
@@ -92,13 +93,11 @@ engine = create_engine(
 Base.metadata.create_all(engine)
 
 # load data
-df_metavision = pd.read_parquet(
-    Path(__file__).parents[1] / "data" / "processed" / "metavision_new_data.parquet"
-)
+data_folder = Path(__file__).parents[1] / "data" / "processed"
 
-df_HIX = pd.read_parquet(
-    Path(__file__).parents[1] / "data" / "processed" / "HiX_data.parquet"
-)
+df_metavision = pd.read_parquet(data_folder / "metavision_data.parquet")
+
+df_HIX = pd.read_parquet(data_folder / "HiX_data.parquet")
 
 # Define your DataFrames for each department
 df_dict = {
@@ -109,36 +108,20 @@ df_dict = {
 }
 
 # load stored discharge letters
-df_discharge4 = pd.read_csv(
-    Path(__file__).parents[1] / "data" / "processed" / "bulk_generated_docs_gpt4.csv"
-)
+df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4.csv")
 
-df_discharge35 = pd.read_csv(
-    Path(__file__).parents[1] / "data" / "processed" / "bulk_generated_docs_gpt35.csv"
-)
+df_discharge35 = pd.read_csv(data_folder / "bulk_generated_docs_gpt35.csv")
 
 # load used enc_ids
-with open(
-    Path(__file__).parents[1]
-    / "src"
-    / "discharge_docs"
-    / "dashboard"
-    / "enc_ids_dashboard.toml",
-    "rb",
-) as f:
-    enc_ids_dict = tomli.load(f)
-    for key in enc_ids_dict:
-        enc_ids_dict[key] = enc_ids_dict[key]["ids"]
-
-for key in enc_ids_dict:
-    if key != "PSY":  # TODO verwijderen na check saskia
-        enc_ids_dict[key] = enc_ids_dict[key][:25]
+enc_ids_dict = get_suitable_enc_ids(
+    file_name="enc_ids_dashboard.toml", type="department"
+)
 
 data_dict, values_list = get_patients_from_list_names(df_dict, enc_ids_dict)
 
 # add demo patient
 patient_1_demo = pd.read_csv(
-    Path(__file__).parents[1] / "data" / "processed" / "DEMO_patient_1.csv", sep=";"
+    Path(__file__).parents[1] / "data" / "examples" / "DEMO_patient_1.csv", sep=";"
 )
 patient_1_demo["date"] = pd.to_datetime(patient_1_demo["date"])
 data_dict["patient_1_demo"] = patient_1_demo
@@ -153,17 +136,7 @@ logger.info("data loaded")
 
 # load prompts
 user_prompt, system_prompt = load_prompts()
-template_prompt_NICU = load_template_prompt("NICU")
-template_prompt_IC = load_template_prompt("IC")
-template_prompt_CAR = load_template_prompt("CAR")
-template_prompt_PSY = load_template_prompt("PSY")
-template_prompt_dict = {
-    "nicu": template_prompt_NICU,
-    "ic": template_prompt_IC,
-    "car": template_prompt_CAR,
-    "psy": template_prompt_PSY,
-    "demo": template_prompt_NICU,
-}
+template_prompt_dict = load_all_templates_prompts_into_dict()
 
 # define the app
 app = dash.Dash(
@@ -173,7 +146,7 @@ app = dash.Dash(
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
-app.layout = get_layout(user_prompt, system_prompt)
+app.layout = get_layout_evaluation_dashboard(user_prompt, system_prompt)
 
 
 @app.callback(
@@ -193,20 +166,16 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         The list of options for the patient admission dropdown and the first patient
         value.
     """
-    user, authorization_group = get_authorization(flask.request, authorization_dict)
-    if os.getenv("ENV", "") == "development":
-        logger.warning("Running in development mode, overriding authorization group.")
-        # Never add this in production!
-        authorization_group = ["NICU", "IC", "CAR", "PSY", "DEMO"]
 
-    authorized_patients = [
-        item
-        for key, values in values_list.items()
-        if key in authorization_group
-        for item in values
-    ]
+    user, authorization_group = get_authorization(
+        flask.request,
+        authorization_dict,
+        development_authorizations=["NICU", "IC", "CAR", "PSY", "DEMO"],
+    )
 
-    fist_patient = authorized_patients[0]["value"] if authorized_patients else None
+    authorized_patients, fist_patient = get_authorized_patients(
+        authorization_group, values_list
+    )
 
     return authorized_patients, fist_patient, [f"Ingelogd als: {user}"]
 
@@ -220,7 +189,7 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
     ],
     [State("date_dropdown", "value")],
 )
-def update_date_dropdown_combined(
+def update_date_dropdown(
     selected_patient_admission: str,
     previous_clicks: int,
     next_clicks: int,
@@ -317,13 +286,19 @@ def handle_select_button_clicks(
     Handle action for select all and deselect all buttons for selecting the
     sections shown.
 
-    Args:
-        select_all_clicks (int): nr of times the select all button is clicked.
-        deselect_all_clicks (int): nr of times deselect all button is clicked.
-        options (list): List of options for the description dropdown.
+    Parameters
+    ----------
+    select_all_clicks : int
+        The number of times the select all button is clicked.
+    deselect_all_clicks : int
+        The number of times the deselect all button is clicked.
+    options : list
+        List of options for the description dropdown.
 
-    Returns:
-        list: Updated value for the description dropdown.
+    Returns
+    -------
+    list
+        Updated value for the description dropdown.
     """
     button_id = ctx.triggered_id
 
@@ -346,7 +321,7 @@ def handle_select_button_clicks(
         Input("search_bar", "value"),
     ],
 )
-def display_value(
+def display_patient_file(
     selected_patient_admission: str,
     selected_date: str,
     selected_all_dates: bool,
@@ -531,7 +506,7 @@ def display_generated_discharge_doc(
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE, deployment_name=deployment_name, client=client
     )
-
+    user_prompt, system_prompt = load_prompts()
     if ITERATIVE:
         user_prompt_iterative, _ = load_prompts(iterative=True)
         discharge_letters = prompt_builder.iterative_simulation(
@@ -686,105 +661,6 @@ def show_prompts(n: int, is_open: bool) -> bool:
     if n:
         return not is_open
     return is_open
-
-
-@app.callback(
-    Output("export-modal", "is_open"),
-    Input("export-db", "n_clicks"),
-)
-def toggle_export_modal(n_clicks: int) -> bool:
-    """Simple function to toggle the export modal
-
-    Parameters
-    ----------
-    n_clicks : int
-        number of times a user clicked on the export data button
-
-    Returns
-    -------
-    bool
-        If the modal should be displayed
-    """
-    if not n_clicks:
-        return False
-    else:
-        return True
-
-
-@app.callback(
-    Output("download-db", "data"),
-    Output("alert-passwd", "is_open"),
-    Input("download-logs-btn", "n_clicks"),
-    State("export-passwd", "value"),
-)
-def export_entire_database(n_clicks: int, passwd: str) -> tuple[dict | NoUpdate, bool]:
-    """Temporary function to download all the logging
-
-    TODO: Remove when we switch to external db.
-
-    Parameters
-    ----------
-    n_clicks : int
-        The amount of times a user pressed the export button
-    passwd : str
-        The password needed to access the logs (env variable)
-
-    Returns
-    -------
-    tuple[Dict | NoUpdate, dict | NoUpdate, dict | NoUpdate, bool]
-        A tuple containing the content and filename for each exported file,
-        and a boolean indicating if the password is incorrect.
-
-    """
-    if not n_clicks:
-        return dash.no_update, False
-
-    if passwd != os.environ["LOGGING_PASSWD"]:
-        return dash.no_update, True
-
-    with Session(engine) as session:
-        dash_total_df = pd.DataFrame(
-            session.execute(
-                select(
-                    DashSession.user,
-                    DashSession.groups,
-                    DashSession.timestamp,
-                    DashSession.version,
-                    DashUserPrompt.prompt,
-                    DashUserPrompt.patient,
-                    DashEvaluation.evaluation_metric,
-                    DashEvaluation.evaluation_value,
-                    DashOutput.gpt_output_value,
-                )
-                .join(DashUserPrompt, DashUserPrompt.session == DashSession.id)
-                .join(
-                    DashEvaluation, DashEvaluation.user_prompt_id == DashUserPrompt.id
-                )
-                .join(DashOutput, DashOutput.user_prompt_id == DashUserPrompt.id)
-            ).all()
-        )
-        dash_total_df_pivoted = dash_total_df.pivot_table(
-            index=[
-                "user",
-                "groups",
-                "timestamp",
-                "version",
-                "prompt",
-                "patient",
-                "gpt_output_value",
-            ],
-            columns="evaluation_metric",
-            values="evaluation_value",
-            aggfunc="first",
-        ).reset_index()
-
-    return (
-        {
-            "content": dash_total_df_pivoted.to_csv(index=False),
-            "filename": "db_export.csv",
-        },
-        False,
-    )
 
 
 # Run the app

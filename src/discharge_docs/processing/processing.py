@@ -956,11 +956,6 @@ if __name__ == "__main__":
         data_folder / "raw" / "pseudonomised_new_metavision_data.parquet"
     ).pipe(lambda df: process_data_metavision_new(df, df_HiX_discharge))
 
-    # combined data for visualisation
-    df_combined = combine_hix_and_metavision_for_visualisation(
-        df_HiX, df_metavision_new
-    )
-
     # Store the processed data
     df_metavision_dp.to_parquet(
         data_folder / "processed" / "metavision_data_april_dp.parquet"
@@ -969,9 +964,6 @@ if __name__ == "__main__":
         data_folder / "processed" / "metavision_new_data.parquet"
     )
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
-    df_combined.to_parquet(
-        data_folder / "processed" / "combined_data_for_visualisation.parquet"
-    )
 
     df_HiX_CAR_pp.to_parquet(
         data_folder / "processed" / "HiX_CAR_data_pre_pilot.parquet"

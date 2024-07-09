@@ -12,6 +12,10 @@ requirements-dev.lock
 *.xlsx
 *.db
 
+# keep example data
+!DEMO_patient_1_eng.csv
+!DEMO_patient_1.csv
+
 # Analysis config
 analysis_config.toml
 

@@ -1,8 +1,11 @@
 import json
 import logging
+import os
 import re
+from pathlib import Path
 
 import pandas as pd
+import tomli
 from dash import dcc, html
 from flask import Request
 
@@ -24,7 +27,6 @@ def highlight(text, selected_words: str) -> list:
     list
         The text with the selected words highlighted.
     """
-    # als text string is
     if isinstance(text, str):
         sequences = re.split(re.escape(selected_words), text, flags=re.IGNORECASE)
         i = 1
@@ -32,7 +34,7 @@ def highlight(text, selected_words: str) -> list:
             sequences.insert(i, html.Mark(selected_words.upper()))
             i += 2
         return sequences
-    else:  # als text een lijst is
+    else:
         for i, t in enumerate(text):
             if isinstance(t, str):
                 text[i] = highlight(t, selected_words)
@@ -47,39 +49,49 @@ def highlight(text, selected_words: str) -> list:
         return flat_list
 
 
-def get_authorization(req: Request, authorization_dict: dict) -> tuple[str, list[str]]:
-    """
-    Get the RStudio Connect credentials from the request headers.
-    Credentials are of the form: {user: "email", groups: ["group1", "group2"]}
-    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+def get_suitable_enc_ids(file_name: str, type: str, first_25: bool = True) -> dict:
+    """Get suitable ENC IDs based on file name and type.
 
     Parameters
     ----------
-    req : Request
-        The request object.
-    authorization_dict : Dict
-        A dictionary containing the user's email and their authorization groups.
-        see auth_example.toml for an example.
+    file_name : str
+        The name of the file containing ENC IDs.
+    type : str
+        The type of ENC IDs to retrieve either per department,
+        or per deparmtnet and user
+    first_25 : bool
+        Whether to show only the first 25 ENC IDs or all.
+        only show 25 to minimise the amount of data shown in dashboard
 
     Returns
     -------
-    Tuple[str, List[str]]
-        A tuple containing the user's email
-        and a list of authorization groups for the user.
+    dict
+        A dictionary containing the suitable ENC IDs.
     """
-    credential_header = req.headers.get("RStudio-Connect-Credentials")
-    if not credential_header:
-        logger.warning("No credentials found in request headers")
-        return "", []
+    with open(
+        Path(__file__).parent / file_name,
+        "rb",
+    ) as f:
+        enc_ids_dict = tomli.load(f)
+        if type == "department":
+            for key in enc_ids_dict:
+                enc_ids_dict[key] = enc_ids_dict[key]["ids"]
+            if first_25:
+                for key in enc_ids_dict:
+                    enc_ids_dict[key] = enc_ids_dict[key][:25]
+            return enc_ids_dict
 
-    credential_header = json.loads(credential_header)
-    user = credential_header.get("user").lower()
-    for value in authorization_dict["users"].values():
-        if value["email"] == user:
-            return user, value["groups"]
-
-    logger.warning(f"No authorization groups found for user {user}")
-    return "", []
+        elif type == "department_user":
+            id_dep_dict = {}
+            for key in enc_ids_dict:
+                id_dep_dict[key] = list(
+                    zip(
+                        enc_ids_dict[key]["ids"],
+                        enc_ids_dict[key]["department"],
+                        strict=False,
+                    )
+                )
+            return id_dep_dict
 
 
 def get_user(req: Request) -> str:
@@ -107,6 +119,74 @@ def get_user(req: Request) -> str:
     return user
 
 
+def get_authorization(
+    req: Request, authorization_dict: dict, development_authorizations: list
+) -> tuple[str, list[str]]:
+    """
+    Get the RStudio Connect credentials from the request headers.
+    Credentials are of the form: {user: "email", groups: ["group1", "group2"]}
+    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+
+    Parameters
+    ----------
+    req : Request
+        The request object.
+    authorization_dict : Dict
+        A dictionary containing the user's email and their authorization groups.
+        see auth_example.toml for an example.
+    development_authorizations : List
+        A list of authorization groups for development mode. Development mode is
+        activated if ENC is set to "development".
+
+    Returns
+    -------
+    Tuple[str, List[str]]
+        A tuple containing the user's email
+        and a list of authorization groups for the user.
+    """
+    if os.getenv("ENV", "") == "development":
+        logger.warning("Running in development mode, overriding authorization group.")
+        # Never add this in production!
+        return "Development user", development_authorizations
+    else:
+        user = get_user(req)
+        for value in authorization_dict["users"].values():
+            if value["email"] == user:
+                return user, value["groups"]
+
+        logger.warning(f"No authorization groups found for user {user}")
+        return "", []
+
+
+def get_authorized_patients(
+    authorization_group: list, patients: dict
+) -> tuple[list, dict]:
+    """Get authorized patients based on authorization group.
+
+    Parameters
+    ----------
+    authorization_group : list
+        The list of authorization groups.
+    patients : dict
+        A dictionary containing patient data.
+
+    Returns
+    -------
+    tuple[list, dict]
+        A tuple containing the authorized patients and a dictionary of patient data.
+    """
+    authorized_patients = [
+        item
+        for key, values in patients.items()
+        if key in authorization_group
+        for item in values
+    ]
+
+    fist_patient = authorized_patients[0]["value"] if authorized_patients else None
+
+    return authorized_patients, fist_patient
+
+
 def get_data_from_patient_admission(
     patient_admission: str, data_dict: dict
 ) -> pd.DataFrame:
@@ -125,9 +205,6 @@ def get_data_from_patient_admission(
     pd.DataFrame
         The data associated with the patient admission.
     """
-    if patient_admission not in data_dict:
-        logger.warning(f"Patient admission {patient_admission} not found in data_dict")
-
     if patient_admission not in data_dict:
         logger.warning(f"Patient admission {patient_admission} not found in data_dict")
 

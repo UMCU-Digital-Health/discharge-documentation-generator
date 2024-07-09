@@ -67,6 +67,29 @@ def load_template_prompt(department: str) -> str:
     return template_prompt
 
 
+def load_all_templates_prompts_into_dict(
+    departments: list = None,
+) -> dict:
+    """Load all template prompts for the specified departments into a dictionary.
+
+    Parameters
+    ----------
+    departments : list, optional
+        The list of departments for which to load the template prompts.
+        Defaults to ["NICU", "IC", "CAR", "PSY"].
+
+    Returns
+    -------
+    dict
+        A dictionary containing the template prompts for each department.
+    """
+    if departments is None:
+        departments = ["NICU", "IC", "CAR", "PSY"]
+    output_dict = {x.lower(): load_template_prompt(x) for x in departments}
+    output_dict["demo"] = load_template_prompt("NICU")
+    return output_dict
+
+
 def load_missing_information_prompt():
     """loads the missing information evaluation prompt from the prompts folder"""
     with open(

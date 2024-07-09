@@ -1,0 +1,11 @@
+# Respiratie
+Op de eerste dag onderging de patiënt onmiddellijk beademing vanwege ernstige ademhalingsproblemen. Op de tweede dag werd gestart met ECMO-ondersteuning vanwege aanhoudende ernstige ademhalingsproblemen. Vanaf de vierde dag vertoont de ademhaling enige verbetering, maar de patiënt blijft afhankelijk van ECMO. Op de zevende dag begint de patiënt te ontsnappen aan ECMO, maar heeft nog steeds ondersteuning nodig. Op de negende dag heeft de patiënt zuurstof nodig en vertoont zwakte. Op de tiende dag verbetert de ademhaling geleidelijk, maar blijft de patiënt zwak en afhankelijk van zuurstof.
+
+# Cardiologie
+Vitale parameters vertoonden stabiliteit vanaf de eerste dag. Op de vierde dag zijn er nog steeds cardiovasculaire schommelingen, die worden aangepakt door de medicatie aan te passen. Vanaf de zevende dag stabiliseren de vitale parameters met behulp van medicatie. Op de tiende dag blijven de vitale parameters stabiel zonder medicatie.
+
+# Neurologie
+De patiënt ervoer verwardheid vanaf de initiële dag, vermoedelijk als gevolg van de anesthesie, en ontwikkelde later een delier. Vanaf de zesde dag verbetert het delier geleidelijk, en op de negende dag is de patiënt stabiel en helder.
+
+# Infectie
+Op de tweede dag werd een mogelijke infectie vermoed vanwege een stijging van de temperatuur, wat resulteerde in het starten van een 10-daagse antibioticakuur. De infectie werd bevestigd, en de antibioticakuur werd voortgezet en bleek effectief. De status van de infectie blijft constant gedurende de opname.
