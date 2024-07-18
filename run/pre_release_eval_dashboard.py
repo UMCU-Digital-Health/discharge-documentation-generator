@@ -89,12 +89,7 @@ Base.metadata.create_all(engine)
 
 # load stored discharge letters
 
-df_discharge4 = pd.read_csv(
-    Path(__file__).parents[1]
-    / "data"
-    / "processed"
-    / "bulk_generated_docs_gpt4_PReval_4.csv"
-)
+df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_PReval_4.csv")
 
 # define the app
 app = dash.Dash(

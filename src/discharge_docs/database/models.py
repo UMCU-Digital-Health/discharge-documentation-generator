@@ -153,3 +153,55 @@ class EvalPhase1(Base):
     highlighted_trivial_information: Mapped[str] = mapped_column(String, nullable=True)
     usability_likert: Mapped[int] = mapped_column(Integer, nullable=False)
     comments: Mapped[str] = mapped_column(String, nullable=True)
+
+
+class EvalPhase2(Base):
+    """Table that stores the evaluation data for phase 2."""
+
+    __tablename__ = "evalphase2"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    user: Mapped[str]
+    timestamp: Mapped[datetime]
+    patientid: Mapped[str]
+    usability_likert: Mapped[int]
+    comments: Mapped[str]
+    evaluated_letter: Mapped[str]
+
+    annotation_relation: Mapped[List["EvalPhase2Annotation"]] = relationship(init=False)
+    extra_questions_relation: Mapped[List["EvalPhase2ExtraQuestions"]] = relationship(
+        init=False
+    )
+
+
+class EvalPhase2Annotation(Base):
+    """Table that stores the annotations for phase 2."""
+
+    __tablename__ = "evalphase2annotation"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    annotation_user: Mapped[str]
+    text: Mapped[str]
+    importance: Mapped[str]
+    duplicate_id: Mapped[int]  # id to refer to by the duplicate column
+    duplicate: Mapped[int] = mapped_column(nullable=True)
+    type: Mapped[str]
+    evalphase2_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(EvalPhase2.id), nullable=True, init=False
+    )
+
+
+class EvalPhase2ExtraQuestions(Base):
+    """Table that stores extra questions for GPT generated letters"""
+
+    __tablename__ = "evalphase2extraquestions"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    question: Mapped[str]
+    answer: Mapped[str]
+    evalphase2_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(EvalPhase2.id), nullable=True, init=False
+    )

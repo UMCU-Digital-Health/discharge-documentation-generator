@@ -1,6 +1,8 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 
+from discharge_docs.dashboard.helper import generate_annotation_datatable
+
 
 def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
     """Create and return a Bootstrap navbar.
@@ -36,27 +38,59 @@ def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
     return navbar
 
 
-def get_patient_selection_div() -> dbc.Card:
+def get_patient_selection_div(add_disharge_selection: bool = False) -> dbc.Row:
     """Create and return a Bootstrap card for patient selection.
+
+    Parameters
+    ----------
+    add_disharge_selection : bool, optional
+        Flag indicating whether to include discharge selection dropdown,
+        by default False
 
     Returns
     -------
-    dbc.Card
-        The created card.
+    dbc.Row
+        The created row containing a patient selection dropdown and optionally a
+        discharge selection dropdown.
     """
+    if add_disharge_selection:
+        discharge_selection = dbc.Col(
+            [
+                dbc.Label(
+                    "Selecteer ontslagbrief:",
+                    className="my-2",
+                ),
+                dbc.Select(
+                    id="selected_letter_dropdown",
+                    class_name="my-2",
+                    value="ORG letter",
+                    options=[
+                        {"label": "Originele ontslagbrief", "value": "ORG letter"},
+                        {
+                            "label": "Gegenereerde ontslagbrief",
+                            "value": "GPT letter",
+                        },
+                    ],
+                ),
+            ],
+            width=4,
+        )
+    else:
+        discharge_selection = None
+
     patient_selection_div = dbc.Row(
         [
             dbc.Col(
                 [
-                    html.H3("Selecteer patiëntopname:"),
+                    dbc.Label("Selecteer patiëntopname:", className="my-2"),
                     dbc.Select(
                         id="patient_admission_dropdown",
-                        class_name="me-2",
-                        style={"margin-bottom": "10px"},
+                        class_name="my-2",
                     ),
                 ],
                 width=4,
             ),
+            discharge_selection,
         ],
     )
     return patient_selection_div
@@ -509,7 +543,10 @@ def get_random_letter_with_markings_card() -> dbc.Card:
 
 
 def get_eval_card(
-    question_header: str, question_explanation: str, slider: str, notes_explanation: str
+    question_header: str,
+    question_explanation: str,
+    slider: str,
+    notes_explanation: list | str,
 ) -> dbc.Card:
     """Create and return a Bootstrap card for evaluation questions.
 
@@ -754,6 +791,283 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
                 ],
             ),
             show_prompts_card,
+        ]
+    )
+    return layout
+
+
+def get_phase_2_layout() -> html.Div:
+    navbar = get_navbar(view_user=True, header_title="Ontslagbrief evaluatie - Fase 2")
+
+    patient_selection_div = get_patient_selection_div(add_disharge_selection=True)
+
+    patient_file_tab = dbc.Card(
+        [
+            dbc.CardBody(
+                [
+                    html.H2("Patiëntendossier:"),
+                    html.Br(),
+                    html.Div(
+                        "Placeholder for patient file",
+                        id="output_value",
+                        style={
+                            "height": "600px",
+                            "overflow": "scroll",
+                            "border": "1px solid lightgrey",
+                            "padding": "10px",
+                        },
+                    ),
+                    html.Br(),
+                    html.H4("Ontbrekende informatie"),
+                    html.Details(
+                        [
+                            html.Summary("Uitleg ontbrekende informatie"),
+                            html.P(
+                                "In de tabel hieronder staat de ontbrekende "
+                                " informatie die de studenten hebben geannoteerd. "
+                                "Het gaat hierbij dus om informatie die wel in het "
+                                "patiëntendossier staat, maar niet in de geselecteerde "
+                                "ontslagbrief. "
+                                "Geef in de kolom `Beoordeling` aan hoe belangrijk "
+                                "je deze annotatie vindt; ben je het eens dat de "
+                                "annotatie missend is en is het belangrijk dat het wel "
+                                "in de ontslagbrief staat, geef dan `Eens`; ernstig` "
+                                "aan. Ben je het eens met de annotatie maar is het "
+                                "niet zo ernstig, geef dan `Eens; minder ernstig` aan. "
+                                "Ben je het niet eens met de annotatie, geef dan "
+                                "`Oneens` aan. Geef in de kolom "
+                                "`Dubbeling` aan of de annotatie al eerder is gemaakt, "
+                                "door in die kolom de ID in te vullen van de eerste "
+                                "rij waarin deze informatie is geannoteerd."
+                            ),
+                        ]
+                    ),
+                    generate_annotation_datatable("omission", "#EEC170"),
+                    dcc.Store(id="annotation_dict"),
+                ]
+            ),
+        ]
+    )
+
+    view_letter_div = dbc.Card(
+        [
+            dbc.CardHeader(html.H3("Bekijk ontslagbrief")),
+            dbc.CardBody(
+                [
+                    html.Br(),
+                    html.Div(
+                        "Placeholder for discharge letter",
+                        id="output_discharge_documentation",
+                        style={
+                            "height": "600px",
+                            "overflow": "scroll",
+                            "border": "1px solid lightgrey",
+                            "padding": "10px",
+                        },
+                    ),
+                    html.H4("Foutieve informatie"),
+                    html.Details(
+                        [
+                            html.Summary("Uitleg foutieve informatie"),
+                            html.P(
+                                "In de tabel hieronder staat de informatie die door "
+                                "studenten is geannoteerd als fout. "
+                                "Dit gaat dus om informatie die wel in de ontslagbrief "
+                                "staat, maar niet in het patiëntendossier. "
+                                "Geef in de kolom `Beoordeling` aan hoe belangrijk "
+                                "je deze annotatie vindt; ben je het eens dat de "
+                                "annotatie fout is en is het een erstige fout  "
+                                "geef dan `Eens`; ernstig` "
+                                "aan. Ben je het eens met de annotatie maar is het "
+                                "niet zo ernstig, geef dan `Eens; minder ernstig` aan. "
+                                "Ben je het niet eens met de annotatie, geef dan "
+                                "`Oneens` aan. Geef in de kolom "
+                                "`Dubbeling` aan of de annotatie al eerder is gemaakt, "
+                                "door in die kolom de ID in te vullen van de eerste "
+                                "rij waarin deze informatie is geannoteerd."
+                            ),
+                        ]
+                    ),
+                    generate_annotation_datatable("hallucination", "#FE5F55"),
+                    html.Hr(),
+                    html.H4("Triviale informatie"),
+                    html.Details(
+                        [
+                            html.Summary("Uitleg triviale informatie"),
+                            html.P(
+                                "In de tabel hieronder staat de informatie die door "
+                                "studenten is geannoteerd als triviaal. "
+                                "Dit gaat dus om informatie die in de ontslagbrief "
+                                "staat, maar daar niet perse in hoeft te staan. "
+                                "Geef in de kolom `Beoordeling` aan hoe belangrijk "
+                                "je deze annotatie vindt; ben je het eens dat de "
+                                "annotatie triviaal is en vind je het erg dat het er  "
+                                "toch in staat, geef dan `Eens`; ernstig` "
+                                "aan. Ben je het eens met de annotatie maar is het "
+                                "niet zo ernstig, geef dan `Eens; minder ernstig` aan. "
+                                "Ben je het niet eens met de annotatie, geef dan "
+                                "`Oneens` aan. Geef in de kolom "
+                                "`Dubbeling` aan of de annotatie al eerder is gemaakt, "
+                                "door in die kolom de ID in te vullen van de eerste "
+                                "rij waarin deze informatie is geannoteerd."
+                            ),
+                        ]
+                    ),
+                    generate_annotation_datatable("trivial", "#C6DDF0"),
+                ]
+            ),
+        ]
+    )
+
+    eval_div = dbc.Card(
+        [
+            dbc.CardHeader(html.H3("Evaluatie")),
+            dbc.CardBody(
+                [
+                    html.H5("Geef scores aan de ontslagbriefbrief:"),
+                    html.Label(
+                        "Ben je het eens met de volgende stelling: Deze ontslagbrief "
+                        + "is geschikt om te worden ingezet als basis voor een "
+                        + "ontslagbrief die met kleine aanpassingen van een arts in "
+                        + "de praktijk kan worden gebruikt"
+                    ),
+                    dcc.Slider(
+                        id="likert_slider",
+                        min=1,
+                        max=5,
+                        step=1,
+                        marks={
+                            1: {
+                                "label": "Strongly\nDisagree",
+                                "style": {"white-space": "pre-line"},
+                            },
+                            2: {"label": "Disagree"},
+                            3: {"label": "Neutral"},
+                            4: {"label": "Agree"},
+                            5: {
+                                "label": "Strongly\nAgree",
+                                "style": {"white-space": "pre-line"},
+                            },
+                        },
+                        value=3,
+                    ),
+                    html.Br(),
+                    html.Div(
+                        children=[
+                            html.Br(),
+                            html.H5("Extra vragen:"),
+                            dbc.Label(
+                                "Welke ontslagbrief organiseert de relevante "
+                                "informatie beter in een goed gestructureerde "
+                                "samenvatting?"
+                            ),
+                            dbc.RadioItems(
+                                options=[
+                                    {
+                                        "label": "Originele ontslagbrief",
+                                        "value": "ORG letter",
+                                    },
+                                    {
+                                        "label": "Gegenereerde ontslagbrief",
+                                        "value": "GPT letter",
+                                    },
+                                ],
+                                value="ORG letter",
+                                id="extra_question_1",
+                                inline=True,
+                            ),
+                            html.Br(),
+                            dbc.Label(
+                                "Welke ontslagbrief is beter in het opnemen van alleen "
+                                "belangrijke informatie uit het patiëntendossier?"
+                            ),
+                            dbc.RadioItems(
+                                options=[
+                                    {
+                                        "label": "Originele ontslagbrief",
+                                        "value": "ORG letter",
+                                    },
+                                    {
+                                        "label": "Gegenereerde ontslagbrief",
+                                        "value": "GPT letter",
+                                    },
+                                ],
+                                value="ORG letter",
+                                id="extra_question_2",
+                                inline=True,
+                            ),
+                            html.Br(),
+                            dbc.Label(
+                                "Welke samenvatting zou u in de praktijk het liefst "
+                                "gebruiken als basis voor een ontslagbrief?"
+                            ),
+                            dbc.RadioItems(
+                                options=[
+                                    {
+                                        "label": "Originele ontslagbrief",
+                                        "value": "ORG letter",
+                                    },
+                                    {
+                                        "label": "Gegenereerde ontslagbrief",
+                                        "value": "GPT letter",
+                                    },
+                                ],
+                                value="ORG letter",
+                                id="extra_question_3",
+                                inline=True,
+                            ),
+                            html.Br(),
+                        ],
+                        id="extra_questions_div",
+                    ),
+                    html.H5("Opmerkingen"),
+                    dbc.Label("Voeg hier nog overige opmerkingen toe:"),
+                    dbc.Textarea(
+                        id="evaluation_text",
+                        value="",
+                    ),
+                    dbc.Button(
+                        "Sla evaluatie op",
+                        id="evaluate_button",
+                        color="danger",
+                        class_name="mt-2",
+                        style={"margin-right": "15px"},
+                    ),
+                ]
+            ),
+        ],
+        class_name="mt-2",
+    )
+
+    layout = html.Div(
+        children=[
+            navbar,
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle("Evaluatie opgeslagen!")),
+                    dbc.ModalBody(id="save_modal"),
+                ],
+                id="save_modal_container",
+                is_open=False,
+            ),
+            patient_selection_div,
+            dbc.Row(
+                children=[
+                    dbc.Col(
+                        [
+                            patient_file_tab,
+                        ],
+                        width=6,
+                    ),
+                    dbc.Col(
+                        [
+                            view_letter_div,
+                            eval_div,
+                        ],
+                        width=6,
+                    ),
+                ]
+            ),
         ]
     )
     return layout

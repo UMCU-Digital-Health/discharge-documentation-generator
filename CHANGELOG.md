@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2024-07-02
 
-## [0.4.5] - 2024-06-19
+### Added
+- Added a dashboard for phase 2 of the evaluation
+- Added tables for storing results of phase 2
+
+### Changed
+- Updated highlight function to change background color and font color
+
+
+## [0.5.0] - 2024-06-19
 
 ### Changed
 - large refactor

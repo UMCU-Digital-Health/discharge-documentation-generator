@@ -741,7 +741,9 @@ def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.Data
     return patient_file_string, patient_file
 
 
-def get_patient_discharge_docs(df: pd.DataFrame, enc_id: int = None) -> str:
+def get_patient_discharge_docs(
+    df: pd.DataFrame, enc_id: int | None = None
+) -> pd.Series:
     """
     Retrieves the discharge documentation for a specific patient based on their
     encounter ID or if the data is only for one end_id.
@@ -766,7 +768,7 @@ def get_patient_discharge_docs(df: pd.DataFrame, enc_id: int = None) -> str:
     discharge_documentation = df[df["description"].isin(["Ontslagbrief"])].sort_values(
         by=["date", "description"]
     )
-    return discharge_documentation.value
+    return discharge_documentation["value"]
 
 
 def split_discharge_docs_NICU(discharge_doc: pd.DataFrame) -> pd.DataFrame:
@@ -941,16 +943,23 @@ if __name__ == "__main__":
     df_HiX_patient_files = pd.read_parquet(
         data_folder
         / "raw"
+        / "pre-pilot"
         / "pseudonomised_HiX_patient_files_CAR_april_rtf_decoded.parquet"
     )
     df_HiX_discharge = pd.read_parquet(
-        data_folder / "raw" / "pseudonomised_HiX_discharge_docs_CAR_april.parquet"
+        data_folder
+        / "raw"
+        / "pre-pilot"
+        / "pseudonomised_HiX_discharge_docs_CAR_april.parquet"
     )
     df_HiX_CAR_pp = process_data_HiX_stg(df_HiX_patient_files, df_HiX_discharge)
 
     # load and process metavision data
     df_metavision_dp = pd.read_parquet(
-        data_folder / "raw" / "pseudonomised_metavision_data_april.parquet"
+        data_folder
+        / "raw"
+        / "pre-pilot"
+        / "pseudonomised_metavision_data_april.parquet"
     ).pipe(process_data_metavision_dp)
     df_metavision_new = pd.read_parquet(
         data_folder / "raw" / "pseudonomised_new_metavision_data.parquet"
@@ -958,7 +967,7 @@ if __name__ == "__main__":
 
     # Store the processed data
     df_metavision_dp.to_parquet(
-        data_folder / "processed" / "metavision_data_april_dp.parquet"
+        data_folder / "processed" / "pre-pilot" / "metavision_data_april_dp.parquet"
     )
     df_metavision_new.to_parquet(
         data_folder / "processed" / "metavision_new_data.parquet"
@@ -966,5 +975,5 @@ if __name__ == "__main__":
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
 
     df_HiX_CAR_pp.to_parquet(
-        data_folder / "processed" / "HiX_CAR_data_pre_pilot.parquet"
+        data_folder / "processed" / "pre-pilot" / "HiX_CAR_data_pre_pilot.parquet"
     )

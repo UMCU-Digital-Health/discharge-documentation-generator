@@ -6,13 +6,15 @@ from pathlib import Path
 
 import pandas as pd
 import tomli
-from dash import dcc, html
+from dash import dash_table, dcc, html
 from flask import Request
 
 logger = logging.getLogger(__name__)
 
 
-def highlight(text, selected_words: str) -> list:
+def highlight(
+    text, selected_words: str, mark_color: str = "yellow", text_color: str = "black"
+) -> list:
     """Highlight selected words in the given text.
 
     Parameters
@@ -31,13 +33,19 @@ def highlight(text, selected_words: str) -> list:
         sequences = re.split(re.escape(selected_words), text, flags=re.IGNORECASE)
         i = 1
         while i < len(sequences):
-            sequences.insert(i, html.Mark(selected_words.upper()))
+            sequences.insert(
+                i,
+                html.Mark(
+                    selected_words.upper(),
+                    style={"backgroundColor": mark_color, "color": text_color},
+                ),
+            )
             i += 2
         return sequences
     else:
         for i, t in enumerate(text):
             if isinstance(t, str):
-                text[i] = highlight(t, selected_words)
+                text[i] = highlight(t, selected_words, mark_color, text_color)
         flat_list = []
 
         for sublist in text:
@@ -47,6 +55,35 @@ def highlight(text, selected_words: str) -> list:
             else:
                 flat_list.append(sublist)
         return flat_list
+
+
+def replace_newlines(elements: str | list) -> list:
+    """Replace newlines in a string with html.Br().
+
+    Parameters
+    ----------
+    elements : str | list
+        The elements to be processed.
+
+    Returns
+    -------
+    list
+        The elements with newlines replaced by html.Br().
+    """
+    if isinstance(elements, str):
+        elements = [elements]
+    new_elements = []
+    for element in elements:
+        if isinstance(element, str):
+            # Split the string on new line and intersperse html.Br()
+            parts = element.split("\n")
+            for part in parts:
+                new_elements.append(part)
+                new_elements.append(html.Br())
+        else:
+            # Assume it is an HTML component and append directly
+            new_elements.append(element)
+    return new_elements
 
 
 def get_suitable_enc_ids(file_name: str, type: str, first_25: bool = True) -> dict:
@@ -92,6 +129,9 @@ def get_suitable_enc_ids(file_name: str, type: str, first_25: bool = True) -> di
                     )
                 )
             return id_dep_dict
+        else:
+            logger.warning("Invalid type, choose department or department_user")
+            return {}
 
 
 def get_user(req: Request) -> str:
@@ -160,7 +200,7 @@ def get_authorization(
 
 def get_authorized_patients(
     authorization_group: list, patients: dict
-) -> tuple[list, dict]:
+) -> tuple[list, str | None]:
     """Get authorized patients based on authorization group.
 
     Parameters
@@ -236,7 +276,7 @@ def get_template_prompt(
 
 
 def get_patients_from_list_names(
-    df_dict: dict, enc_ids_dict: dict
+    df_dict: dict, enc_ids_dict: dict, phase2: bool = False
 ) -> tuple[dict, dict]:
     """
     Get patients' data and values list from a dictionary of dataframes and a dictionary
@@ -266,7 +306,10 @@ def get_patients_from_list_names(
         for idx, enc_id in enumerate(enc_ids, start=1):
             df = df_dict.get(department, None)
             if df is not None:
-                patient_key = f"patient_{idx}_{department.lower()}"
+                if phase2:
+                    patient_key = str(enc_id)
+                else:
+                    patient_key = f"patient_{idx}_{department.lower()}"
                 patients_data[patient_key] = df[df["enc_id"] == enc_id]
                 label_days = patients_data[patient_key]["length_of_stay"].values[0]
                 patients_list.append(
@@ -333,7 +376,7 @@ def get_patients_from_list_names_pilot(
 
 def load_stored_discharge_letters(
     df: pd.DataFrame, patient_name: str
-) -> list[html.Div]:
+) -> list[html.Div] | str:
     """Load discharge letters for a specific patient.
 
     Parameters
@@ -368,8 +411,8 @@ def load_stored_discharge_letters(
 
 
 def load_stored_discharge_letters_pre_release(
-    df: pd.DataFrame, patient_name: str
-) -> list[html.Div]:
+    df: pd.DataFrame, patient_name: str, phase2: bool = False
+) -> list[html.Div] | str:
     """Load discharge letters for a specific patient formatting according to pre-release
 
     Parameters
@@ -384,10 +427,15 @@ def load_stored_discharge_letters_pre_release(
     list[html.Div]
         A list of HTML Div elements representing the discharge letters for the patient.
     """
-    if patient_name not in df["name"].values:
+    id_column = "enc_id" if phase2 else "name"
+    if phase2:
+        df[id_column] = df[id_column].astype(str)
+    if not phase2 and patient_name not in df[id_column].values:
         return "Er is geen opgeslagen documentatie voor deze patient."
 
-    discharge_document = df.loc[df["name"] == patient_name, "generated_doc"].values[0]
+    discharge_document = df.loc[df[id_column] == patient_name, "generated_doc"].values[
+        0
+    ]
     discharge_document = eval(discharge_document)
 
     outputstring = ""
@@ -399,3 +447,63 @@ def load_stored_discharge_letters_pre_release(
         outputstring += formatted_string + "\n\n"
 
     return outputstring
+
+
+def generate_annotation_datatable(type: str, header_color: str) -> dash_table.DataTable:
+    """Generate an annotation datatable.
+
+    Parameters
+    ----------
+    type : str
+        The type of annotation datatable, for example: "omission" or "hallucination".
+    header_color : str
+        The background color of the header.
+
+    Returns
+    -------
+    dash_table.DataTable
+        A DataTable for annotations.
+    """
+    return dash_table.DataTable(
+        columns=[
+            {"id": "id", "name": "ID", "editable": False},
+            {"id": "text", "name": "Annotatie", "editable": False},
+            {
+                "id": "importance",
+                "name": "Beoordeling",
+                "presentation": "dropdown",
+                "editable": True,
+            },
+            {
+                "id": "duplicate",
+                "name": "Dubbeling",
+                "type": "numeric",
+                "editable": True,
+            },
+        ],
+        id=f"{type}_table",
+        editable=True,
+        style_data={
+            "overflow": "hidden",
+            "textOverflow": "ellipsis",
+            "maxWidth": 0,
+        },
+        tooltip_duration=None,
+        style_header={
+            "backgroundColor": header_color,
+            "fontWeight": "bold",
+            "color": "white",
+        },
+        dropdown={
+            "importance": {
+                "options": [
+                    {"label": "Eens; ernstig", "value": "Important"},
+                    {
+                        "label": "Eens; minder ernstig",
+                        "value": "Less important",
+                    },
+                    {"label": "Oneens", "value": "False"},
+                ]
+            }
+        },
+    )

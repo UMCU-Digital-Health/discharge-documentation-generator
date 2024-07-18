@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "run.fase_2_dashboard:app"
+  },
+  "python": {
+    "version": "3.10.13",
+    "package_manager": {
+      "name": "pip",
+      "version": "23.3.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "751e4cbfa006b1a4ee1d85c224322cd2"
+    },
+    "CHANGELOG.md": {
+      "checksum": "183fdac3e5f96a4f15c2a58bc801bc8a"
+    },
+    "README.md": {
+      "checksum": "785fa4e29ab9369b68b5e225e30b3968"
+    },
+    "data/processed/bulk_generated_docs_gpt35.csv": {
+      "checksum": "914e4cccdc447e4602ff862c5b9a8f56"
+    },
+    "data/processed/bulk_generated_docs_gpt4.csv": {
+      "checksum": "0bf113c0289aedf0186868cc4e04ccbc"
+    },
+    "data/processed/pre-pilot/HiX_CAR_data_pre_pilot.parquet": {
+      "checksum": "100424abd53cdc77a95261b5039c235f"
+    },
+    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_2.csv": {
+      "checksum": "5bae5d313dca93b026ac80ff70ee9658"
+    },
+    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_3.csv": {
+      "checksum": "a823ce4087290948c149ff5fb652389b"
+    },
+    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_4.csv": {
+      "checksum": "2eea881249f902eff0222c13c57c491d"
+    },
+    "data/processed/pre-pilot/metavision_data_april_dp.parquet": {
+      "checksum": "a3a5d43380fa391e8ca702fdba89218e"
+    },
+    "data/raw/.gitignore": {
+      "checksum": "75e3ac18be43d8d31ed135e6d1976b4f"
+    },
+    "deploy.sh": {
+      "checksum": "80cca1d7d7280470a99968e7dd658ac4"
+    },
+    "dvc.lock": {
+      "checksum": "c5e15e5502bc98deebedae958b1cc684"
+    },
+    "dvc.yaml": {
+      "checksum": "3ddbde449ca5188e9f4ba07a9ce6e945"
+    },
+    "pyproject.toml": {
+      "checksum": "ff5e06164caac3fe4c20e648646f2a2e"
+    },
+    "requirements-dev.lock": {
+      "checksum": "83b4dd36ac379e7b3a1709f3541680e8"
+    },
+    "requirements.lock": {
+      "checksum": "0ae2bd7517397af11924c4c8d56f0b4f"
+    },
+    "run/api.py": {
+      "checksum": "d2117f3ffc8587c433a32fbf4e412149"
+    },
+    "run/config/.gitignore": {
+      "checksum": "46bb068379c771febb9780a11f02b0a7"
+    },
+    "run/config/auth_fase2.toml": {
+      "checksum": "930cad58c9c3abaa11213a24eb3eb05b"
+    },
+    "run/config/auth_fase2.toml.dvc": {
+      "checksum": "3c415b55f9c3f545e02b33750fed5eb0"
+    },
+    "run/evaluation_dashboard.py": {
+      "checksum": "21b1e3b7dd400aecca26daba08f20f26"
+    },
+    "run/fase_2_dashboard.py": {
+      "checksum": "cfb83b18a8c5cad842d87ef4f8d16cde"
+    },
+    "run/pilot_application.py": {
+      "checksum": "b26763cb6b09d888649e1a3753e242c5"
+    },
+    "run/pre_release_eval_dashboard.py": {
+      "checksum": "a3bc40737e1377bac5cd85c3fa2d0f1c"
+    },
+    "src/discharge_docs/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/api/app.py": {
+      "checksum": "1720269080f5ae168227167bc0d6d11e"
+    },
+    "src/discharge_docs/dashboard/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/dashboard/dashboard_layout.py": {
+      "checksum": "c4099f8ad6f2731122cc3fa582368601"
+    },
+    "src/discharge_docs/dashboard/enc_ids_dashboard.toml": {
+      "checksum": "621a4d7e33258dd12f39aeafb3366639"
+    },
+    "src/discharge_docs/dashboard/enc_ids_pre_release_phase1_1.toml": {
+      "checksum": "5414f6580cd0c3fbe261e18f22b18225"
+    },
+    "src/discharge_docs/dashboard/enc_ids_pre_release_phase2.toml": {
+      "checksum": "49f08d91094ca18535703f12464ed180"
+    },
+    "src/discharge_docs/dashboard/helper.py": {
+      "checksum": "8a66e105687c13e6dc471c72177e2ae8"
+    },
+    "src/discharge_docs/database/models.py": {
+      "checksum": "18528e96463142066fe27e4bf03bcdf3"
+    },
+    "src/discharge_docs/database/student_annotation.py": {
+      "checksum": "4871651246c18e188116f42d918dc461"
+    },
+    "src/discharge_docs/evaluate/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/evaluate/evaluate_prompt.py": {
+      "checksum": "4cc62a66b2c9aeec2cc6a0a452f644cb"
+    },
+    "src/discharge_docs/evaluate/evaluate_prompt_helper.py": {
+      "checksum": "3a0d94565f366e78b8f02464764585c9"
+    },
+    "src/discharge_docs/processing/apply_rtf.py": {
+      "checksum": "af121095f5c4579895a6a875cc0d5093"
+    },
+    "src/discharge_docs/processing/deduce_text.py": {
+      "checksum": "2c639c9b5145534603c120212bdbe0db"
+    },
+    "src/discharge_docs/processing/processing.py": {
+      "checksum": "5bc0ab9585844ec2635033c82d7891d9"
+    },
+    "src/discharge_docs/processing/pseudo.toml": {
+      "checksum": "a2905f4a51edc4f7477cf5268ae00a98"
+    },
+    "src/discharge_docs/prompts/CAR_template_prompt.txt": {
+      "checksum": "1c5dfe415e139f03d1baf65317f15ce5"
+    },
+    "src/discharge_docs/prompts/IC_template_prompt.txt": {
+      "checksum": "d304f44aef3d499a97b091315df8d0d8"
+    },
+    "src/discharge_docs/prompts/NICU_template_prompt.txt": {
+      "checksum": "581e5d53f9def87bd89045a9688a980c"
+    },
+    "src/discharge_docs/prompts/PSY_template_prompt.txt": {
+      "checksum": "9ad286d824b70e72b5ab988897105ce6"
+    },
+    "src/discharge_docs/prompts/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/additional_information_prompt.txt": {
+      "checksum": "839e6913b0d64bb63c122273c67edd81"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/evaluation_prompt.txt": {
+      "checksum": "8850dc98ab66f044c300d8fb285353a3"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_correction_prompt.txt": {
+      "checksum": "cf090353b4d699cdaa203405dbdccd0d"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_intersection_prompt.txt": {
+      "checksum": "5ab0c58b87de6b7218320b26ebcc6afb"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_union_prompt.txt": {
+      "checksum": "77577ce28f688db2006874c56c5b90e8"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/missing_information_prompt.txt": {
+      "checksum": "a1b0407f0eaf1e25e0944879237e61ec"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/split_into_segments_prompt.txt": {
+      "checksum": "4ec865ca05af628b2334d41423a67da3"
+    },
+    "src/discharge_docs/prompts/prompt.py": {
+      "checksum": "3c04db26a0b4741533833b78a34dd4c9"
+    },
+    "src/discharge_docs/prompts/prompt_builder.py": {
+      "checksum": "dae2e7e245a3389a9ca07be5171c74fb"
+    },
+    "src/discharge_docs/prompts/system_prompt.txt": {
+      "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
+    },
+    "src/discharge_docs/prompts/user_prompt.txt": {
+      "checksum": "c20c7cfe6f15c6ee16330d15f2ea16b1"
+    },
+    "src/discharge_docs/prompts/user_prompt_iterative.txt": {
+      "checksum": "65f2785d194c307bd13ea757df49aac0"
+    },
+    "write_manifest.sh": {
+      "checksum": "5241770318fb77f3aba771637d650a21"
+    }
+  }
+}
