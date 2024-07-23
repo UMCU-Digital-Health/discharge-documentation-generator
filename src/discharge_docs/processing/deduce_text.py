@@ -1,14 +1,22 @@
 # Processing file to pseudonomise data by applying Deduce
 
+import os
 from hashlib import sha256
 from pathlib import Path
 
 import pandas as pd
 from deduce import Deduce
+from dotenv import load_dotenv
 from tqdm import tqdm
 
 tqdm.pandas()
-deduce = Deduce()
+
+load_dotenv()
+
+if os.getenv("ENV", "") == "development":
+    deduce = Deduce()
+else:
+    deduce = Deduce(cache_path=".")
 
 
 def apply_deduce(df: pd.DataFrame, col_name: str) -> pd.DataFrame:

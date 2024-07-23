@@ -25,7 +25,7 @@ def replace_text(input_text):
     return replaced_text
 
 
-def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
+def process_data_metavision_dp(df: pd.DataFrame, nifi: bool = False) -> pd.DataFrame:
     """
     Process the given DataFrame containing metavision data.
     The steps were:
@@ -49,19 +49,23 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
     ----------
     df : pandas.DataFrame
         The DataFrame containing metavision data.
-    df_discharge_docs_dp : pandas.DataFrame
-        The DataFrame containing full discharge documentation from the dataplatform.
+    nifi : bool
+        Whether the data is from nifi or not to determine datetime processing
 
     Returns
     -------
     pandas.DataFrame
         The processed DataFrame.
     """
-    # include enc_id per admission
-    df["enc_id"] = df.groupby(["period_start", "period_end"]).ngroup()
+    if not nifi:
+        # replace enc_id per admission (start date and pseudo_id) for privacy
+        df["enc_id"] = df.groupby(["period_start", "pseudo_id"]).ngroup()
 
     # Rename and drop columns
-    df = df.drop(columns=["pseudo_id"]).rename(
+    if "pseudo_id" in df.columns:
+        df = df.drop(columns=["pseudo_id"])
+
+    df = df.rename(
         columns={
             "period_start": "admissionDate",
             "period_end": "dischargeDate",
@@ -70,20 +74,29 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
             "code_display_original": "description",
             "valueString": "value",
             "enc_id": "enc_id",
+            "subject_Patient_value": "patient_number",
         }
     )
+    # include date column and possibly length of stay
+    if nifi:
+        df["time"] = pd.to_datetime(df["time"].astype(float), unit="ms")
+        df["admissionDate"] = pd.to_datetime(
+            df["admissionDate"].astype(float), unit="ms"
+        )
+        df["dischargeDate"] = pd.to_datetime(
+            df["dischargeDate"].astype(float), unit="ms"
+        )
+    else:
+        df["time"] = pd.to_datetime(df["time"])
+        df["admissionDate"] = pd.to_datetime(df["admissionDate"])
+        df["dischargeDate"] = pd.to_datetime(df["dischargeDate"])
 
-    # include date column
-    df["time"] = pd.to_datetime(df["time"])
     df["date"] = pd.to_datetime(df["time"].dt.date)
 
-    # add length of stay
-    df["admissionDate"] = pd.to_datetime(df["admissionDate"])
-    df["dischargeDate"] = pd.to_datetime(df["dischargeDate"])
-    df["length_of_stay"] = (df["dischargeDate"] - df["admissionDate"]).dt.days
-
-    # remove patients with length of stay 0 days
-    df = df[df["length_of_stay"] != 0]
+    if not df["dischargeDate"].isna().all():
+        df["length_of_stay"] = (df["dischargeDate"] - df["admissionDate"]).dt.days
+        # remove patients with length of stay 0 days
+        df = df[df["length_of_stay"] != 0]
 
     # remove rows where value is empty
     df = df[
@@ -99,12 +112,12 @@ def process_data_metavision_dp(df: pd.DataFrame) -> pd.DataFrame:
     # apply replace_text to all values in the value column
     df["value"] = df["value"].apply(replace_text)
 
-    # remove encounters that do not have a discharge letter
-    encounters_with_discharge = df.loc[
-        df["description"] == "Medische Ontslagbrief - Beloop", "enc_id"
-    ].unique()
-
-    df = df[df["enc_id"].isin(encounters_with_discharge)]
+    if not nifi:
+        # remove encounters that do not have a discharge letter
+        encounters_with_discharge = df.loc[
+            df["description"] == "Medische Ontslagbrief - Beloop", "enc_id"
+        ].unique()
+        df = df[df["enc_id"].isin(encounters_with_discharge)]
 
     # Function to replace 1899 dates with the most recent date in the group
     # as the 1899 dates are not valid and contain the discharge docs

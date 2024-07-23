@@ -34,11 +34,7 @@ dependencies =[
     "fastapi>=0.111.0",
     "pymssql>=2.3.0",
     "striprtf>=0.0.26",
-    "jupyter>=1.0.0",
-    "jupyterlab>=4.2.1",
-    "ipykernel>=6.29.4",
     "openpyxl>=3.1.3",
-    "uvicorn>=0.30.1",
 ]
 
 [project.optional-dependencies]
@@ -47,11 +43,14 @@ dev = ["rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5", "ipykernel
 
 [tool]
 rye = { dev-dependencies = [
-    "ipykernel>=6.29.2",
+    "ipykernel>=6.29.5",
     "nbstripout>=0.7.1",
     "pytest>=8.0.2",
-    "uvicorn>=0.27.1",
+    "uvicorn>=0.30.1",
     "pytest-asyncio~=0.23.6",
+    "rsconnect-python>=1.24.0",
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.2.3",
     "tomli-w~=1.0.0",
 ] }
 

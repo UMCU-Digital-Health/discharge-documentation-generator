@@ -1,12 +1,14 @@
 import os
 
 import dash
+import dash_bootstrap_components as dbc
 from dash import dcc, html
 from dash.dependencies import Input, Output
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, desc, select
 from sqlalchemy.orm import sessionmaker
 
-from discharge_docs.database.models import ApiGeneratedDoc
+from discharge_docs.dashboard.dashboard_layout import get_navbar
+from discharge_docs.database.models import ApiEncounter, ApiGeneratedDoc
 
 # Database connection setup
 DB_USER = os.getenv("DB_USER", "")
@@ -22,30 +24,35 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 # Dash app setup
-app = dash.Dash(__name__)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+)
 app.layout = html.Div(
     [
-        html.H1("Dashboard for Discharge Documentation"),
+        get_navbar(
+            view_user=True,
+            header_title="Dashboard voor ophalen gegenereerde ontslagbrief",
+        ),
         dcc.Dropdown(
-            id="encounter-dropdown",
+            id="patient-dropdown",
             options=[],
             value=None,
             clearable=False,
         ),
         html.Div(id="discharge-letter-display"),
+        dcc.Store(id="discharge-letter-store", data=None),
     ]
 )
 
 
-@app.callback(
-    Output("encounter-dropdown", "options"), [Input("encounter-dropdown", "id")]
-)
+@app.callback(Output("patient-dropdown", "options"), [Input("patient-dropdown", "id")])
 def update_dropdown(_) -> list:
-    """Update the dropdown list with encounter IDs.
+    """Update the dropdown list with patient IDs.
 
-    This function retrieves distinct encounter IDs from the database and formats them
+    This function retrieves distinct patient IDs from the database and formats them
     into a list of dictionaries, where each dictionary contains the label and value
-    of an encounter ID.
+    of an patient ID.
 
     Parameters
     ----------
@@ -54,16 +61,17 @@ def update_dropdown(_) -> list:
     Returns
     -------
     list
-        A list of dictionaries, where each dictionary represents an encounter ID.
+        A list of dictionaries, where each dictionary represents an patient ID.
         Each dictionary contains two keys: 'label' and 'value'. The 'label' key
-        represents the string representation of the encounter ID, and the 'value'
+        represents the string representation of the patient ID, and the 'value'
         key represents the same value as the 'label' key.
     """
     db = SessionLocal()
     try:
-        results = db.execute(select(ApiGeneratedDoc.encounter_id).distinct()).fetchall()
+        results = db.execute(select(ApiEncounter.patient_number).distinct()).fetchall()
         return [
-            {"label": str(enc_id[0]), "value": str(enc_id[0])} for enc_id in results
+            {"label": str(patient_id[0]), "value": str(patient_id[0])}
+            for patient_id in results
         ]
     finally:
         db.close()
@@ -71,15 +79,16 @@ def update_dropdown(_) -> list:
 
 @app.callback(
     Output("discharge-letter-display", "children"),
-    [Input("encounter-dropdown", "value")],
+    Output("discharge-letter-store", "data"),
+    [Input("patient-dropdown", "value")],
 )
-def display_discharge_letter(selected_encounter_id: str) -> html.P:
-    """Display the discharge letter based on the selected encounter ID.
+def display_discharge_letter(selected_patient_id: str) -> html.P:
+    """Display the discharge letter based on the selected patient ID.
 
     Parameters
     ----------
-    selected_encounter_id : str
-        The selected encounter ID.
+    selected_patient_id : str
+        The selected patient ID.
 
     Returns
     -------
@@ -87,17 +96,39 @@ def display_discharge_letter(selected_encounter_id: str) -> html.P:
         A paragraph element containing the discharge letter.
     """
     db = SessionLocal()
-    if selected_encounter_id:
+    if selected_patient_id:
         try:
-            stmt = select(ApiGeneratedDoc.discharge_letter).where(
-                ApiGeneratedDoc.encounter_id == selected_encounter_id
+            query = (
+                select(ApiGeneratedDoc.discharge_letter)
+                .join(ApiEncounter, ApiGeneratedDoc.encounter_id == ApiEncounter.id)
+                .where(ApiEncounter.patient_number == selected_patient_id)
+                .order_by(desc(ApiGeneratedDoc.id))
+                .limit(1)
             )
-            result = db.execute(stmt).fetchone()
+
+            result = db.execute(query).fetchone()
             discharge_letter = result[0] if result else "No discharge letter found."
-            return html.P(discharge_letter)
+
+            if isinstance(discharge_letter, str):
+                discharge_letter = eval(discharge_letter)
+
+            output_structured = []
+            output_plain = ""
+            for category_pair in discharge_letter:
+                output_structured.append(
+                    html.Div(
+                        [
+                            html.Strong(category_pair["Categorie"]),
+                            dcc.Markdown(category_pair["Beloop tijdens opname"]),
+                        ]
+                    )
+                )
+                output_plain += f"{category_pair['Categorie']}\n"
+                output_plain += f"{category_pair['Beloop tijdens opname']}\n\n"
+            return output_structured, output_plain
         finally:
             db.close()
-    return html.P("Select an encounter ID to see the discharge letter.")
+    return html.P("Select an patient ID to see the discharge letter."), ""
 
 
 # Run the app

@@ -2,11 +2,11 @@
     "https://rsc.ds.umcutrecht.nl/": {
         "server_url": "https://rsc.ds.umcutrecht.nl/",
         "filename": "/mapr/administratielast/administratielast_onderzoeker/Laura/Discharge_Documentation_Generator",
-        "app_url": "https://rsc.ds.umcutrecht.nl/Pilot_evaluatie_dashboard/",
-        "app_id": "2ec4cbf9-b7c4-47a4-b168-0344b7456b65",
-        "app_guid": "2ec4cbf9-b7c4-47a4-b168-0344b7456b65",
-        "title": "Pilot Evaluatie Dashboard",
-        "app_mode": "python-dash",
+        "app_url": "https://rsc.ds.umcutrecht.nl/content/13ebe043-bcef-4123-853f-e559d582e599/",
+        "app_id": "13ebe043-bcef-4123-853f-e559d582e599",
+        "app_guid": "13ebe043-bcef-4123-853f-e559d582e599",
+        "title": "Discharge_Documentation_Generator",
+        "app_mode": "python-fastapi",
         "app_store_version": 1
     }
 }

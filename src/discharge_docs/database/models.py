@@ -117,23 +117,26 @@ class ApiEncounter(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     encounter_hix_id: Mapped[str]
-    input_token_length: Mapped[int]
+    patient_number: Mapped[str]
+
     request_id: Mapped[int] = mapped_column(
         Integer, ForeignKey(ApiRequest.id), init=False
     )
+
     department: Mapped[str]
 
-    generated_doc_relation: Mapped["ApiGeneratedDoc"] = relationship(init=False)
+    generated_doc_relation: Mapped[List["ApiGeneratedDoc"]] = relationship(init=False)
 
 
 class ApiGeneratedDoc(Base):
-    """Table that stores the generated discharge letters"""
+    """Table that stores the generated discharge letters and patiënt numbers"""
 
     __tablename__ = "apigenerateddoc"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     discharge_letter: Mapped[str]
+    input_token_length: Mapped[int]
     encounter_id: Mapped[str] = mapped_column(ForeignKey(ApiEncounter.id), init=False)
 
 

@@ -81,7 +81,7 @@ class PromptBuilder:
         user_prompt: str,
         template_prompt: str,
         addition_prompt: str | None = None,
-    ) -> dict:
+    ) -> list[dict]:
         """
         Generate discharge documentation using GPT model.
 

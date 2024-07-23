@@ -1,4 +1,12 @@
   SELECT
+    CONVERT(
+        VARCHAR(64),
+        HASHBYTES(
+            'SHA2_256',
+            CONCAT(enc.subject_Patient_value, 'aiva')
+        ),
+        2
+    ) AS pseudo_id,
     enc.subject_Patient_value,
     enc.identifier_value AS enc_id,
     enc.period_start,
@@ -11,8 +19,8 @@
     obs.effectiveDateTime,
     obs.valueString
 FROM
-    [DWH].[models].[Encounter] enc
-    JOIN [DWH].[models].[Observation] obs ON obs.context_Encounter_system = enc.identifier_system
+    [PUB].[aiva_discharge_docs].[Encounter] enc
+    JOIN [PUB].[aiva_discharge_docs].[Observation] obs ON obs.context_Encounter_system = enc.identifier_system
     AND obs.context_Encounter_value = enc.identifier_value
 WHERE
     1 = 1
@@ -22,7 +30,6 @@ WHERE
         'Neonatologie',
         'Intensive Care Centrum'
     )
-    --AND (enc.[status] = 'in-progress' OR (enc.[status] = 'finished' AND enc.period_end >= DATEADD(day, -1, GETDATE())))
     AND enc.[status] = 'in-progress'
     AND obs.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionVrijeTekstMeting'
-    AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag');
+    AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag')

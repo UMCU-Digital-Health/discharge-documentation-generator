@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.1] - 2024-07-02
 
+## [0.4.6] - 2024-07-18
+
+### Added 
+- working API that processes the data, pseudonomises it, generates a discharge letter and saves it to the database. 
+
+### Changed
+- the test data for the API is changed to what the real test data will look like
+- updated the dashboard that gathers the last entry in the database. 
+
+## [0.4.5] - 2024-06-19
 ### Added
 - Added a dashboard for phase 2 of the evaluation
 - Added tables for storing results of phase 2

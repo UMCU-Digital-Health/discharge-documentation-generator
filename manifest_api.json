@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-fastapi",
+    "entrypoint": "run.api:app"
+  },
+  "python": {
+    "version": "3.10.13",
+    "package_manager": {
+      "name": "pip",
+      "version": "24.1.2",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "d30f4aceb75a62dbb47a911c3a66a783"
+    },
+    "CHANGELOG.md": {
+      "checksum": "79016eb018c5f15e1917bc017b17ee15"
+    },
+    "README.md": {
+      "checksum": "785fa4e29ab9369b68b5e225e30b3968"
+    },
+    "deploy.sh": {
+      "checksum": "80cca1d7d7280470a99968e7dd658ac4"
+    },
+    "docs/Makefile": {
+      "checksum": "ef4f00c423089323edef1d3cff31a4a2"
+    },
+    "docs/_static/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "docs/conf.py": {
+      "checksum": "cda4962949e0daec53846d5e181f3ec3"
+    },
+    "docs/index.rst": {
+      "checksum": "15ae536a3c2b4212dd630c3665729d0f"
+    },
+    "docs/make.bat": {
+      "checksum": "1eb66bfc2d91ac65bd16a1a73bded2ca"
+    },
+    "dvc.lock": {
+      "checksum": "c5e15e5502bc98deebedae958b1cc684"
+    },
+    "dvc.yaml": {
+      "checksum": "3ddbde449ca5188e9f4ba07a9ce6e945"
+    },
+    "pyproject.toml": {
+      "checksum": "82287548e424411c46a617294c7fdad6"
+    },
+    "requirements-dev.lock": {
+      "checksum": "459387ca88d0ffbf2d969da5398e6b77"
+    },
+    "requirements.lock": {
+      "checksum": "78d12fd185d9e29b3bc6e58a79e67dd7"
+    },
+    "run/api.py": {
+      "checksum": "d2117f3ffc8587c433a32fbf4e412149"
+    },
+    "run/config/auth.toml": {
+      "checksum": "13b7b64ef90b49013743abb1d3391a71"
+    },
+    "run/config/auth.toml.dvc": {
+      "checksum": "2c93479f4d6537d3b1d47261f9bcc95a"
+    },
+    "run/config/auth_example.toml": {
+      "checksum": "0b12e286b05ff89b8ce360b2dc22710e"
+    },
+    "run/config/auth_fase1.toml": {
+      "checksum": "3a16bb1b6b2cf25dd2c0662ff7023c26"
+    },
+    "run/config/auth_fase1.toml.dvc": {
+      "checksum": "4089b71ec2333803196bd955648e7c06"
+    },
+    "src/discharge_docs/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/api/app.py": {
+      "checksum": "47966209e55fc13e1f995e9036ea5c91"
+    },
+    "src/discharge_docs/api/deployment_config.toml": {
+      "checksum": "22fed186e1c7f4fd4797f4d136e508d5"
+    },
+    "src/discharge_docs/dashboard/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/dashboard/dashboard_layout.py": {
+      "checksum": "e7270fbc7452d01a56cf9f96551552da"
+    },
+    "src/discharge_docs/dashboard/enc_ids_dashboard.toml": {
+      "checksum": "621a4d7e33258dd12f39aeafb3366639"
+    },
+    "src/discharge_docs/dashboard/enc_ids_pre_release_phase1_1.toml": {
+      "checksum": "5414f6580cd0c3fbe261e18f22b18225"
+    },
+    "src/discharge_docs/dashboard/helper.py": {
+      "checksum": "ac9e6d42c22333e726cb31158e6e651b"
+    },
+    "src/discharge_docs/database/models.py": {
+      "checksum": "981b30cc7405071cdbc02efa58efbb40"
+    },
+    "src/discharge_docs/evaluate/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/evaluate/evaluate_prompt.py": {
+      "checksum": "4cc62a66b2c9aeec2cc6a0a452f644cb"
+    },
+    "src/discharge_docs/evaluate/evaluate_prompt_helper.py": {
+      "checksum": "3a0d94565f366e78b8f02464764585c9"
+    },
+    "src/discharge_docs/processing/apply_rtf.py": {
+      "checksum": "af121095f5c4579895a6a875cc0d5093"
+    },
+    "src/discharge_docs/processing/deduce_text.py": {
+      "checksum": "2c639c9b5145534603c120212bdbe0db"
+    },
+    "src/discharge_docs/processing/processing.py": {
+      "checksum": "412bffbf302f6a9151c998518c224c2d"
+    },
+    "src/discharge_docs/processing/pseudo.toml": {
+      "checksum": "a2905f4a51edc4f7477cf5268ae00a98"
+    },
+    "src/discharge_docs/prompts/CAR_template_prompt.txt": {
+      "checksum": "1c5dfe415e139f03d1baf65317f15ce5"
+    },
+    "src/discharge_docs/prompts/IC_template_prompt.txt": {
+      "checksum": "d304f44aef3d499a97b091315df8d0d8"
+    },
+    "src/discharge_docs/prompts/NICU_template_prompt.txt": {
+      "checksum": "581e5d53f9def87bd89045a9688a980c"
+    },
+    "src/discharge_docs/prompts/PSY_template_prompt.txt": {
+      "checksum": "9ad286d824b70e72b5ab988897105ce6"
+    },
+    "src/discharge_docs/prompts/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/additional_information_prompt.txt": {
+      "checksum": "839e6913b0d64bb63c122273c67edd81"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/evaluation_prompt.txt": {
+      "checksum": "8850dc98ab66f044c300d8fb285353a3"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_correction_prompt.txt": {
+      "checksum": "cf090353b4d699cdaa203405dbdccd0d"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_intersection_prompt.txt": {
+      "checksum": "5ab0c58b87de6b7218320b26ebcc6afb"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/information_union_prompt.txt": {
+      "checksum": "77577ce28f688db2006874c56c5b90e8"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/missing_information_prompt.txt": {
+      "checksum": "a1b0407f0eaf1e25e0944879237e61ec"
+    },
+    "src/discharge_docs/prompts/automatic evaluation/split_into_segments_prompt.txt": {
+      "checksum": "4ec865ca05af628b2334d41423a67da3"
+    },
+    "src/discharge_docs/prompts/prompt.py": {
+      "checksum": "3c04db26a0b4741533833b78a34dd4c9"
+    },
+    "src/discharge_docs/prompts/prompt_builder.py": {
+      "checksum": "dae2e7e245a3389a9ca07be5171c74fb"
+    },
+    "src/discharge_docs/prompts/system_prompt.txt": {
+      "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
+    },
+    "src/discharge_docs/prompts/user_prompt.txt": {
+      "checksum": "c20c7cfe6f15c6ee16330d15f2ea16b1"
+    },
+    "src/discharge_docs/prompts/user_prompt_iterative.txt": {
+      "checksum": "65f2785d194c307bd13ea757df49aac0"
+    },
+    "write_manifest.sh": {
+      "checksum": "4a5c2720365e43d555b6faec8303a7c3"
+    }
+  }
+}

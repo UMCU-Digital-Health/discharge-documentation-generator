@@ -1,1 +1,145 @@
-[{"enc_id":1,"department":"NICU","date":"01-01-2024","value":"Reden voor opname: postoperatieve ademhalingsproblemen.","description":"Anamnese"},{"enc_id":1,"department":"NICU","date":"01-01-2024","value":"Respiratie: De pati\u00ebnt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.\nCardiologie: Vitale parameters zijn stabiel.\nNeurologie: De pati\u00ebnt is verward, vermoedelijk door de anesthesie.\nInfectie: -","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"02-01-2024","value":"Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.\nCardiologie: Stabiele vitale parameters.\nNeurologie: Verwardheid blijft aanhouden, vermoeden op delier.\nInfectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"03-01-2024","value":"Respiratie: beademing-ondersteuning wordt voortgezet.\nCardiologie: Stabiele vitale parameters.\nNeurologie: delier.\nInfectie: minimale verdere stijging in temp, antibiotica worden voortgezet.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"04-01-2024","value":"Respiratie: Enige verbetering in de ademhaling, pati\u00ebnt blijft afhankelijk van beademing.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier nemen toe.\nInfectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"05-01-2024","value":"Respiratie: beademing-ondersteuning.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier.\nInfectie: constant, antibioticakuur.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"06-01-2024","value":"Respiratie: beademing-ondersteuning.\nCardiologie: - (Geen significante verandering)\nNeurologie: Delier verbetert geleidelijk.\nInfectie: -  constant, antibioticakuur.\n","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"07-01-2024","value":"Respiratie: De pati\u00ebnt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.\nCardiologie: Vitale parameters stabiliseren met behulp van medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"08-01-2024","value":"Respiratie: - (Geen significante verandering)\nCardiologie: - (Geen significante verandering)\nNeurologie: geen delier meer\nInfectie:  constant, antibioticakuur.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"09-01-2024","value":"Respiratie: zuurstof, patient zwak  \nCardiologie: - (Geen significante verandering)\nNeurologie: stabiel en helder\nInfectie:  constant, antibioticakuur.","description":"Dagstatus"},{"enc_id":1,"department":"NICU","date":"10-01-2024","value":"Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof\nCardiologie: Vitale parameters zijn nu stabiel zonder medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.","description":"Dagstatus"},{"enc_id":2,"department":"IC","date":"01-04-2024","value":"De pati\u00ebnt, heeft vandaag een stabiele nacht gehad zonder \nsignificante incidenten. Zijn vitale functies zijn binnen de verwachte grenzen gebleven,\nmet een bloeddruk van 120\/80 mmHg, een hartslag van 78 slagen per minuut en een\nzuurstofsaturatie van 95% op 2 liter zuurstof via een neusbril. Gedurende de dag heeft\nhij driemaal fysiotherapie gehad om zijn ademhalingsfunctie te ondersteunen en \nmobiliteit te bevorderen. Er is een lichte verhoging in de ontstekingswaarden\ngeconstateerd, waardoor de antibiotica kuur is voortgezet zoals voorgeschreven.\nVoeding wordt nog steeds via een nasogastrische sonde toegediend en hij verdraagt dit\ngoed. De planning voor morgen is om een weaningsproces te starten om te kijken of\nmeneer Jansen langzaam van de beademingsmachine af kan komen.","description":"Conclusie"}]
+[
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "1",
+        "valueString": "Reden voor opname: postoperatieve ademhalingsproblemen.",
+        "code_display_original": "Anamnese"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "1",
+        "valueString": "Respiratie: De pati\u00ebnt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.\nCardiologie: Vitale parameters zijn stabiel.\nNeurologie: De pati\u00ebnt is verward, vermoedelijk door de anesthesie.\nInfectie: -",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "02",
+        "valueString": "Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.\nCardiologie: Stabiele vitale parameters.\nNeurologie: Verwardheid blijft aanhouden, vermoeden op delier.\nInfectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "03",
+        "valueString": "Respiratie: beademing-ondersteuning wordt voortgezet.\nCardiologie: Stabiele vitale parameters.\nNeurologie: delier.\nInfectie: minimale verdere stijging in temp, antibiotica worden voortgezet.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "04",
+        "valueString": "Respiratie: Enige verbetering in de ademhaling, pati\u00ebnt blijft afhankelijk van beademing.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier nemen toe.\nInfectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "05",
+        "valueString": "Respiratie: beademing-ondersteuning.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier.\nInfectie: constant, antibioticakuur.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "06",
+        "valueString": "Respiratie: beademing-ondersteuning.\nCardiologie: - (Geen significante verandering)\nNeurologie: Delier verbetert geleidelijk.\nInfectie: -  constant, antibioticakuur.\n",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "07",
+        "valueString": "Respiratie: De pati\u00ebnt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.\nCardiologie: Vitale parameters stabiliseren met behulp van medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "08",
+        "valueString": "Respiratie: - (Geen significante verandering)\nCardiologie: - (Geen significante verandering)\nNeurologie: geen delier meer\nInfectie:  constant, antibioticakuur.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "09",
+        "valueString": "Respiratie: zuurstof, patient zwak  \nCardiologie: - (Geen significante verandering)\nNeurologie: stabiel en helder\nInfectie:  constant, antibioticakuur.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 1234,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "Neonatologie",
+        "effectiveDateTime": "10",
+        "valueString": "Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof\nCardiologie: Vitale parameters zijn nu stabiel zonder medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 2345,
+        "pseudo_id": "test_pseudo_id",
+        "subject_Patient_value": "0123456789",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "IC",
+        "effectiveDateTime": "1",
+        "valueString": "De pati\u00ebnt, heeft vandaag een stabiele nacht gehad zonder \nsignificante incidenten. Zijn vitale functies zijn binnen de verwachte grenzen gebleven,\nmet een bloeddruk van 120\/80 mmHg, een hartslag van 78 slagen per minuut en een\nzuurstofsaturatie van 95% op 2 liter zuurstof via een neusbril. Gedurende de dag heeft\nhij driemaal fysiotherapie gehad om zijn ademhalingsfunctie te ondersteunen en \nmobiliteit te bevorderen. Er is een lichte verhoging in de ontstekingswaarden\ngeconstateerd, waardoor de antibiotica kuur is voortgezet zoals voorgeschreven.\nVoeding wordt nog steeds via een nasogastrische sonde toegediend en hij verdraagt dit\ngoed. De planning voor morgen is om een weaningsproces te starten om te kijken of\nmeneer Jansen langzaam van de beademingsmachine af kan komen.",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    },
+    {
+        "enc_id": 4567,
+        "pseudo_id": "test_pseudo_id2",
+        "subject_Patient_value": "1234567891",
+        "period_start": "1",
+        "period_end": "NaN",
+        "location_Location_value_original": "IC",
+        "effectiveDateTime": "1",
+        "valueString": "test2",
+        "code_display_original": "Dagstatus - Tractus 12 Conclusie"
+    }
+]
