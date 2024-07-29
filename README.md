@@ -19,8 +19,6 @@ rsconnect deploy dash --server https://rsc.ds.umcutrecht.nl/ --api-key <(user sp
 ```
 
 ## Documentation
-Generate the Sphinx documentation as follows:
 
-```
-sphinx-build -b html docs docs/_build
-```
+A dataset card specifying the dataset can be found [here](/docs/dataset_card.md)
+A model card specifying the used model can be found [here](/docs/model_card.md)
