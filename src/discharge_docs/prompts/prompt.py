@@ -30,7 +30,11 @@ def load_prompts(iterative: bool = False):
 def load_evaluatie_prompt():
     """loads the evaluatie prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "evaluatie_prompt.txt", "r"
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "evaluation_prompt.txt",
+        "r",
     ) as file:
         evaluatie_prompt = file.read()
     return evaluatie_prompt
@@ -53,8 +57,6 @@ def load_template_prompt(department: str) -> str:
     departments_dict = {
         "Neonatologie": "NICU",
         "Intensive Care Centrum": "IC",
-        "High Care Kinderen": "PICU",
-        "Intensive Care Kinderen": "PICU",
     }
     if department in departments_dict:
         department = departments_dict[department]
@@ -93,7 +95,11 @@ def load_all_templates_prompts_into_dict(
 def load_missing_information_prompt():
     """loads the missing information evaluation prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "missing_information_prompt.txt", "r"
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "missing_information_prompt.txt",
+        "r",
     ) as file:
         evaluatie_prompt = file.read()
     return evaluatie_prompt
@@ -102,7 +108,11 @@ def load_missing_information_prompt():
 def load_additional_information_prompt():
     """loads the additional information evaluation prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "additional_information_prompt.txt", "r"
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "additional_information_prompt.txt",
+        "r",
     ) as file:
         evaluatie_prompt = file.read()
     return evaluatie_prompt
@@ -111,7 +121,11 @@ def load_additional_information_prompt():
 def load_information_union_prompt():
     """loads the information union prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "information_union_prompt.txt", "r"
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "information_union_prompt.txt",
+        "r",
     ) as file:
         evaluatie_prompt = file.read()
     return evaluatie_prompt
@@ -120,7 +134,10 @@ def load_information_union_prompt():
 def load_information_intersection_prompt():
     """loads the information intersection prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "information_intersection_prompt.txt",
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "information_intersection_prompt.txt",
         "r",
     ) as file:
         evaluatie_prompt = file.read()
@@ -130,7 +147,10 @@ def load_information_intersection_prompt():
 def load_information_correction_prompt():
     """loads the information correction prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "information_correction_prompt.txt",
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "information_correction_prompt.txt",
         "r",
     ) as file:
         evaluatie_prompt = file.read()
@@ -140,7 +160,11 @@ def load_information_correction_prompt():
 def load_segment_prompt():
     """loads the segment prompt from the prompts folder"""
     with open(
-        Path(__file__).parents[1] / "prompts" / "split_into_segments_prompt.txt", "r"
+        Path(__file__).parents[1]
+        / "prompts"
+        / "automatic evaluation"
+        / "split_into_segments_prompt.txt",
+        "r",
     ) as file:
         segment_prompt = file.read()
     return segment_prompt

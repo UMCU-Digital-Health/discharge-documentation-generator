@@ -1,19 +1,19 @@
-import json
 import logging
 import os
-import traceback
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 import tomli
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security.api_key import APIKeyHeader
 from openai import AzureOpenAI
-from sqlalchemy import create_engine, delete, select
+from pydantic import BaseModel
+from sqlalchemy import create_engine, delete, desc, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from discharge_docs.dashboard.helper import format_generated_doc
 from discharge_docs.database.models import (
     ApiEncounter,
     ApiGeneratedDoc,
@@ -59,12 +59,25 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, execution_options=execution_opti
 Base.metadata.create_all(engine)
 SessionLocal = sessionmaker(bind=engine)
 
-api_key_header = APIKeyHeader(name="X-API-KEY", auto_error=False)
+header_scheme = APIKeyHeader(name="X-API-KEY")
+
+
+class Patient(BaseModel):
+    patient_id: str
+
+
+class PatientFile(BaseModel):
+    enc_id: int
+    pseudo_id: str
+    subject_Patient_value: str
+    period_start: str
+    location_Location_value_original: str
+    effectiveDateTime: str
+    valueString: str
+    code_display_original: str
+
 
 app = FastAPI()
-
-TEMPERATURE = 0.2
-deployment_name = "aiva-gpt"
 
 client = AzureOpenAI(
     api_version="2024-02-01",
@@ -77,137 +90,180 @@ with open(Path(__file__).parent / "deployment_config.toml", "rb") as f:
 
 
 def get_db():
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         yield db
+    finally:
         db.close()
-    except Exception as e:
-        print(e)
-
-
-def check_api_key(api_key_header: str = Security(api_key_header)) -> str:
-    if api_key_header == os.getenv("X_API_KEY", ""):
-        return api_key_header
-    else:
-        raise HTTPException(403, "Unauthorized, Api Key not valid")
 
 
 @app.post("/process-and-generate-discharge-docs")
 async def process_and_generate_discharge_docs(
-    data: list[dict],
+    data: list[PatientFile],
     db: Session = Depends(get_db),
-    api_key: str = Depends(check_api_key),
+    key: str = Depends(header_scheme),
 ) -> dict:
-    """For every encounter update the discharge documentation with the latest
-    information.
+    """Process the data and generate discharge documentation.
+    Save this to database.
 
     Parameters
     ----------
-    daily_updates : list[dict]
-        raw export of patient data in json-format,
-        needs at least the following fields:
-          TODO ADD FIELDS
+    data : list[PatientFile]
+        json data containing the patient data
+    db : Session, optional
+        database, by default Depends(get_db)
+    key : str, optional
+        api_key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    dict
+        message and last generated discharge letter in the for loop (only relevant when
+         a single discharge letter is generated)
+
+    Raises
+    ------
+    HTTPException
+        403 error when the api_key is not authorized
     """
-    try:
-        start_time = datetime.now()
-
-        data_df = pd.DataFrame.from_records(data)
-
-        processed_data = process_data_metavision_dp(data_df, nifi=True)
-
-        processed_data = apply_deduce(processed_data, "value")
-
-        api_request = ApiRequest(
-            timestamp=start_time,
-            endpoint="/update-discharge-docs",
-            api_version=API_VERSION,
+    if key != os.getenv("X_API_KEY"):
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
         )
 
-        prompt_builder = PromptBuilder(
-            temperature=deployment_config_dict["TEMPERATURE"],
-            deployment_name=deployment_config_dict["deployment_name"],
-            client=client,
+    start_time = datetime.now()
+
+    validated_data = [item.model_dump() for item in data]
+    data_df = pd.DataFrame.from_records(validated_data)
+
+    processed_data = process_data_metavision_dp(data_df, nifi=True)
+
+    processed_data = apply_deduce(processed_data, "value")
+
+    api_request = ApiRequest(
+        timestamp=start_time,
+        endpoint="/update-discharge-docs",
+        api_version=API_VERSION,
+    )
+
+    prompt_builder = PromptBuilder(
+        temperature=deployment_config_dict["TEMPERATURE"],
+        deployment_name=deployment_config_dict["deployment_name"],
+        client=client,
+    )
+    user_prompt, system_prompt = load_prompts()
+
+    for enc_id in processed_data["enc_id"].unique():
+        patient_file_string, patient_df = get_patient_file(processed_data, enc_id)
+        department = patient_df["department"].values[0]
+        template_prompt = load_template_prompt(department)
+
+        token_length = prompt_builder.get_token_length(
+            patient_file_string, system_prompt, user_prompt, template_prompt
         )
-        user_prompt, system_prompt = load_prompts()
 
-        for enc_id in processed_data["enc_id"].unique():
-            patient_file_string, patient_df = get_patient_file(processed_data, enc_id)
-            department = patient_df["department"].values[0]
-            template_prompt = load_template_prompt(department)
+        logger.info(
+            f"Generating discharge doc for encounter {enc_id} "
+            f"and department {department}..."
+        )
 
-            token_length = prompt_builder.get_token_length(
-                patient_file_string, system_prompt, user_prompt, template_prompt
+        discharge_letter = prompt_builder.generate_discharge_doc(
+            patient_file=patient_file_string,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            template_prompt=template_prompt,
+        )
+
+        if discharge_letter[0]["Categorie"] in [
+            "LengthError",
+            "JSONError",
+            "GeneralError",
+        ]:
+            discharge_letter = discharge_letter[0]["Beloop tijdens opname"]
+        else:
+            discharge_letter = format_generated_doc(
+                discharge_letter, format_type="plain"
             )
 
-            logger.info(
-                f"Generating discharge doc for encounter {enc_id} "
-                f"and department {department}..."
+            discharge_letter = (
+                "--------------- \n"
+                + "START AI-gegenereerde tekst: \n\n"
+                + "NB: Dit deel is gegenereerd voor patient "
+                + str(patient_df["patient_number"].values[0])
+                + " op: "
+                + str(datetime.now().strftime("%Y-%m-%d %H:%M"))
+                + "\n\n"
+                + discharge_letter
+                + "\n\nEINDE AI-gegenereerde tekst."
+                + "\n---------------"
             )
 
-            discharge_letter = prompt_builder.generate_discharge_doc(
-                patient_file=patient_file_string,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                template_prompt=template_prompt,
+        api_encounter = db.execute(
+            select(ApiEncounter).where(ApiEncounter.encounter_hix_id == str(enc_id))
+        ).scalar_one_or_none()
+
+        if not api_encounter:
+            api_encounter = ApiEncounter(
+                encounter_hix_id=str(enc_id),
+                patient_number=str(patient_df["patient_number"].values[0]),
+                department=department,
             )
 
-            discharge_letter.insert(
-                0,
-                {
-                    "Categorie": "Datum gegenereerd",
-                    "Beloop tijdens opname": "Deze brief is gegenereerd door AI op: "
-                    + str(datetime.now().strftime("%Y-%m-%d %H:%M")),
-                },
-            )
+        api_discharge_letter = ApiGeneratedDoc(
+            discharge_letter=discharge_letter,
+            input_token_length=token_length,
+        )
+        api_encounter.generated_doc_relation.append(api_discharge_letter)
+        api_request.encounter_relation.append(api_encounter)
 
-            api_encounter = db.execute(
-                select(ApiEncounter).where(ApiEncounter.encounter_hix_id == str(enc_id))
-            ).scalar_one_or_none()
-
-            if not api_encounter:
-                api_encounter = ApiEncounter(
-                    encounter_hix_id=str(enc_id),
-                    patient_number=str(patient_df["patient_number"].values[0]),
-                    department=department,
-                )
-            else:
-                pass
-
-            api_discharge_letter = ApiGeneratedDoc(
-                discharge_letter=json.dumps(discharge_letter),
-                input_token_length=token_length,
-            )
-            api_encounter.generated_doc_relation.append(api_discharge_letter)
-            api_request.encounter_relation.append(api_encounter)
-
-        end_time = datetime.now()
-        runtime = (end_time - start_time).total_seconds()
-        api_request.runtime = runtime
-        api_request.response_code = 200
-        db.merge(api_request)
-        db.commit()
-
-    except Exception as e:
-        tb = traceback.format_exc()
-        logger.error(f"Error in update_discharge_docs: {e}\n{tb}")
-        raise HTTPException(500, "Internal Server Error") from e
-    return {"message": "Success"}
+    end_time = datetime.now()
+    runtime = (end_time - start_time).total_seconds()
+    api_request.runtime = runtime
+    api_request.response_code = 200
+    api_request.number_affected = len(processed_data["enc_id"].unique())
+    db.merge(api_request)
+    db.commit()
+    return {
+        "message": "Success",
+        "discharge_letter": discharge_letter,
+    }
 
 
 @app.post("/remove_old_discharge_docs")
 async def remove_old_discharge_docs(
     max_date: datetime,
     db: Session = Depends(get_db),
-    api_key: str = Depends(check_api_key),
+    key: str = Depends(header_scheme),
 ) -> dict:
-    """Remove all discharge documentation generated before the given date.
+    """Remove old discharge documents from the database. This removes all discharge
+    letters before the specified date given that there is no newly generated document
+    after the specified date. Meaning only non-active patients will have their discharge
+    letters removed.
 
     Parameters
     ----------
     max_date : datetime
-        The maximum date for which discharge documentation should be kept.
+        The maximum date for which discharge documents should be removed.
         Example format: YYYY-MM-DDT00:00:00
+    db : Session, optional
+        The database session, by default Depends(get_db)
+    key : str, optional
+        The API key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    dict
+        A dictionary indicating the success of the operation.
+
+    Raises
+    ------
+    HTTPException
+        Raises a 403 error when the API key is not authorized.
     """
+    if key != os.getenv("X_API_KEY"):
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
+        )
     start_time = datetime.now()
     api_request = ApiRequest(
         timestamp=datetime.now(),
@@ -233,10 +289,78 @@ async def remove_old_discharge_docs(
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()
+    api_request.number_affected = rows_deleted.rowcount
     db.add(api_request)
     db.commit()
 
     return {"message": "Success"}
+
+
+@app.post("/retrieve_discharge_doc")
+async def retrieve_discharge_doc(
+    patient_id: str,
+    db: Session = Depends(get_db),
+    key: str = Depends(header_scheme),
+) -> str:
+    """Retrieve the discharge document for a specific patient.
+
+    Parameters
+    ----------
+    patient_id : str
+        The ID of the patient.
+    db : Session, optional
+        The database session, by default Depends(get_db)
+    key : str, optional
+        The API key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    str
+        The discharge document for the patient.
+
+    Raises
+    ------
+    HTTPException
+        Raises a 403 error when the API key is not authorized.
+    """
+    if key != os.getenv("X_API_KEY"):
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
+        )
+    start_time = datetime.now()
+    api_request = ApiRequest(
+        timestamp=datetime.now(),
+        endpoint="/retrieve_discharge_doc",
+        api_version=API_VERSION,
+    )
+
+    query = (
+        select(ApiGeneratedDoc.discharge_letter)
+        .join(ApiEncounter, ApiGeneratedDoc.encounter_id == ApiEncounter.id)
+        .where(ApiEncounter.patient_number == patient_id)
+        .order_by(desc(ApiGeneratedDoc.id))
+        .limit(1)
+    )
+
+    result = db.execute(query).fetchone()
+
+    if result:
+        discharge_letter = result[0]
+        api_request.number_affected = 1
+    else:
+        discharge_letter = (
+            "Er is geen ontslagbrief in de database gevonden voor patiënt "
+            + f"{patient_id}."
+        )
+        api_request.number_affected = 0
+
+    api_request.response_code = 200
+    api_request.runtime = (datetime.now() - start_time).total_seconds()
+
+    db.add(api_request)
+    db.commit()
+
+    return discharge_letter
 
 
 @app.get("/")

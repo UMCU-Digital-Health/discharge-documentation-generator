@@ -103,6 +103,7 @@ class ApiRequest(Base):
     endpoint: Mapped[str]
     runtime: Mapped[float] = mapped_column(init=False)
     api_version: Mapped[str]
+    number_affected: Mapped[int] = mapped_column(init=False)
 
     encounter_relation: Mapped[List["ApiEncounter"]] = relationship(init=False)
 

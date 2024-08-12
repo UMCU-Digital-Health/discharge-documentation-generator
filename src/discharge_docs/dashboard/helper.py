@@ -507,3 +507,40 @@ def generate_annotation_datatable(type: str, header_color: str) -> dash_table.Da
             }
         },
     )
+
+
+def format_generated_doc(generated_doc: list[dict], format_type: str) -> str:
+    """Convert the generated document to plain text or markdown with headers.
+
+    Parameters
+    ----------
+    generated_doc : list[dict]
+        The generated document in a list of dict.
+    format_type : str
+        The desired format type of the generated document.
+
+    Returns
+    -------
+    str
+        The plain text version of the generated document.
+    """
+
+    output_structured = []
+    output_plain = ""
+    for category_pair in generated_doc:
+        output_structured.append(
+            html.Div(
+                [
+                    html.Strong(category_pair["Categorie"]),
+                    dcc.Markdown(category_pair["Beloop tijdens opname"]),
+                ]
+            )
+        )
+        output_plain += f"{category_pair['Categorie']}\n"
+        output_plain += f"{category_pair['Beloop tijdens opname']}\n\n"
+    if format_type == "markdown":
+        return output_structured
+    elif format_type == "plain":
+        return output_plain
+    else:
+        return ""

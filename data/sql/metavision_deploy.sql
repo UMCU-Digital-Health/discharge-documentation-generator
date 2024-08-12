@@ -10,7 +10,6 @@
     enc.subject_Patient_value,
     enc.identifier_value AS enc_id,
     enc.period_start,
-    enc.period_end,
     enc.[status],
     enc.location_Location_value_original,
     obs.identifier_value AS obs_id,
@@ -33,3 +32,4 @@ WHERE
     AND enc.[status] = 'in-progress'
     AND obs.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionVrijeTekstMeting'
     AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag')
+    AND obs.code_display_original IS NOT NULL

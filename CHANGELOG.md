@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2024-08-06
+
+### Changed
+- changed the discharge doc to be saved as a string instead of a json. 
+- Error handeling in the PromptBuilder class
+- authentication check X-API-KEY
+- database connection get_db() updated
+- query for dataplatform to not contain NULL
+
+### Added
+- include the API for retrieving from the database
+- Error handling and check in API
+- Pydantic type class to ensure error handling of patient data file
+- unit tests for processing
+- unit tests for API
+- unit tests for PromptBuilder and prompt helper file
+
 ## [0.5.3] - 2024-07-23
 
 ### Added

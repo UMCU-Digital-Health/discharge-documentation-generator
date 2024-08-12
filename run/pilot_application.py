@@ -40,8 +40,7 @@ app.layout = html.Div(
             value=None,
             clearable=False,
         ),
-        html.Div(id="discharge-letter-display"),
-        dcc.Store(id="discharge-letter-store", data=None),
+        dcc.Markdown(id="discharge-letter-display"),
     ]
 )
 
@@ -79,10 +78,9 @@ def update_dropdown(_) -> list:
 
 @app.callback(
     Output("discharge-letter-display", "children"),
-    Output("discharge-letter-store", "data"),
     [Input("patient-dropdown", "value")],
 )
-def display_discharge_letter(selected_patient_id: str) -> html.P:
+def display_discharge_letter(selected_patient_id: str) -> str:
     """Display the discharge letter based on the selected patient ID.
 
     Parameters
@@ -92,7 +90,7 @@ def display_discharge_letter(selected_patient_id: str) -> html.P:
 
     Returns
     -------
-    html.P
+    str
         A paragraph element containing the discharge letter.
     """
     db = SessionLocal()
@@ -108,27 +106,10 @@ def display_discharge_letter(selected_patient_id: str) -> html.P:
 
             result = db.execute(query).fetchone()
             discharge_letter = result[0] if result else "No discharge letter found."
-
-            if isinstance(discharge_letter, str):
-                discharge_letter = eval(discharge_letter)
-
-            output_structured = []
-            output_plain = ""
-            for category_pair in discharge_letter:
-                output_structured.append(
-                    html.Div(
-                        [
-                            html.Strong(category_pair["Categorie"]),
-                            dcc.Markdown(category_pair["Beloop tijdens opname"]),
-                        ]
-                    )
-                )
-                output_plain += f"{category_pair['Categorie']}\n"
-                output_plain += f"{category_pair['Beloop tijdens opname']}\n\n"
-            return output_structured, output_plain
+            return discharge_letter
         finally:
             db.close()
-    return html.P("Select an patient ID to see the discharge letter."), ""
+    return "Select an patient ID to see the discharge letter."
 
 
 # Run the app

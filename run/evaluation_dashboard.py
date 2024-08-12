@@ -9,7 +9,7 @@ import flask
 import numpy as np
 import pandas as pd
 import tomli
-from dash import ctx, dcc, html
+from dash import ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from discharge_docs.dashboard.dashboard_layout import get_layout_evaluation_dashboard
 from discharge_docs.dashboard.helper import (
+    format_generated_doc,
     get_authorization,
     get_authorized_patients,
     get_data_from_patient_admission,
@@ -36,8 +37,10 @@ from discharge_docs.database.models import (
     DashUserPrompt,
 )
 from discharge_docs.processing.processing import (
-    get_patient_discharge_docs,
     get_patient_file,
+)
+from discharge_docs.processing.processing_dev import (
+    get_patient_discharge_docs,
 )
 from discharge_docs.prompts.prompt import (
     load_all_templates_prompts_into_dict,
@@ -527,16 +530,7 @@ def display_generated_discharge_doc(
         )
         generated_doc = discharge_letter
 
-    generated_output = []
-    for category_pair in generated_doc:
-        generated_output.append(
-            html.Div(
-                [
-                    html.Strong(category_pair["Categorie"]),
-                    dcc.Markdown(category_pair["Beloop tijdens opname"]),
-                ]
-            )
-        )
+    generated_output = format_generated_doc(generated_doc, format_type="markdown")
     return generated_output
 
 

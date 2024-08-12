@@ -14,10 +14,8 @@ from discharge_docs.evaluate.evaluate_prompt_helper import (
     information_delta,
     split_letter_into_segments,
 )
-from discharge_docs.processing.processing import (
-    get_patient_discharge_docs,
-    get_patient_file,
-)
+from discharge_docs.processing.processing import get_patient_file
+from discharge_docs.processing.processing_dev import get_patient_discharge_docs
 from discharge_docs.prompts.prompt import (
     load_evaluation_prompt,
     load_information_correction_prompt,

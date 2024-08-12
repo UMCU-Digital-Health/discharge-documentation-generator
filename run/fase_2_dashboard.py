@@ -33,7 +33,7 @@ from discharge_docs.database.models import (
     EvalPhase2ExtraQuestions,
 )
 from discharge_docs.database.student_annotation import get_student_annotations
-from discharge_docs.processing.processing import get_patient_discharge_docs
+from discharge_docs.processing.processing_dev import get_patient_discharge_docs
 
 logger = logging.getLogger(__name__)
 

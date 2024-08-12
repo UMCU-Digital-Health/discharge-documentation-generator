@@ -28,7 +28,7 @@ from discharge_docs.dashboard.helper import (
     load_stored_discharge_letters_pre_release,
 )
 from discharge_docs.database.models import Base, EvalPhase1
-from discharge_docs.processing.processing import get_patient_discharge_docs
+from discharge_docs.processing.processing_dev import get_patient_discharge_docs
 
 logger = logging.getLogger(__name__)
 
