@@ -62,10 +62,6 @@ SessionLocal = sessionmaker(bind=engine)
 header_scheme = APIKeyHeader(name="X-API-KEY")
 
 
-class Patient(BaseModel):
-    patient_id: str
-
-
 class PatientFile(BaseModel):
     enc_id: int
     pseudo_id: str
@@ -296,7 +292,7 @@ async def remove_old_discharge_docs(
     return {"message": "Success"}
 
 
-@app.post("/retrieve_discharge_doc")
+@app.get("/retrieve_discharge_doc/{patient_id}")
 async def retrieve_discharge_doc(
     patient_id: str,
     db: Session = Depends(get_db),

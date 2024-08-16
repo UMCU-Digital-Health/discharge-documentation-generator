@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.5.5] - 2024-15-06
+
+### Changed
+- retrieving API patient id call option for metavision integration
+
 ## [0.5.4] - 2024-08-06
 
 ### Changed
