@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from discharge_docs.dashboard.helper import format_generated_doc
 from discharge_docs.database.models import (
     ApiEncounter,
+    ApiFeedback,
     ApiGeneratedDoc,
     ApiRequest,
     Base,
@@ -175,24 +176,23 @@ async def process_and_generate_discharge_docs(
             "JSONError",
             "GeneralError",
         ]:
+            success = discharge_letter[0]["Categorie"]
             discharge_letter = discharge_letter[0]["Beloop tijdens opname"]
+
         else:
             discharge_letter = format_generated_doc(
                 discharge_letter, format_type="plain"
             )
 
             discharge_letter = (
-                "--------------- \n"
-                + "START AI-gegenereerde tekst: \n\n"
-                + "NB: Dit deel is gegenereerd voor patient "
+                "Deze brief is door AI gegenereerd voor patient "
                 + str(patient_df["patient_number"].values[0])
                 + " op: "
-                + str(datetime.now().strftime("%Y-%m-%d %H:%M"))
+                + str(start_time.strftime("%Y-%m-%d %H:%M"))
                 + "\n\n"
                 + discharge_letter
-                + "\n\nEINDE AI-gegenereerde tekst."
-                + "\n---------------"
             )
+            success = "Success"
 
         api_encounter = db.execute(
             select(ApiEncounter).where(ApiEncounter.encounter_hix_id == str(enc_id))
@@ -208,6 +208,7 @@ async def process_and_generate_discharge_docs(
         api_discharge_letter = ApiGeneratedDoc(
             discharge_letter=discharge_letter,
             input_token_length=token_length,
+            success=success,
         )
         api_encounter.generated_doc_relation.append(api_discharge_letter)
         api_request.encounter_relation.append(api_encounter)
@@ -216,7 +217,7 @@ async def process_and_generate_discharge_docs(
     runtime = (end_time - start_time).total_seconds()
     api_request.runtime = runtime
     api_request.response_code = 200
-    api_request.number_affected = len(processed_data["enc_id"].unique())
+    api_request.logging_number = len(processed_data["enc_id"].unique())
     db.merge(api_request)
     db.commit()
     return {
@@ -285,16 +286,16 @@ async def remove_old_discharge_docs(
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()
-    api_request.number_affected = rows_deleted.rowcount
+    api_request.logging_number = rows_deleted.rowcount
     db.add(api_request)
     db.commit()
 
     return {"message": "Success"}
 
 
-@app.get("/retrieve_discharge_doc/{patient_id}")
+@app.get("/retrieve_discharge_doc/{enc_id}")
 async def retrieve_discharge_doc(
-    patient_id: str,
+    enc_id: str,
     db: Session = Depends(get_db),
     key: str = Depends(header_scheme),
 ) -> str:
@@ -302,8 +303,8 @@ async def retrieve_discharge_doc(
 
     Parameters
     ----------
-    patient_id : str
-        The ID of the patient.
+    enc_id : str
+        The encounter ID of the patient.
     db : Session, optional
         The database session, by default Depends(get_db)
     key : str, optional
@@ -329,26 +330,67 @@ async def retrieve_discharge_doc(
         endpoint="/retrieve_discharge_doc",
         api_version=API_VERSION,
     )
+    # initialize the logging number
+    api_request.logging_number = 0
 
+    # Fetch the last 7 discharge letters for the given encounter ID
     query = (
-        select(ApiGeneratedDoc.discharge_letter)
-        .join(ApiEncounter, ApiGeneratedDoc.encounter_id == ApiEncounter.id)
-        .where(ApiEncounter.patient_number == patient_id)
-        .order_by(desc(ApiGeneratedDoc.id))
-        .limit(1)
-    )
-
-    result = db.execute(query).fetchone()
-
-    if result:
-        discharge_letter = result[0]
-        api_request.number_affected = 1
-    else:
-        discharge_letter = (
-            "Er is geen ontslagbrief in de database gevonden voor patiënt "
-            + f"{patient_id}."
+        select(
+            ApiGeneratedDoc.discharge_letter,
+            ApiGeneratedDoc.encounter_id,
+            ApiGeneratedDoc.id,
+            ApiGeneratedDoc.success,
         )
-        api_request.number_affected = 0
+        .join(ApiEncounter, ApiGeneratedDoc.encounter_id == ApiEncounter.id)
+        .where(ApiEncounter.encounter_hix_id == enc_id)
+        .order_by(desc(ApiGeneratedDoc.id))
+        .limit(7)
+    )
+    result = db.execute(query).fetchall()
+
+    result_df = pd.DataFrame(
+        result, columns=["discharge_letter", "encounter_id", "id", "success"]
+    )
+    if result_df.empty:
+        discharge_letter = (
+            f"Er is geen ontslagbrief in de database gevonden voor patiënt {enc_id}."
+        )
+
+    else:
+        # Get the most recent letter regardless of success
+        latest_letter = result_df.iloc[0]
+
+        # filter for the successful letters
+        successful_letters = result_df[result_df["success"] == "Success"]
+
+        if successful_letters.empty:
+            discharge_letter = (
+                "Er is geen successvolle AI-gegeneratie van de ontslagbrief geweest in "
+                + f"de afgelopen 7 dagen voor patiënt {enc_id}."
+            )
+            if latest_letter["success"] == "LengthError":
+                discharge_letter += (
+                    " Dit komt doordat het patientendossier te lang is geworden voor "
+                    + "het dossier."
+                )
+
+        else:
+            # Get the most recent successful letter
+            latest_successful_letter = successful_letters.iloc[0]
+            discharge_letter = latest_successful_letter["discharge_letter"]
+
+            # add note if letter older than 1 day is retrieved
+            if latest_letter["success"] != "Success":
+                discharge_letter = (
+                    "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd. "
+                    + "\n\n "
+                    + discharge_letter
+                )
+
+            api_request.logging_number = (
+                f"{latest_successful_letter['encounter_id']}_"
+                f"{latest_successful_letter['id']}"
+            )
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()
@@ -357,6 +399,60 @@ async def retrieve_discharge_doc(
     db.commit()
 
     return discharge_letter
+
+
+@app.post("/save-feedback/{feedback}")
+async def save_feedback(
+    feedback: str,
+    db: Session = Depends(get_db),
+    key: str = Depends(header_scheme),
+) -> dict:
+    """Save the feedback provided by the user.
+
+    Parameters
+    ----------
+    feedback : str
+        The feedback provided by the user.
+    db : Session, optional
+        The database session, by default Depends(get_db)
+    key : str, optional
+        The API key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    dict
+        A dictionary indicating the success of the operation.
+
+    Raises
+    ------
+    HTTPException
+        Raises a 403 error when the API key is not authorized.
+    """
+    if key != os.getenv("X_API_KEY"):
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
+        )
+
+    start_time = datetime.now()
+
+    api_request = ApiRequest(
+        timestamp=start_time,
+        endpoint="/save-feedback",
+        api_version=API_VERSION,
+    )
+
+    api_feedback = ApiFeedback(feedback=feedback)
+
+    api_request.feedback_relation.append(api_feedback)
+
+    end_time = datetime.now()
+    runtime = (end_time - start_time).total_seconds()
+    api_request.runtime = runtime
+    api_request.response_code = 200
+    api_request.logging_number = 1
+    db.merge(api_request)
+    db.commit()
+    return {"message": "Success"}
 
 
 @app.get("/")

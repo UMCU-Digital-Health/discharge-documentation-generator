@@ -11,6 +11,7 @@ requirements-dev.lock
 *.csv
 *.xlsx
 *.db
+discharge_aiva_evalphase1_NICU_IC.json
 
 # keep example data
 !DEMO_patient_1_eng.csv

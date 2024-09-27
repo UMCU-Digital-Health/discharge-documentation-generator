@@ -92,7 +92,15 @@ class DashOutput(Base):
 
 
 class ApiRequest(Base):
-    """Table that stores information on API requests"""
+    """Table that stores information on API requests. This includes the timestamp,
+    response code, endpoint, runtime, api version and logging number.
+    The logging number's purpose is to do variable logging per endpoint.
+        /process-and-generate-discharge-docs: number of encounters processed
+        /remove_old_discharge_docs: number of discharge letters removed
+        /retrieve_discharge_doc: {encounter_id}_{generated_doc_id} to show for which
+            patient which discharge letter was retrieved
+        /save-feedback: number of feedbacks entries saved (by default 1)
+    """
 
     __tablename__ = "apirequest"
     __table_args__ = {"schema": "discharge_aiva"}
@@ -103,9 +111,10 @@ class ApiRequest(Base):
     endpoint: Mapped[str]
     runtime: Mapped[float] = mapped_column(init=False)
     api_version: Mapped[str]
-    number_affected: Mapped[int] = mapped_column(init=False)
+    logging_number: Mapped[str] = mapped_column(init=False)
 
     encounter_relation: Mapped[List["ApiEncounter"]] = relationship(init=False)
+    feedback_relation: Mapped[List["ApiFeedback"]] = relationship(init=False)
 
 
 class ApiEncounter(Base):
@@ -129,6 +138,21 @@ class ApiEncounter(Base):
     generated_doc_relation: Mapped[List["ApiGeneratedDoc"]] = relationship(init=False)
 
 
+class ApiFeedback(Base):
+    """Table that stores the feedback given by the user on the retrieved discharge
+    letter.
+    """
+
+    __tablename__ = "apifeedback"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    feedback: Mapped[str]
+    request_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(ApiRequest.id), init=False
+    )
+
+
 class ApiGeneratedDoc(Base):
     """Table that stores the generated discharge letters and patiënt numbers"""
 
@@ -138,6 +162,7 @@ class ApiGeneratedDoc(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     discharge_letter: Mapped[str]
     input_token_length: Mapped[int]
+    success: Mapped[str]
     encounter_id: Mapped[str] = mapped_column(ForeignKey(ApiEncounter.id), init=False)
 
 

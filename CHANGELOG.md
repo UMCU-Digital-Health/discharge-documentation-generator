@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.6] - 2024-08-28
+
+### Changed
+- retrieving API patient id call option for metavision integration to be via enc_id instead of patient number and go back at most 7 days
+- new export for the CAR data
+- add column to ApiGeneratedDoc for success
+
+### Added
+- the feedback endpoint of the API
 
 ## [0.5.5] - 2024-15-06
 

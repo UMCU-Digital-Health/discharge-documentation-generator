@@ -30,6 +30,10 @@ class FakeExecute:
         print("requested fetchone...")
         return None
 
+    def fetchall(self):
+        print("requested fetchall...")
+        return None
+
     @property
     def rowcount(self):
         return 0
