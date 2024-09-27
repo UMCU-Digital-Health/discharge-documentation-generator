@@ -367,7 +367,7 @@ def process_data_HiX_stg(
     7. Adds a "date" column based on the "time" column in the merged data.
     8. Calculates the length of stay for each encounter in the merged data.
     9. Rename ontslagbrief
-    10. start with a 1000 index in enc_id
+    10. start with a 2000 index in enc_id
     11. pseudonomise by hand
 
     """
@@ -471,9 +471,9 @@ def process_data_HiX_stg(
         "Klinische Brief", "Ontslagbrief"
     )
 
-    # map enc_id to start with 1000
+    # map enc_id to start with 2000
     enc_id_map = {
-        enc_id: 1000 + i for i, enc_id in enumerate(patient_file.enc_id.unique())
+        enc_id: 2000 + i for i, enc_id in enumerate(patient_file.enc_id.unique())
     }
     patient_file["enc_id"] = patient_file["enc_id"].map(enc_id_map)
 
@@ -683,13 +683,13 @@ if __name__ == "__main__":
         data_folder
         / "raw"
         / "pre-pilot"
-        / "pseudonomised_HiX_patient_files_CAR_april_rtf_decoded.parquet"
+        / "pseudonomised_HiX_patient_files_CAR_may_rtf_decoded.parquet"
     )
     df_HiX_discharge = pd.read_parquet(
         data_folder
         / "raw"
         / "pre-pilot"
-        / "pseudonomised_HiX_discharge_docs_CAR_april.parquet"
+        / "pseudonomised_HiX_discharge_docs_CAR_may.parquet"
     )
     df_HiX_CAR_pp = process_data_HiX_stg(df_HiX_patient_files, df_HiX_discharge)
 
@@ -714,5 +714,5 @@ if __name__ == "__main__":
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
 
     df_HiX_CAR_pp.to_parquet(
-        data_folder / "processed" / "pre-pilot" / "HiX_CAR_data_pre_pilot.parquet"
+        data_folder / "processed" / "pre-pilot" / "HiX_CAR_data_pre_pilot_may.parquet"
     )

@@ -41,25 +41,21 @@ logger = logging.getLogger(__name__)
 # load data
 data_folder = Path(__file__).parents[1] / "data" / "processed" / "pre-pilot"
 
-df_metavision = pd.read_parquet(data_folder / "metavision_data_april_dp.parquet")
+# df_metavision = pd.read_parquet(data_folder / "metavision_data_april_dp.parquet")
 
-df_HIX = pd.read_parquet(data_folder / "HiX_CAR_data_pre_pilot.parquet")
+df_HIX = pd.read_parquet(data_folder / "HiX_CAR_data_pre_pilot_may.parquet")
 
 # Define your DataFrames for each department
 df_dict = {
-    "NICU": df_metavision,
-    "IC": df_metavision,
+    # "NICU": df_metavision,
+    # "IC": df_metavision,
     "CAR": df_HIX,
     "PSY": df_HIX,
 }
 
 # load stored discharge letters
-df_discharge2 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_PReval_2.csv")
-df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_PReval_4.csv")
-df_discharge3 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_PReval_3.csv")
-df_discharge_total = pd.concat(
-    [df_discharge2, df_discharge3, df_discharge4]
-).drop_duplicates("enc_id", keep="last")
+df_discharge_total = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_CAR_may.csv")
+
 
 # load used enc_ids
 enc_ids_dict = get_suitable_enc_ids(

@@ -10,7 +10,7 @@ if __name__ == "__main__":
         "/mapr/administratielast/administratielast_datamanager/ontslagdocumentatie/"
     )
 
-    file_name = "pre-pilot IC NICU CAR/HiX_patient_files_CAR_april"
+    file_name = "pre-pilot IC NICU CAR/HiX_patient_files_CAR_may"
 
     # read file
     df = pd.read_json(Path(data_folder / file_name).with_suffix(".json"))

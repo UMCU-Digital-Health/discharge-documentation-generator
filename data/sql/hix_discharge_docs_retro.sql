@@ -25,8 +25,8 @@ FROM
 WHERE
     enc1.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpname'
     AND enc1.status = 'finished'
-    AND enc1.period_end >= '2024-04-01' -- change these to the desired date range
-    AND enc1.period_end < '2024-05-01' -- change these to the desired date range
+    AND enc1.period_end >= '2024-05-01' -- change these to the desired date range
+    AND enc1.period_end < '2024-06-01' -- change these to the desired date range
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
     AND enc2.specialty_Organization_value IN ('CAR') -- for later: 'PSY', 'GGZ', 'NEO'
@@ -36,3 +36,5 @@ WHERE
         '1000100013',   -- Voorlopige Ontslagbrief
         'CS00000003'  -- Klinische brief
     )
+    AND dr.docStatus = 'final'
+    AND dr.author_Organization_value = 'CAR'

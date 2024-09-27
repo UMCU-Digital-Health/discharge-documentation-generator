@@ -60,7 +60,7 @@ def deduce_metavision_database(
         )
 
 
-def apply_and_save_deduce_hix(
+def apply_and_save_deduce(
     data: pd.DataFrame,
     column: str,
     save: bool,
@@ -86,27 +86,25 @@ def apply_and_save_deduce_hix(
     staging : bool, optional
         Flag indicating whether the deduced data is for staging purposes, default False.
     """
-    hix_patient_files = apply_deduce(data, column)
-
+    pseudo_data = apply_deduce(data, column)
     if save:
         # pseudo keylist table
-        hix_patient_files[
-            ["pseudo_id", "subject_Patient_value"]
-        ].drop_duplicates().to_csv(
+        pseudo_data[["pseudo_id", "subject_Patient_value"]].drop_duplicates().to_csv(
             save_path / (save_file_name + "pseudo_table.csv"),
             index=False,
         )
         if not staging:
             # save discharge data to csv
-            hix_patient_files.drop(columns="subject_Patient_value").to_csv(
+            pseudo_data.drop(columns="subject_Patient_value").to_csv(
                 save_path / ("pseudonomised_" + save_file_name + ".csv"),
                 index=False,
             )
 
         # save discharge data to parquet
-        hix_patient_files.drop(columns="subject_Patient_value").to_parquet(
+        pseudo_data.drop(columns="subject_Patient_value").to_parquet(
             save_path / ("pseudonomised_" + save_file_name + ".parquet"),
         )
+        print(f"Saved deduced data to {save_path}")
 
 
 if __name__ == "__main__":
@@ -120,7 +118,8 @@ if __name__ == "__main__":
     # change this to only run part of the deduce flow
     deduce_metavision_db_export_dev = False
     deduce_hix_dp_export_dev = False
-    deduce_pre_pilot = True
+    deduce_pre_pilot_hix = True
+    deduce_pre_pilot_metavision = False
 
     if deduce_metavision_db_export_dev:
         # Metavision deduce (metavision database export)
@@ -162,35 +161,63 @@ if __name__ == "__main__":
             dtype={"subject_Patient_value": str},
         )
 
-        apply_and_save_deduce_hix(
+        apply_and_save_deduce(
             hix_discharge_data, column="content_attachment1_plain_data", save=True
         )
-        apply_and_save_deduce_hix(
+        apply_and_save_deduce(
             hix_patient_files, column="item_answer_value_valueString", save=True
         )
 
-    if deduce_pre_pilot:
+    if deduce_pre_pilot_hix:
         # HiX Pre-Pilot deduce (dataplatform export)
         export_folder_name = "pre-pilot IC NICU CAR"
         data_path = data_folder / export_folder_name
 
-        file_name = "HiX_discharge_docs_CAR_april.json"
+        file_name = "HiX_discharge_docs_CAR_may"
+        file_name_json = Path(file_name).with_suffix(".json")
         hix_discharge_data = pd.read_json(
-            Path(data_path) / file_name,
+            Path(data_path) / file_name_json,
             convert_dates=["period_start", "period_end", "created"],
             dtype={"subject_Patient_value": str},
         )
 
-        file_name = "HiX_patient_files_CAR_april_rtf_decoded.json"
+        apply_and_save_deduce(
+            hix_discharge_data,
+            column="content_attachment1_plain_data",
+            save=True,
+            save_path=data_path,
+            save_file_name=file_name,
+        )
+
+        file_name = "HiX_patient_files_CAR_may_rtf_decoded"
+        file_name_json = Path(file_name).with_suffix(".json")
         hix_patient_files = pd.read_json(
-            Path(data_path) / file_name,
+            Path(data_path) / file_name_json,
             convert_dates=["period_start", "period_end", "created", "authored"],
             dtype={"subject_Patient_value": str},
         )
 
-        apply_and_save_deduce_hix(
-            hix_discharge_data, column="content_attachment1_plain_data", save=True
+        apply_and_save_deduce(
+            hix_patient_files,
+            column="TEXT",
+            save=True,
+            staging=True,
+            save_path=data_path,
+            save_file_name=file_name,
         )
-        apply_and_save_deduce_hix(
-            hix_patient_files, column="TEXT", save=True, staging=True
+
+    if deduce_pre_pilot_metavision:
+        # Metavision Pre-Pilot deduce (metavision database export)
+        export_folder_name = "pre-pilot IC NICU CAR"
+        data_path = data_folder / export_folder_name
+
+        file_name = "metavision_from_april_on"
+        file_name_json = Path(file_name).with_suffix(".json")
+        metavision_data = pd.read_json(Path(data_path) / file_name_json)
+        apply_and_save_deduce(
+            metavision_data,
+            column="valueString",
+            save=True,
+            save_path=data_path,
+            save_file_name=file_name,
         )

@@ -36,15 +36,15 @@ logger = logging.getLogger(__name__)
 # load data
 data_folder = Path(__file__).parents[1] / "data" / "processed" / "pre-pilot"
 
-df_metavision = pd.read_parquet(data_folder / "metavision_data_april_dp.parquet")
+# df_metavision = pd.read_parquet(data_folder / "metavision_data_april_dp.parquet")
 
-df_HIX = pd.read_parquet(data_folder / "HiX_CAR_data_pre_pilot.parquet")
+df_HIX = pd.read_parquet(data_folder / "HiX_CAR_data_pre_pilot_may.parquet")
 
 
 # Define your DataFrames for each department
 df_dict = {
-    "NICU": df_metavision,
-    "IC": df_metavision,
+    # "NICU": df_metavision,
+    # "IC": df_metavision,
     "CAR": df_HIX,
     "PSY": df_HIX,
 }
@@ -89,7 +89,7 @@ Base.metadata.create_all(engine)
 
 # load stored discharge letters
 
-df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_PReval_4.csv")
+df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_CAR_may.csv")
 
 # define the app
 app = dash.Dash(
