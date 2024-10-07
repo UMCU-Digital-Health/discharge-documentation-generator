@@ -120,6 +120,8 @@ class ApiRequest(Base):
 class ApiEncounter(Base):
     """Table that stores per API request the encounters for which the discharge
     letter was updated
+    "encounter_hix_id" is the unique identifier for the encounter.
+        In dp this is identifier_value from Encounter table.
     """
 
     __tablename__ = "apiencounter"
@@ -141,6 +143,8 @@ class ApiEncounter(Base):
 class ApiFeedback(Base):
     """Table that stores the feedback given by the user on the retrieved discharge
     letter.
+    "encounter_hix_id" is the unique identifier for the encounter.
+        In dp this is identifier_value from Encounter table.
     """
 
     __tablename__ = "apifeedback"
@@ -148,6 +152,7 @@ class ApiFeedback(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     feedback: Mapped[str]
+    encounter_hix_id: Mapped[int]
     request_id: Mapped[int] = mapped_column(
         Integer, ForeignKey(ApiRequest.id), init=False
     )
@@ -163,6 +168,7 @@ class ApiGeneratedDoc(Base):
     discharge_letter: Mapped[str]
     input_token_length: Mapped[int]
     success: Mapped[str]
+    generation_date: Mapped[datetime] = mapped_column(DateTime)
     encounter_id: Mapped[str] = mapped_column(ForeignKey(ApiEncounter.id), init=False)
 
 

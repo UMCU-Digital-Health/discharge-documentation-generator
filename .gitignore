@@ -5,6 +5,9 @@
 requirements.lock
 requirements-dev.lock
 
+# uv lock files (for now)
+uv.lock
+
 # Data files
 *.parquet
 *.pickle

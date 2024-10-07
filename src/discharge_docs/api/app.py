@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -123,7 +123,7 @@ async def process_and_generate_discharge_docs(
     HTTPException
         403 error when the api_key is not authorized
     """
-    if key != os.getenv("X_API_KEY"):
+    if key != os.environ["X_API_KEY_generate"]:
         raise HTTPException(
             status_code=403, detail="You are not authorized to access this endpoint"
         )
@@ -209,6 +209,7 @@ async def process_and_generate_discharge_docs(
             discharge_letter=discharge_letter,
             input_token_length=token_length,
             success=success,
+            generation_date=start_time,
         )
         api_encounter.generated_doc_relation.append(api_discharge_letter)
         api_request.encounter_relation.append(api_encounter)
@@ -257,7 +258,7 @@ async def remove_old_discharge_docs(
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.getenv("X_API_KEY"):
+    if key != os.environ["X_API_KEY_remove"]:
         raise HTTPException(
             status_code=403, detail="You are not authorized to access this endpoint"
         )
@@ -298,6 +299,7 @@ async def retrieve_discharge_doc(
     enc_id: str,
     db: Session = Depends(get_db),
     key: str = Depends(header_scheme),
+    max_days_old: int = 7,
 ) -> str:
     """Retrieve the discharge document for a specific patient.
 
@@ -305,10 +307,13 @@ async def retrieve_discharge_doc(
     ----------
     enc_id : str
         The encounter ID of the patient.
+            This is NOT the patient number 7-digit patient number.
     db : Session, optional
         The database session, by default Depends(get_db)
     key : str, optional
         The API key for authorization, by default Depends(header_scheme)
+    max_days_old : int, optional
+        The maximum number of days old the discharge document can be, by default 7
 
     Returns
     -------
@@ -320,7 +325,7 @@ async def retrieve_discharge_doc(
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.getenv("X_API_KEY"):
+    if key != os.environ["X_API_KEY_retrieve"]:
         raise HTTPException(
             status_code=403, detail="You are not authorized to access this endpoint"
         )
@@ -340,20 +345,35 @@ async def retrieve_discharge_doc(
             ApiGeneratedDoc.encounter_id,
             ApiGeneratedDoc.id,
             ApiGeneratedDoc.success,
+            ApiGeneratedDoc.generation_date,
         )
         .join(ApiEncounter, ApiGeneratedDoc.encounter_id == ApiEncounter.id)
         .where(ApiEncounter.encounter_hix_id == enc_id)
+        .where(
+            ApiGeneratedDoc.generation_date
+            >= (datetime.now().date() - timedelta(days=max_days_old))
+        )
         .order_by(desc(ApiGeneratedDoc.id))
-        .limit(7)
     )
+
     result = db.execute(query).fetchall()
 
     result_df = pd.DataFrame(
-        result, columns=["discharge_letter", "encounter_id", "id", "success"]
+        result,
+        columns=[
+            "discharge_letter",
+            "encounter_id",
+            "id",
+            "success",
+            "generation_date",
+        ],
     )
     if result_df.empty:
         discharge_letter = (
-            f"Er is geen ontslagbrief in de database gevonden voor patiënt {enc_id}."
+            "Er is geen ontslagbrief in de database gevonden voor deze patiënt. "
+            + "Als dit onverwachts is, neem dan contact op met de key-users op "
+            + "jouw afdeling en/of met de afdeling Digital Health via "
+            + "ai-support@umcutrecht.nl"
         )
 
     else:
@@ -366,7 +386,7 @@ async def retrieve_discharge_doc(
         if successful_letters.empty:
             discharge_letter = (
                 "Er is geen successvolle AI-gegeneratie van de ontslagbrief geweest in "
-                + f"de afgelopen 7 dagen voor patiënt {enc_id}."
+                + "de afgelopen 7 dagen voor deze patiënt."
             )
             if latest_letter["success"] == "LengthError":
                 discharge_letter += (
@@ -379,8 +399,11 @@ async def retrieve_discharge_doc(
             latest_successful_letter = successful_letters.iloc[0]
             discharge_letter = latest_successful_letter["discharge_letter"]
 
-            # add note if letter older than 1 day is retrieved
-            if latest_letter["success"] != "Success":
+            # add note if letter older than today is retrieved
+            if (
+                latest_successful_letter["generation_date"].date()
+                < datetime.now().date()
+            ):
                 discharge_letter = (
                     "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd. "
                     + "\n\n "
@@ -391,6 +414,10 @@ async def retrieve_discharge_doc(
                 f"{latest_successful_letter['encounter_id']}_"
                 f"{latest_successful_letter['id']}"
             )
+
+    # manually filter out [LEEFTIJD-1]-jarige from discharge letter as end users don't
+    # want to read the age placeholder in every letter
+    discharge_letter = discharge_letter.replace(" [LEEFTIJD-1]-jarige", "")
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()
@@ -412,7 +439,9 @@ async def save_feedback(
     Parameters
     ----------
     feedback : str
-        The feedback provided by the user.
+        The feedback provided by the user. This is of the form: enc_id_feedback
+        The feedback is 'ja' or 'nee' indicating whether the user agrees with the
+        question whether the discharge letter helped them.
     db : Session, optional
         The database session, by default Depends(get_db)
     key : str, optional
@@ -428,7 +457,7 @@ async def save_feedback(
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.getenv("X_API_KEY"):
+    if key != os.environ["X_API_KEY_feedback"]:
         raise HTTPException(
             status_code=403, detail="You are not authorized to access this endpoint"
         )
@@ -441,7 +470,9 @@ async def save_feedback(
         api_version=API_VERSION,
     )
 
-    api_feedback = ApiFeedback(feedback=feedback)
+    api_feedback = ApiFeedback(
+        feedback=feedback.split("_")[1], encounter_hix_id=feedback.split("_")[0]
+    )
 
     api_request.feedback_relation.append(api_feedback)
 

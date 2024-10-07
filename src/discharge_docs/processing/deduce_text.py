@@ -1,18 +1,12 @@
-import os
+from pathlib import Path
 
 import pandas as pd
 from deduce import Deduce
-from dotenv import load_dotenv
 from tqdm import tqdm
 
 tqdm.pandas()
 
-load_dotenv()
-
-if os.getenv("ENV", "") == "development":
-    deduce = Deduce()
-else:
-    deduce = Deduce(cache_path=".")
+deduce = Deduce(cache_path=Path(__file__).parents[3] / "run")
 
 
 def apply_deduce(df: pd.DataFrame, col_name: str) -> pd.DataFrame:

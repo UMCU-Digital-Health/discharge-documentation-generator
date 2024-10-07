@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.7] - 2024-09-27
+
+### Changed
+- X_API_KEY variable across endpoints
+- removal of duplicate encounter id's used in pre-pilot evaluation
+- change to GPT4
+- retrieval filtering now based on dates
+- split feedback column into two columns
+- environment variables check
+
+### Added
+- manually filter out [LEEFTIJD-1]-jarige
+- generation_date column in ApiGeneratedDoc
+
+### Fixed
+- Fixed retrieve endpoint using patient_number instead of enc_id
+
 ## [0.5.6] - 2024-08-28
 
 ### Changed

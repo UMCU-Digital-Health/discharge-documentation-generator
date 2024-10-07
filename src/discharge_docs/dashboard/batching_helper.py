@@ -10,6 +10,9 @@ def create_ordered_id_list(df_los):
     df_los : pd.DataFrame
         dataframe containing enc_id and
     """
+    # keep only the first row for each enc_id to mitigate duplicates that occur in data
+    # due to multiple rows with data for the same enc_id
+    df_los = df_los.drop_duplicates(subset="enc_id", keep="first")
 
     length_enc_id_dict = {}
     for _, row in df_los.iterrows():
