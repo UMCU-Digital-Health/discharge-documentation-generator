@@ -7,6 +7,7 @@ import pandas as pd
 import tomli
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 from fastapi.security.api_key import APIKeyHeader
 from openai import AzureOpenAI
 from pydantic import BaseModel
@@ -218,7 +219,7 @@ async def process_and_generate_discharge_docs(
     runtime = (end_time - start_time).total_seconds()
     api_request.runtime = runtime
     api_request.response_code = 200
-    api_request.logging_number = len(processed_data["enc_id"].unique())
+    api_request.logging_number = str(len(processed_data["enc_id"].unique()))
     db.merge(api_request)
     db.commit()
     return {
@@ -287,14 +288,14 @@ async def remove_old_discharge_docs(
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()
-    api_request.logging_number = rows_deleted.rowcount
+    api_request.logging_number = str(rows_deleted.rowcount)
     db.add(api_request)
     db.commit()
 
     return {"message": "Success"}
 
 
-@app.get("/retrieve_discharge_doc/{enc_id}")
+@app.get("/retrieve_discharge_doc/{enc_id}", response_class=PlainTextResponse)
 async def retrieve_discharge_doc(
     enc_id: str,
     db: Session = Depends(get_db),
@@ -303,11 +304,13 @@ async def retrieve_discharge_doc(
 ) -> str:
     """Retrieve the discharge document for a specific patient.
 
+    Returns the discharge document and some additional information as plain text
+
     Parameters
     ----------
     enc_id : str
         The encounter ID of the patient.
-            This is NOT the patient number 7-digit patient number.
+        This is NOT the patient number 7-digit patient number.
     db : Session, optional
         The database session, by default Depends(get_db)
     key : str, optional
@@ -318,7 +321,7 @@ async def retrieve_discharge_doc(
     Returns
     -------
     str
-        The discharge document for the patient.
+        The discharge document for the patient in plain text.
 
     Raises
     ------
@@ -336,7 +339,7 @@ async def retrieve_discharge_doc(
         api_version=API_VERSION,
     )
     # initialize the logging number
-    api_request.logging_number = 0
+    api_request.logging_number = "0"
 
     # Fetch the last 7 discharge letters for the given encounter ID
     query = (
@@ -371,9 +374,9 @@ async def retrieve_discharge_doc(
     if result_df.empty:
         discharge_letter = (
             "Er is geen ontslagbrief in de database gevonden voor deze patiënt. "
-            + "Als dit onverwachts is, neem dan contact op met de key-users op "
-            + "jouw afdeling en/of met de afdeling Digital Health via "
-            + "ai-support@umcutrecht.nl"
+            "Als dit onverwachts is, neem dan contact op met de key-users op "
+            "jouw afdeling en/of met de afdeling Digital Health via "
+            "ai-support@umcutrecht.nl"
         )
 
     else:
@@ -386,12 +389,12 @@ async def retrieve_discharge_doc(
         if successful_letters.empty:
             discharge_letter = (
                 "Er is geen successvolle AI-gegeneratie van de ontslagbrief geweest in "
-                + "de afgelopen 7 dagen voor deze patiënt."
+                "de afgelopen 7 dagen voor deze patiënt."
             )
             if latest_letter["success"] == "LengthError":
                 discharge_letter += (
                     " Dit komt doordat het patientendossier te lang is geworden voor "
-                    + "het dossier."
+                    "het dossier."
                 )
 
         else:
@@ -405,8 +408,8 @@ async def retrieve_discharge_doc(
                 < datetime.now().date()
             ):
                 discharge_letter = (
-                    "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd. "
-                    + "\n\n "
+                    "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd."
+                    + "\n\n"
                     + discharge_letter
                 )
 
@@ -471,7 +474,7 @@ async def save_feedback(
     )
 
     api_feedback = ApiFeedback(
-        feedback=feedback.split("_")[1], encounter_hix_id=feedback.split("_")[0]
+        feedback=feedback.split("_")[1], encounter_hix_id=int(feedback.split("_")[0])
     )
 
     api_request.feedback_relation.append(api_feedback)
@@ -480,7 +483,7 @@ async def save_feedback(
     runtime = (end_time - start_time).total_seconds()
     api_request.runtime = runtime
     api_request.response_code = 200
-    api_request.logging_number = 1
+    api_request.logging_number = "1"
     db.merge(api_request)
     db.commit()
     return {"message": "Success"}

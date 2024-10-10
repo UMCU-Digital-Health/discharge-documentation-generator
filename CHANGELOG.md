@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.8] - 2024-10-08
+
+### Fixes
+- Retrieve endpoint now returns plain text, which should work better in Metavision
+- Small type fixes
+- Small documentation fixes
+
 ## [0.5.7] - 2024-09-27
 
 ### Changed
