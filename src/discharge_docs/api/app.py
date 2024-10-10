@@ -102,12 +102,15 @@ async def process_and_generate_discharge_docs(
     key: str = Depends(header_scheme),
 ) -> dict:
     """Process the data and generate discharge documentation.
-    Save this to database.
+
+    Receives all the patient data and processes it to generate discharge documentation.
+    The discharge documentation is generated using the GPT model and saved
+    in the database.
 
     Parameters
     ----------
     data : list[PatientFile]
-        json data containing the patient data
+        The patient data to process and generate discharge documentation for.
     db : Session, optional
         database, by default Depends(get_db)
     key : str, optional
@@ -140,7 +143,7 @@ async def process_and_generate_discharge_docs(
 
     api_request = ApiRequest(
         timestamp=start_time,
-        endpoint="/update-discharge-docs",
+        endpoint="/process-and-generate-discharge-docs",
         api_version=API_VERSION,
     )
 
@@ -186,12 +189,9 @@ async def process_and_generate_discharge_docs(
             )
 
             discharge_letter = (
-                "Deze brief is door AI gegenereerd voor patient "
-                + str(patient_df["patient_number"].values[0])
-                + " op: "
-                + str(start_time.strftime("%Y-%m-%d %H:%M"))
-                + "\n\n"
-                + discharge_letter
+                f"Deze brief is door AI gegenereerd voor patientnummer: "
+                f"{patient_df['patient_number'].values[0]} op: "
+                f"{(start_time.strftime('%Y-%m-%d %H:%M'))}\n\n{discharge_letter}"
             )
             success = "Success"
 
@@ -304,7 +304,8 @@ async def retrieve_discharge_doc(
 ) -> str:
     """Retrieve the discharge document for a specific patient.
 
-    Returns the discharge document and some additional information as plain text
+    Returns the discharge document and some additional information as plain text from
+    the application database.
 
     Parameters
     ----------
@@ -409,8 +410,7 @@ async def retrieve_discharge_doc(
             ):
                 discharge_letter = (
                     "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd."
-                    + "\n\n"
-                    + discharge_letter
+                    f"\n\n{discharge_letter}"
                 )
 
             api_request.logging_number = (
@@ -421,6 +421,8 @@ async def retrieve_discharge_doc(
     # manually filter out [LEEFTIJD-1]-jarige from discharge letter as end users don't
     # want to read the age placeholder in every letter
     discharge_letter = discharge_letter.replace(" [LEEFTIJD-1]-jarige", "")
+    # IC letters only have one heading (beloop) so filter it out
+    discharge_letter = discharge_letter.replace("\n\nBeloop\n", "\n\n")
 
     api_request.response_code = 200
     api_request.runtime = (datetime.now() - start_time).total_seconds()

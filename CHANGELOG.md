@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.9] - 2024-10-10
+
+### Changed
+- Small textual changes to the discharge letter
+- Small fixes to the code
+- No longer log the response while generating discharge letters
+
 ## [0.5.8] - 2024-10-08
 
 ### Fixes

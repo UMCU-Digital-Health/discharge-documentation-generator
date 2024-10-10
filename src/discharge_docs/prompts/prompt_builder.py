@@ -161,7 +161,6 @@ class PromptBuilder:
                     ),
                 )
                 cleaned_content = re.sub(r"\]\s*\.*\s*$", "]", cleaned_content[0])
-                logger.info(cleaned_content)
                 reply = json.loads(cleaned_content, strict=False)
                 success = True
             except json.JSONDecodeError:
@@ -169,7 +168,6 @@ class PromptBuilder:
 
             if not success:
                 logger.error("Failed to parse response to JSON.")
-                logger.error(str(response))
                 return [
                     {
                         "Categorie": "JSONError",
