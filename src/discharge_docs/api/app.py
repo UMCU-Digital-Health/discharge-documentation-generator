@@ -191,7 +191,7 @@ async def process_and_generate_discharge_docs(
             discharge_letter = (
                 f"Deze brief is door AI gegenereerd voor patientnummer: "
                 f"{patient_df['patient_number'].values[0]} op: "
-                f"{(start_time.strftime('%Y-%m-%d %H:%M'))}\n\n{discharge_letter}"
+                f"{start_time:%d-%m-%Y %H:%M}\n\n{discharge_letter}"
             )
             success = "Success"
 
