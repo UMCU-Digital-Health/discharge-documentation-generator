@@ -71,6 +71,7 @@ async def test_api_discharge_docs(monkeypatch):
 
     monkeypatch.setattr(app, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_generate", "test")
+    monkeypatch.setenv("ENVIRONMENT", "acc")
     output = await process_and_generate_discharge_docs(test_data, FakeDB(), "test")
     assert output["message"] == "Success"
     assert isinstance(output["discharge_letter"], str)

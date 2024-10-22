@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2024-10-17
+### Changed
+- version number to 1.0.0 for release pilot
+- logging for retrieve API
+- deployment config for acc and prod different model implementation
+
+### Added
+- prevention of dead database connection
+
 ## [0.5.10] - 2024-10-14
 
 ### Changed
@@ -227,5 +236,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - demo dashboard
-
-

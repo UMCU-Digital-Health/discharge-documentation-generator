@@ -58,7 +58,7 @@ def test_prompt_builder():
         deployment_config_dict = tomli.load(f)
     prompt_builder = PromptBuilder(
         temperature=deployment_config_dict["TEMPERATURE"],
-        deployment_name=deployment_config_dict["deployment_name"],
+        deployment_name=deployment_config_dict["deployment_name_acc"],
         client=MockAzureOpenAI,
     )
 

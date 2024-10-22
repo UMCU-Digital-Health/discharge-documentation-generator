@@ -57,7 +57,12 @@ else:
     )
     execution_options = None
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, execution_options=execution_options)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    execution_options=execution_options,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+)
 Base.metadata.create_all(engine)
 SessionLocal = sessionmaker(bind=engine)
 
@@ -146,10 +151,11 @@ async def process_and_generate_discharge_docs(
         endpoint="/process-and-generate-discharge-docs",
         api_version=API_VERSION,
     )
-
     prompt_builder = PromptBuilder(
         temperature=deployment_config_dict["TEMPERATURE"],
-        deployment_name=deployment_config_dict["deployment_name"],
+        deployment_name=deployment_config_dict[
+            f"deployment_name_{os.getenv('ENVIRONMENT')}"
+        ],
         client=client,
     )
     user_prompt, system_prompt = load_prompts()
@@ -375,11 +381,13 @@ async def retrieve_discharge_doc(
     if result_df.empty:
         discharge_letter = (
             "Er is geen ontslagbrief in de database gevonden voor deze patiënt. "
-            "Als dit onverwachts is, neem dan contact op met de key-users op "
+            "Dit komt voor bij patiënten die zijn opgenomen na de vorige AI-generatie "
+            "(dagelijks om 5 uur 's ochtends). Probeer het morgen nog eens. \n\n"
+            "Als dit toch onverwachts is, neem dan contact op met de key-users op "
             "jouw afdeling en/of met de afdeling Digital Health via "
             "ai-support@umcutrecht.nl"
         )
-
+        api_request.logging_number = "NA_NotFound"
     else:
         # Get the most recent letter regardless of success
         latest_letter = result_df.iloc[0]
@@ -392,11 +400,13 @@ async def retrieve_discharge_doc(
                 "Er is geen successvolle AI-gegeneratie van de ontslagbrief geweest in "
                 "de afgelopen 7 dagen voor deze patiënt."
             )
+            api_request.logging_number = f"{latest_letter['encounter_id']}_NoSuccess"
             if latest_letter["success"] == "LengthError":
                 discharge_letter += (
                     " Dit komt doordat het patientendossier te lang is geworden voor "
                     "het dossier."
                 )
+                api_request.logging_number = f"{latest_letter['encounter_id']}_TooLong"
 
         else:
             # Get the most recent successful letter
