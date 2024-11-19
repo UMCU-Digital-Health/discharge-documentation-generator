@@ -113,12 +113,6 @@
     "pyproject.toml": {
       "checksum": "e38e9529ee53dabd4f8195c3a7e705ba"
     },
-    "requirements-dev.lock": {
-      "checksum": "a7972e313b1ef1319f25a162b143ab81"
-    },
-    "requirements.lock": {
-      "checksum": "dfd8b20fe109919487b56855995f38e8"
-    },
     "run/api.py": {
       "checksum": "d2117f3ffc8587c433a32fbf4e412149"
     },
