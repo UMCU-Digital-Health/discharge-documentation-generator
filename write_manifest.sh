@@ -13,7 +13,12 @@ read -p "Do you need data in your dashboard? (Y/N) " DATA_BOOL
 DATA_BOOL=${DATA_BOOL:-N}
 
 # Base command
-COMMAND="rsconnect write-manifest $APP_TYPE --entrypoint run.$APPLICATION:app --exclude .github --exclude .ruff_cache --exclude logs --exclude notebooks --exclude output --exclude tests --overwrite --exclude .env --exclude .dvc --exclude .pytest_cache --exclude .dvcignore --exclude .gitignore --exclude .python-version --exclude .vscode --exclude build"
+COMMAND="rsconnect write-manifest $APP_TYPE \
+--entrypoint run.$APPLICATION:app --overwrite \
+--exclude logs --exclude notebooks --exclude output --exclude tests --exclude build \
+--exclude .dvc --exclude .github --exclude .ruff_cache --exclude .coverage \
+--exclude .pytest_cache --exclude .env --exclude .venv --exclude .vscode \
+--exclude docs --exclude run/cache --exclude \"**/*.db\" --exclude \"**/*.pyc\""
 
 # Conditionally exclude data/raw directory
 if [ "$DATA_BOOL" == "N" ] || [ "$DATA_BOOL" == "n" ]; then
@@ -21,4 +26,4 @@ if [ "$DATA_BOOL" == "N" ] || [ "$DATA_BOOL" == "n" ]; then
 fi
 
 # Execute the command
-$COMMAND .
+eval $COMMAND .

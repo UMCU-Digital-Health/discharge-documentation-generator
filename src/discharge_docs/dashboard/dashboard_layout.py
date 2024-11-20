@@ -38,12 +38,12 @@ def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
     return navbar
 
 
-def get_patient_selection_div(add_disharge_selection: bool = False) -> dbc.Row:
+def get_patient_selection_div(add_discharge_selection: bool = False) -> dbc.Row:
     """Create and return a Bootstrap card for patient selection.
 
     Parameters
     ----------
-    add_disharge_selection : bool, optional
+    add_discharge_selection : bool, optional
         Flag indicating whether to include discharge selection dropdown,
         by default False
 
@@ -53,7 +53,7 @@ def get_patient_selection_div(add_disharge_selection: bool = False) -> dbc.Row:
         The created row containing a patient selection dropdown and optionally a
         discharge selection dropdown.
     """
-    if add_disharge_selection:
+    if add_discharge_selection:
         discharge_selection = dbc.Col(
             [
                 dbc.Label(
@@ -85,9 +85,9 @@ def get_patient_selection_div(add_disharge_selection: bool = False) -> dbc.Row:
                     dbc.Label("Selecteer patiëntopname:", className="my-2"),
                     dbc.Select(
                         id="patient_admission_dropdown",
-                        class_name="my-2",
                     ),
                 ],
+                class_name="m-2",
                 width=4,
             ),
             discharge_selection,
@@ -368,7 +368,7 @@ def get_GPT_card() -> dbc.Card:
                                     style={"height": "250px"},
                                 ),
                                 dbc.Button(
-                                    "Update en genereer onstlagbrief met GPT 3.5",
+                                    "Update en genereer onstlagbrief",
                                     id="update_discharge_button",
                                     color="primary",
                                     class_name="mt-2 me-2",
@@ -382,8 +382,8 @@ def get_GPT_card() -> dbc.Card:
                                 ),
                                 dbc.Label(
                                     "Het kan zijn dat de gegenereerde ontslagbrief soms"
-                                    + " niet goed laadt. Probeer het dan opnieuw door "
-                                    + "nog een keer op de knop te drukken."
+                                    " niet goed laadt. Probeer het dan opnieuw door "
+                                    "nog een keer op de knop te drukken."
                                 ),
                             ]
                         ),
@@ -799,7 +799,7 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
 def get_phase_2_layout() -> html.Div:
     navbar = get_navbar(view_user=True, header_title="Ontslagbrief evaluatie - Fase 2")
 
-    patient_selection_div = get_patient_selection_div(add_disharge_selection=True)
+    patient_selection_div = get_patient_selection_div(add_discharge_selection=True)
 
     patient_file_tab = dbc.Card(
         [
@@ -1066,6 +1066,43 @@ def get_phase_2_layout() -> html.Div:
                         ],
                         width=6,
                     ),
+                ]
+            ),
+        ]
+    )
+    return layout
+
+
+def get_demo_layout() -> html.Div:
+    navbar = get_navbar(view_user=False, header_title="AI-ontslagbrief Generator Demo")
+
+    patient_selection_div = get_patient_selection_div(add_discharge_selection=False)
+    gpt_card = get_GPT_card()
+
+    patient_file_card = dbc.Card(
+        [
+            dbc.CardHeader(html.H2("Patiënt dossier:")),
+            dbc.CardBody(
+                dcc.Textarea(
+                    id="patient_file",
+                    readOnly=False,
+                    style={
+                        "width": "100%",
+                        "height": "600px",
+                    },
+                )
+            ),
+        ]
+    )
+
+    layout = html.Div(
+        [
+            navbar,
+            patient_selection_div,
+            dbc.Row(
+                [
+                    dbc.Col(patient_file_card, width=6),
+                    dbc.Col(gpt_card, width=6),
                 ]
             ),
         ]

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2024-11-20
+
+### Added
+- Added a demo dashboard, influenced by the eval dashboard, but limited in functionality
+
+### Changed
+- Updated the write-manifest script to exclude pycache and other unneccesary files
+- Fixed typo in dashboard layout
+
+### Removed
+- Removed pilot application, since this is no longer used, since it is implemented directly into the EHR system
+
 ## [1.0.0] - 2024-10-17
 ### Changed
 - version number to 1.0.0 for release pilot
