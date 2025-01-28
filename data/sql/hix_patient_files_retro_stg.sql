@@ -31,8 +31,8 @@ WHERE
     1=1
     AND enc1.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpname'
     AND enc1.status = 'finished'
-    AND enc1.period_end >= '2024-05-01' -- change these to the desired date range
-    AND enc1.period_end < '2024-06-01' -- change these to the desired date range   
+    AND enc1.period_end >= '2024-12-01' -- change these to the desired date range
+    AND enc1.period_end < '2025-01-01' -- change these to the desired date range   
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
     AND enc2.specialty_Organization_value IN ('CAR') -- voor later: 'PSY', 'GGZ'

@@ -9,19 +9,28 @@
     "version": "3.10.13",
     "package_manager": {
       "name": "pip",
-      "version": "23.3.1",
+      "version": "24.2",
       "package_file": "requirements.txt"
     }
   },
   "files": {
     "requirements.txt": {
-      "checksum": "316c86f229233185212b584dc37f1340"
+      "checksum": "b309825f95abb705b7652661faff473e"
+    },
+    ".dvcignore": {
+      "checksum": "34659c119a2634fe318cd6a4822df435"
+    },
+    ".gitignore": {
+      "checksum": "4205c84875529c6c7fd6bf5c8df77395"
+    },
+    ".python-version": {
+      "checksum": "8cc51d75d45711fa87a6325306217c37"
     },
     "CHANGELOG.md": {
-      "checksum": "d90c094a62a5681e45fa4bfaa98dd605"
+      "checksum": "7e829979f9261933d0e50cb9882cd1b9"
     },
     "README.md": {
-      "checksum": "785fa4e29ab9369b68b5e225e30b3968"
+      "checksum": "a5a8ed9495d5f74ad8011715d26454b2"
     },
     "data/examples/DEMO_patient_1.csv": {
       "checksum": "a8a4b2572c512a75cc2c3c13ef774517"
@@ -45,13 +54,13 @@
       "checksum": "fa2ded497d6b586e334462870c9505d7"
     },
     "data/processed/HiX_data.parquet": {
-      "checksum": "9ad423d07a84110f2da04180500747fa"
+      "checksum": "5bdf003a5b93ed5da6713f21866451b9"
     },
-    "data/processed/bulk_generated_docs_gpt35.csv": {
-      "checksum": "914e4cccdc447e4602ff862c5b9a8f56"
+    "data/processed/bulk_generated_docs_gpt4_new.csv": {
+      "checksum": "5e73b05a5b885e20f3eb3826b6803d6d"
     },
-    "data/processed/bulk_generated_docs_gpt4.csv": {
-      "checksum": "0bf113c0289aedf0186868cc4e04ccbc"
+    "data/processed/bulk_generated_docs_gpt4_old.csv": {
+      "checksum": "12a389510cf6d6ec551fe9c5b1cd9a37"
     },
     "data/processed/metavision_data.parquet": {
       "checksum": "6121dc9ecf449092c9a57d75bb1d268a"
@@ -59,38 +68,11 @@
     "data/processed/metavision_data.parquet.dvc": {
       "checksum": "761bd4fab9b2d61cb134465e0aadcf6a"
     },
-    "data/processed/pre-pilot/HiX_CAR_data_pre_pilot.parquet": {
-      "checksum": "58a9bc872452e0ce8192d22f82b25fbf"
-    },
-    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_1.csv": {
-      "checksum": "861e9d0bb811dd4c561306c4fb202519"
-    },
-    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_2.csv": {
-      "checksum": "5bae5d313dca93b026ac80ff70ee9658"
-    },
-    "data/processed/pre-pilot/bulk_generated_docs_gpt4_PReval_3.csv": {
-      "checksum": "a823ce4087290948c149ff5fb652389b"
-    },
-    "data/processed/pre-pilot/metavision_data_april_dp.parquet": {
-      "checksum": "f6bc619ae7942f24d025be2dde31fd95"
+    "data/processed/metavision_new_data.parquet": {
+      "checksum": "e55bf3ef77802c9c8711178b4051ca3c"
     },
     "deploy.sh": {
-      "checksum": "5699bdc19a8c4cf48225bc943b4331eb"
-    },
-    "docs/Makefile": {
-      "checksum": "ef4f00c423089323edef1d3cff31a4a2"
-    },
-    "docs/_static/.gitkeep": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
-    },
-    "docs/conf.py": {
-      "checksum": "cda4962949e0daec53846d5e181f3ec3"
-    },
-    "docs/index.rst": {
-      "checksum": "15ae536a3c2b4212dd630c3665729d0f"
-    },
-    "docs/make.bat": {
-      "checksum": "1eb66bfc2d91ac65bd16a1a73bded2ca"
+      "checksum": "2ddff545aba4f2b0969d9f2352f46ca5"
     },
     "dvc.lock": {
       "checksum": "c5e15e5502bc98deebedae958b1cc684"
@@ -98,23 +80,29 @@
     "dvc.yaml": {
       "checksum": "3ddbde449ca5188e9f4ba07a9ce6e945"
     },
+    "manifest_api.json": {
+      "checksum": "de55664055ddb8316f4b9ebdc9087eec"
+    },
+    "manifest_demo.json": {
+      "checksum": "05d03efd0b7de5a473381a5af365036b"
+    },
     "manifest_eval.json": {
-      "checksum": "5be13e6b6f32b78202e806a4d216f103"
+      "checksum": "37d1f7564f2ff4a8169148afaf31c6d1"
     },
-    "pseudo_table.csv": {
-      "checksum": "afcd34668db3b53f3bf6dbfb105ef29a"
+    "manifest_pp1.json": {
+      "checksum": "c78ce03896a5a24d71142d70e8c9740e"
     },
-    "pseudonomised_.csv": {
-      "checksum": "cda1c3ad9d21b1c55dcc50faf9bf9852"
-    },
-    "pseudonomised_.parquet": {
-      "checksum": "d5926729f91ca722819edbccc3dca7b4"
+    "manifest_pp2.json": {
+      "checksum": "33110e901cdd9a3e4ca7a15141d73ad7"
     },
     "pyproject.toml": {
-      "checksum": "e38e9529ee53dabd4f8195c3a7e705ba"
+      "checksum": "2cd6517b37af243bc31519c9d8dbdaaa"
     },
     "run/api.py": {
-      "checksum": "d2117f3ffc8587c433a32fbf4e412149"
+      "checksum": "2d79678373b473f33db80f7fb6cef4cd"
+    },
+    "run/config/.gitignore": {
+      "checksum": "46bb068379c771febb9780a11f02b0a7"
     },
     "run/config/auth.toml": {
       "checksum": "13b7b64ef90b49013743abb1d3391a71"
@@ -131,59 +119,92 @@
     "run/config/auth_fase1.toml.dvc": {
       "checksum": "4089b71ec2333803196bd955648e7c06"
     },
-    "run/evaluation_dashboard.py": {
-      "checksum": "dbd260316fd2f23505a4eb299d71a82c"
+    "run/config/auth_fase2.toml": {
+      "checksum": "e923550615cdf5dcf91dc9d5a0b4625e"
     },
-    "run/pilot_application.py": {
-      "checksum": "b26763cb6b09d888649e1a3753e242c5"
+    "run/config/auth_fase2.toml.dvc": {
+      "checksum": "3430ab51aef147a78c17cfc3b1b2c166"
+    },
+    "run/demo_dashboard.py": {
+      "checksum": "fd39ac8c98bf38fe3d15ae946bfaa98f"
+    },
+    "run/evaluation_dashboard.py": {
+      "checksum": "1437ac9bc98e07dd13795ecfdfd0bcc6"
+    },
+    "run/fase_2_dashboard.py": {
+      "checksum": "816b2beacf6bb7d8e1707c21df6e3e29"
     },
     "run/pre_release_eval_dashboard.py": {
-      "checksum": "2904ec6658abe61e308888df87670c4f"
-    },
-    "sql_app.db": {
-      "checksum": "f4caee031f976e360039f2489faa4ec3"
+      "checksum": "19dccc17c3f40c4df892e713c951d774"
     },
     "src/discharge_docs/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/api/app.py": {
-      "checksum": "1720269080f5ae168227167bc0d6d11e"
+      "checksum": "7addeb1bc78c63b6f25523c0c7d1cdfb"
+    },
+    "src/discharge_docs/api/deployment_config.toml": {
+      "checksum": "f5492cf559628dc6d5ae0c34d466f8b8"
     },
     "src/discharge_docs/dashboard/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
+    "src/discharge_docs/dashboard/batching_helper.py": {
+      "checksum": "1efb443fd924e0e58d466cf483a2f104"
+    },
     "src/discharge_docs/dashboard/dashboard_layout.py": {
-      "checksum": "5458c04f1e0a7c3a5faae1a9bf04e5a5"
+      "checksum": "1d9bd1c0eeab824cbf251fd16f01890f"
+    },
+    "src/discharge_docs/dashboard/enc_ids.toml": {
+      "checksum": "e8fd5f56bbe6cbba14f11da0ae43dcfb"
     },
     "src/discharge_docs/dashboard/enc_ids_dashboard.toml": {
       "checksum": "621a4d7e33258dd12f39aeafb3366639"
     },
     "src/discharge_docs/dashboard/enc_ids_pre_release_phase1_1.toml": {
-      "checksum": "43a7f7b3e9ee94c20cc428febc7f1d3f"
+      "checksum": "bcfb2882af0ea599fc5cf943e543880f"
+    },
+    "src/discharge_docs/dashboard/enc_ids_pre_release_phase2.toml": {
+      "checksum": "bdf7f54d0d2084376e345b25088853e0"
     },
     "src/discharge_docs/dashboard/helper.py": {
-      "checksum": "0135af62eb733fd1d19890dff2633edb"
+      "checksum": "faf5ef31d1c556a91ead7b75cbf8935f"
+    },
+    "src/discharge_docs/database/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/database/models.py": {
-      "checksum": "904c1b70d379e34f92bfa1ae5f0e7b4f"
+      "checksum": "46e013c975abf9c5b5999be584b71b49"
+    },
+    "src/discharge_docs/database/student_annotation.py": {
+      "checksum": "4871651246c18e188116f42d918dc461"
     },
     "src/discharge_docs/evaluate/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/evaluate/evaluate_prompt.py": {
-      "checksum": "209f45e2bb679f36be69da888119f945"
+      "checksum": "62e464af624c85734986ae4383403981"
     },
     "src/discharge_docs/evaluate/evaluate_prompt_helper.py": {
-      "checksum": "32b5ce1b9c57da650c497fdd05e2f41c"
+      "checksum": "3a0d94565f366e78b8f02464764585c9"
     },
-    "src/discharge_docs/processing/apply_rtf.py": {
-      "checksum": "af121095f5c4579895a6a875cc0d5093"
+    "src/discharge_docs/processing/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/processing/apply_rtf_dev.py": {
+      "checksum": "cc92d292f9d06d262492832eff9d30d0"
     },
     "src/discharge_docs/processing/deduce_text.py": {
-      "checksum": "8e6b63f61112d38de5337c29fba9f1b4"
+      "checksum": "f4881cde656250b83cac3e1fb13800fe"
+    },
+    "src/discharge_docs/processing/deduce_text_dev.py": {
+      "checksum": "91cbc21658d8665f937250946fd3f373"
     },
     "src/discharge_docs/processing/processing.py": {
-      "checksum": "a48d3b6c6d6d351576622593dfd3930d"
+      "checksum": "53973a463ac5cbb5ecf62a584fc6344d"
+    },
+    "src/discharge_docs/processing/processing_dev.py": {
+      "checksum": "2a92c901f44cef6adab2f8e30b0eee74"
     },
     "src/discharge_docs/processing/pseudo.toml": {
       "checksum": "a2905f4a51edc4f7477cf5268ae00a98"
@@ -206,7 +227,7 @@
     "src/discharge_docs/prompts/automatic evaluation/additional_information_prompt.txt": {
       "checksum": "839e6913b0d64bb63c122273c67edd81"
     },
-    "src/discharge_docs/prompts/automatic evaluation/evaluatie_prompt.txt": {
+    "src/discharge_docs/prompts/automatic evaluation/evaluation_prompt.txt": {
       "checksum": "8850dc98ab66f044c300d8fb285353a3"
     },
     "src/discharge_docs/prompts/automatic evaluation/information_correction_prompt.txt": {
@@ -225,10 +246,10 @@
       "checksum": "4ec865ca05af628b2334d41423a67da3"
     },
     "src/discharge_docs/prompts/prompt.py": {
-      "checksum": "80dc419d4b071a872915f5275eb835b6"
+      "checksum": "ca3b74d0313d26d717ba02d2364bdf64"
     },
     "src/discharge_docs/prompts/prompt_builder.py": {
-      "checksum": "dae2e7e245a3389a9ca07be5171c74fb"
+      "checksum": "5494cc87528a72cfe05b0d79a6151d45"
     },
     "src/discharge_docs/prompts/system_prompt.txt": {
       "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
@@ -238,6 +259,12 @@
     },
     "src/discharge_docs/prompts/user_prompt_iterative.txt": {
       "checksum": "65f2785d194c307bd13ea757df49aac0"
+    },
+    "uv.lock": {
+      "checksum": "8ba04ed61ea2315375268dc9bdcbc537"
+    },
+    "write_manifest.sh": {
+      "checksum": "b5a55edea5346e7969e505f74175c1c1"
     }
   }
 }

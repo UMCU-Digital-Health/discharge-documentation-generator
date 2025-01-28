@@ -60,7 +60,7 @@ client = AzureOpenAI(
     api_key=os.getenv("AZURE_OPENAI_KEY"),
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT", ""),
 )
-deployment_name = "aiva-gpt"
+deployment_name = "aiva-gpt4-new"
 
 # Authorization config
 with open(Path(__file__).parent / "config" / "auth.toml", "rb") as f:
@@ -107,18 +107,16 @@ df_dict = {
     "NICU": df_metavision,
     "IC": df_metavision,
     "CAR": df_HIX,
-    "PSY": df_HIX,
+    # "PSY": df_HIX,
 }
 
 # load stored discharge letters
-df_discharge4 = pd.read_csv(data_folder / "bulk_generated_docs_gpt4.csv")
+df_discharge_gpt4_new = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_new.csv")
 
-df_discharge35 = pd.read_csv(data_folder / "bulk_generated_docs_gpt35.csv")
+df_discharge_gpt4_old = pd.read_csv(data_folder / "bulk_generated_docs_gpt4_old.csv")
 
 # load used enc_ids
-enc_ids_dict = get_suitable_enc_ids(
-    file_name="enc_ids_dashboard.toml", type="department"
-)
+enc_ids_dict = get_suitable_enc_ids(file_name="enc_ids.toml", type="department")
 
 data_dict, values_list = get_patients_from_list_names(df_dict, enc_ids_dict)
 
@@ -425,8 +423,8 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
 
 
 @app.callback(
-    Output("output_stored_generated_discharge_documentation35", "children"),
-    Output("output_stored_generated_discharge_documentation4", "children"),
+    Output("output_stored_generated_discharge_documentation_old", "children"),
+    Output("output_stored_generated_discharge_documentation_new", "children"),
     [
         Input("patient_admission_dropdown", "value"),
     ],
@@ -446,18 +444,20 @@ def display_stored_discharge_documentation(
     -------
     tuple[list, list]
         A tuple containing two lists:
-        - The discharge docs for the selected patient admission from discharge35
-        - The discharge docs for the selected patient admission from discharge4
+        - The discharge docs for the selected patient admission from the older model
+        - The discharge docs for the selected patient admission from the newer model
     """
     if selected_patient_admission is None:
         return ""
 
-    output_35 = load_stored_discharge_letters(
-        df_discharge35, selected_patient_admission
+    output_old = load_stored_discharge_letters(
+        df_discharge_gpt4_old, selected_patient_admission
     )
-    output_4 = load_stored_discharge_letters(df_discharge4, selected_patient_admission)
+    output_new = load_stored_discharge_letters(
+        df_discharge_gpt4_new, selected_patient_admission
+    )
 
-    return output_35, output_4
+    return output_old, output_new
 
 
 @app.callback(

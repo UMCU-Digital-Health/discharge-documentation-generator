@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import tomli
+import tomli_w
 
 from discharge_docs.processing.processing import process_data_metavision_dp
 
@@ -676,43 +677,42 @@ if __name__ == "__main__":
     df_HiX_discharge = pd.read_parquet(
         data_folder / "raw" / "pseudonomised_HiX_discharge_data.parquet"
     )
-    df_HiX = process_data_HiX(df_HiX_patient_files, df_HiX_discharge)
+    df_HiX = process_data_HiX_stg(df_HiX_patient_files, df_HiX_discharge)
 
-    # load and process HIX CAR data for pre-pilot
-    df_HiX_patient_files = pd.read_parquet(
-        data_folder
-        / "raw"
-        / "pre-pilot"
-        / "pseudonomised_HiX_patient_files_CAR_may_rtf_decoded.parquet"
-    )
-    df_HiX_discharge = pd.read_parquet(
-        data_folder
-        / "raw"
-        / "pre-pilot"
-        / "pseudonomised_HiX_discharge_docs_CAR_may.parquet"
-    )
-    df_HiX_CAR_pp = process_data_HiX_stg(df_HiX_patient_files, df_HiX_discharge)
-
-    # load and process metavision data
-    df_metavision_dp = pd.read_parquet(
-        data_folder
-        / "raw"
-        / "pre-pilot"
-        / "pseudonomised_metavision_data_april.parquet"
-    ).pipe(process_data_metavision_dp)
+    # Load and process metavision data
     df_metavision_new = pd.read_parquet(
         data_folder / "raw" / "pseudonomised_new_metavision_data.parquet"
-    ).pipe(lambda df: process_data_metavision_new(df, df_HiX_discharge))
+    ).pipe(lambda df: process_data_metavision_dp(df))
 
-    # Store the processed data
-    df_metavision_dp.to_parquet(
-        data_folder / "processed" / "pre-pilot" / "metavision_data_april_dp.parquet"
-    )
+    # Save processed data
     df_metavision_new.to_parquet(
         data_folder / "processed" / "metavision_new_data.parquet"
     )
     df_HiX.to_parquet(data_folder / "processed" / "HiX_data.parquet")
 
-    df_HiX_CAR_pp.to_parquet(
-        data_folder / "processed" / "pre-pilot" / "HiX_CAR_data_pre_pilot_may.parquet"
+    # Write enc_ids for dashboard
+    metavision_encs = df_metavision_new[["enc_id", "department"]].drop_duplicates()
+    # replace certain values in department
+    metavision_encs["department"] = metavision_encs["department"].replace(
+        {
+            "Intensive Care Centrum": "IC",
+            "Neonatologie": "NICU",
+        }
     )
+
+    hix_encs = df_HiX[["enc_id", "department"]].drop_duplicates()
+
+    # combine and save as TOML where the table is the department and the encs are a list
+    enc_ids = pd.concat([metavision_encs, hix_encs], axis=0)
+    enc_ids = enc_ids.groupby("department")["enc_id"].apply(list).to_dict()
+    toml_data = {dept: {"ids": ids} for dept, ids in enc_ids.items()}
+
+    with open(
+        Path(__file__).parents[3]
+        / "src"
+        / "discharge_docs"
+        / "dashboard"
+        / "enc_ids.toml",
+        "wb",
+    ) as f:
+        tomli_w.dump(toml_data, f)

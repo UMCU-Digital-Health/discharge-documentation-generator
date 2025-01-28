@@ -693,27 +693,27 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
         notes_explanation=(
             [
                 html.Strong(
-                    "Benoem in de opmerkingen of het over de GPT4 brief gaat of"
-                    + " over de zelf gegenereerde GPT 3.5 brief."
+                    "Benoem in de opmerkingen of het over de opgeslagen GPT-brief gaat"
+                    " of over de zelf gegenereerde brief."
                 ),
                 html.Br(),
                 " Staat alle informatie erin? Zo nee: staat de informatie"
-                + " wel in het dossier? Is de verwoording acceptabel? etc.",
+                " wel in het dossier? Is de verwoording acceptabel? etc.",
             ]
         ),
     )
 
     GPT_card = get_GPT_card()
 
-    view_docs4_card = get_discharge_doc_card(
-        "Placeholder for GPT4 discharge letter",
-        "output_stored_generated_discharge_documentation4",
+    view_docs_new_card = get_discharge_doc_card(
+        "Placeholder for newer GPT discharge letter",
+        "output_stored_generated_discharge_documentation_new",
         "div",
     )
 
-    view_docs35_card = get_discharge_doc_card(
-        "Placeholder for GPT3.5 discharge letter",
-        "output_stored_generated_discharge_documentation35",
+    view_docs_old_card = get_discharge_doc_card(
+        "Placeholder for older GPT discharge letter",
+        "output_stored_generated_discharge_documentation_old",
         "div",
     )
 
@@ -771,13 +771,13 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
                                         tab_id="generate_docs_tab",
                                     ),
                                     dbc.Tab(
-                                        view_docs35_card,
-                                        label="Opgeslagen GPT3.5 brieven",
+                                        view_docs_old_card,
+                                        label="Opgeslagen GPT4 brieven",
                                         tab_id="view_docs3.5_tab",
                                     ),
                                     dbc.Tab(
-                                        view_docs4_card,
-                                        label="Opgeslagen GPT4 brieven",
+                                        view_docs_new_card,
+                                        label="Opgeslagen GPT4 brieven (Nieuwe versie)",
                                         tab_id="view_docs4_tab",
                                     ),
                                 ],

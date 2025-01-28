@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.0.2] - 2024-01-27
+
+### Changed
+- Hotfix for updating the evaluation dashboard to test different versions of GPT4
+- Created new data export of december 2024 and rerun pipelines
+- Added deduce pipeline to deduce_text.py
+- Updated preprocessing pipeline to preprocessing_dev.py and added a step to generate enc_ids toml file. Removed unused code
+
+
 ## [1.0.1] - 2024-11-20
 
 ### Added

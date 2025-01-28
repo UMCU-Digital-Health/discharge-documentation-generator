@@ -311,6 +311,8 @@ def get_patients_from_list_names(
                 else:
                     patient_key = f"patient_{idx}_{department.lower()}"
                 patients_data[patient_key] = df[df["enc_id"] == enc_id]
+                if patients_data[patient_key].empty:
+                    continue
                 label_days = patients_data[patient_key]["length_of_stay"].values[0]
                 patients_list.append(
                     {
