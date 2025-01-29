@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2024-01-29
+
+### Fixed
+- Fixed Metavision file loaded in evaluation dashboard
 
 ## [1.0.2] - 2024-01-27
 

@@ -98,7 +98,7 @@ Base.metadata.create_all(engine)
 # load data
 data_folder = Path(__file__).parents[1] / "data" / "processed"
 
-df_metavision = pd.read_parquet(data_folder / "metavision_data.parquet")
+df_metavision = pd.read_parquet(data_folder / "metavision_new_data.parquet")
 
 df_HIX = pd.read_parquet(data_folder / "HiX_data.parquet")
 
