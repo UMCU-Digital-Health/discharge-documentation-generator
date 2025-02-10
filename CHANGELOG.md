@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.3] - 2024-01-29
+## [1.0.4] - 2025-01-29
+
+### Added
+- Added endpoints for HiX integration
+- Added example data for HiX integration
+- Added unit tests
+
+## [1.0.3] - 2025-01-29
 
 ### Fixed
 - Fixed Metavision file loaded in evaluation dashboard
 
-## [1.0.2] - 2024-01-27
+## [1.0.2] - 2025-01-27
 
 ### Changed
 - Hotfix for updating the evaluation dashboard to test different versions of GPT4

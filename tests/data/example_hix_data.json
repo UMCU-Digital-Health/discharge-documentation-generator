@@ -1,0 +1,48 @@
+{
+    "ALLPARTS": [
+        {
+            "CLASSID": "",
+            "SPECIALISM": "CAR",
+            "TEXT": "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Helvetica;}}\\n\\n\\f0\\fs20 65-jarige Patiënt Henk de Boer vertoont symptomen van angina pectoris. Verdere onderzoeken nodig.}",
+            "TEXTTYPE": "R",
+            "DATE": "2025-01-29",
+            "TIME": "10:15",
+            "NAAM": "Lichamelijk Onderzoek",
+            "CATID": "CONS000052",
+            "MAINCATID": ""
+        },
+        {
+            "CLASSID": "CARDIO123",
+            "SPECIALISM": "CAR",
+            "TEXT": "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Helvetica;}}\\n\\n\\f0\\fs20 ECG vertoont afwijkingen die wijzen op myocardiale ischemie.}",
+            "TEXTTYPE": "R",
+            "DATE": "2025-01-29 00:00:00",
+            "TIME": "11:30",
+            "NAAM": "ECG Analyse",
+            "CATID": "CONS000053",
+            "MAINCATID": "CONS000050"
+        },
+        {
+            "CLASSID": "",
+            "SPECIALISM": "CAR",
+            "TEXTTYPE": "R",
+            "TEXT": "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Helvetica;}}\\n\\n\\f0\\fs20 Aanvullend bloedonderzoek aangevraagd ter evaluatie van troponineniveaus.}",
+            "DATE": "2025-01-29",
+            "TIME": "12:00",
+            "NAAM": "Aanvullend Onderzoek",
+            "CATID": "CONS000054",
+            "MAINCATID": ""
+        },
+        {
+            "CLASSID": "",
+            "SPECIALISM": "CAR",
+            "TEXT": "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Helvetica;}}\\n\\n\\f0\\fs20 Beleid: Start medicamenteuze behandeling met bètablokkers en verwijzing naar cardioloog.}",
+            "TEXTTYPE": "R",
+            "DATE": "2025-01-29",
+            "TIME": "12:30",
+            "NAAM": "Beleid",
+            "CATID": "CONS000055",
+            "MAINCATID": ""
+        }
+    ]
+}

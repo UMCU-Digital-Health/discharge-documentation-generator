@@ -12,7 +12,8 @@ from fastapi.security.api_key import APIKeyHeader
 from openai import AzureOpenAI
 from pydantic import BaseModel
 from sqlalchemy import create_engine, delete, desc, select
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
+from striprtf.striprtf import rtf_to_text
 
 from discharge_docs.dashboard.helper import format_generated_doc
 from discharge_docs.database.models import (
@@ -64,12 +65,12 @@ engine = create_engine(
     pool_recycle=3600,
 )
 Base.metadata.create_all(engine)
-SessionLocal = sessionmaker(bind=engine)
 
+header_scheme_hix = APIKeyHeader(name="API-KEY")
 header_scheme = APIKeyHeader(name="X-API-KEY")
 
 
-class PatientFile(BaseModel):
+class MetavisionPatientFile(BaseModel):
     enc_id: int
     pseudo_id: str
     subject_Patient_value: str
@@ -78,6 +79,30 @@ class PatientFile(BaseModel):
     effectiveDateTime: str
     valueString: str
     code_display_original: str
+
+
+class HixInputEntry(BaseModel):
+    CLASSID: str
+    SPECIALISM: str
+    TEXT: str
+    TEXTTYPE: str
+    DATE: datetime
+    NAAM: str
+    CATID: str
+    MAINCATID: str
+
+
+class HixInput(BaseModel):
+    ALLPARTS: list[HixInputEntry]
+
+
+class HixOutput(BaseModel):
+    department: str
+    value: str
+
+
+class LLMOutput(BaseModel):
+    message: str
 
 
 app = FastAPI()
@@ -92,18 +117,151 @@ with open(Path(__file__).parent / "deployment_config.toml", "rb") as f:
     deployment_config_dict = tomli.load(f)
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+@app.post("/process-hix-data")
+async def process_hix_data(
+    data: HixInput,
+    db: Session = Depends(get_session),
+    key: str = Depends(header_scheme_hix),
+) -> HixOutput:
+    """Process the HIX data and return the processed data.
+
+    This endpoint preocesses the HiX-data and pseudonomizes it using DEDUCE.
+    It also transforms the data into a format that can be used by the
+    generate-hix-discharge-docs endpoint.
+
+    Parameters
+    ----------
+    data : HixPatientFile
+        The HiX data to process.
+    db : Session, optional
+        The database session, by default Depends(get_db)
+    key : str, optional
+        The API key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    HixOutput
+        The processed data, which can be send to the generate-hix-discharge-docs
+        endpoint.
+    """
+    if key != os.environ["X_API_KEY_HIX"]:
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
+        )
+
+    start_time = datetime.now()
+    api_request = ApiRequest(
+        timestamp=start_time,
+        endpoint="/process-hix-data",
+        api_version=API_VERSION,
+    )
+
+    validated_data = data.model_dump()
+    data_df = pd.DataFrame.from_records(validated_data["ALLPARTS"]).rename(
+        columns={
+            "TEXT": "value",
+            "NAAM": "description",
+            "DATE": "date",
+            "SPECIALISM": "department",
+        },
+    )
+    data_df["value"] = data_df["value"].apply(rtf_to_text)
+    processed_data = apply_deduce(data_df, "value")
+    processed_data = processed_data[["date", "department", "description", "value"]]
+
+    patient_file_string, patient_df = get_patient_file(processed_data)
+    department = patient_df["department"].values[0]
+
+    end_time = datetime.now()
+    runtime = (end_time - start_time).total_seconds()
+    api_request.runtime = runtime
+    api_request.response_code = 200
+    api_request.logging_number = str(len(processed_data))
+    db.add(api_request)
+    db.commit()
+
+    return HixOutput(department=department, value=patient_file_string)
+
+
+@app.post("/generate-hix-discharge-docs")
+async def generate_hix_discharge_docs(
+    data: HixOutput,
+    db: Session = Depends(get_session),
+    key: str = Depends(header_scheme_hix),
+) -> LLMOutput:
+    """Generate discharge documentation for the given data using the GPT model.
+
+    Parameters
+    ----------
+    data : HiXOutput
+        The data to generate discharge documentation for.
+    db : Session, optional
+        The database session, by default Depends(get_db)
+    key : str, optional
+        The API key for authorization, by default Depends(header_scheme)
+
+    Returns
+    -------
+    LLMOutput
+        The generated discharge documentation.
+    """
+    if key != os.environ["X_API_KEY_HIX"]:
+        raise HTTPException(
+            status_code=403, detail="You are not authorized to access this endpoint"
+        )
+
+    start_time = datetime.now()
+
+    validated_data = data.model_dump()
+
+    patient_file_string = validated_data["value"]
+    department = validated_data["department"]
+
+    api_request = ApiRequest(
+        timestamp=start_time,
+        endpoint="/generate-hix-discharge-docs",
+        api_version=API_VERSION,
+    )
+
+    template_prompt = load_template_prompt(department)
+
+    prompt_builder = PromptBuilder(
+        temperature=deployment_config_dict["TEMPERATURE"],
+        deployment_name=deployment_config_dict[
+            f"deployment_name_{os.getenv('ENVIRONMENT')}"
+        ],
+        client=client,
+    )
+
+    user_prompt, system_prompt = load_prompts()
+
+    discharge_letter = prompt_builder.generate_discharge_doc(
+        patient_file=patient_file_string,
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        template_prompt=template_prompt,
+    )
+
+    end_time = datetime.now()
+    runtime = (end_time - start_time).total_seconds()
+    api_request.runtime = runtime
+    api_request.response_code = 200
+    api_request.logging_number = "1"
+    db.add(api_request)
+    db.commit()
+
+    return LLMOutput(message=discharge_letter[0]["Beloop tijdens opname"])
 
 
 @app.post("/process-and-generate-discharge-docs")
 async def process_and_generate_discharge_docs(
-    data: list[PatientFile],
-    db: Session = Depends(get_db),
+    data: list[MetavisionPatientFile],
+    db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
 ) -> dict:
     """Process the data and generate discharge documentation.
@@ -237,7 +395,7 @@ async def process_and_generate_discharge_docs(
 @app.post("/remove_old_discharge_docs")
 async def remove_old_discharge_docs(
     max_date: datetime,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
 ) -> dict:
     """Remove old discharge documents from the database. This removes all discharge
@@ -304,7 +462,7 @@ async def remove_old_discharge_docs(
 @app.get("/retrieve_discharge_doc/{enc_id}", response_class=PlainTextResponse)
 async def retrieve_discharge_doc(
     enc_id: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
     max_days_old: int = 7,
 ) -> str:
@@ -446,7 +604,7 @@ async def retrieve_discharge_doc(
 @app.post("/save-feedback/{feedback}")
 async def save_feedback(
     feedback: str,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
 ) -> dict:
     """Save the feedback provided by the user.
@@ -502,5 +660,6 @@ async def save_feedback(
 
 
 @app.get("/")
+@app.post("/")
 async def root():
     return {"message": "Hello World"}

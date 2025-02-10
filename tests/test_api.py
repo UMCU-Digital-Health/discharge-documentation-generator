@@ -10,8 +10,13 @@ from sqlalchemy.orm import Session
 
 import discharge_docs.api.app as app
 from discharge_docs.api.app import (
-    PatientFile,
+    HixInput,
+    HixOutput,
+    LLMOutput,
+    MetavisionPatientFile,
+    generate_hix_discharge_docs,
     process_and_generate_discharge_docs,
+    process_hix_data,
     remove_old_discharge_docs,
 )
 
@@ -67,7 +72,7 @@ async def test_api_discharge_docs(monkeypatch):
     """Test the process_and_generate_discharge_docs endpoint in the API."""
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
         test_data = json.load(f)
-        test_data = [PatientFile(**item) for item in test_data]
+        test_data = [MetavisionPatientFile(**item) for item in test_data]
 
     monkeypatch.setattr(app, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_generate", "test")
@@ -93,7 +98,7 @@ async def test_api_wrong_api_key(monkeypatch):
         test_data = json.load(f)
 
     try:
-        test_data = [PatientFile(**item) for item in test_data]
+        test_data = [MetavisionPatientFile(**item) for item in test_data]
     except ValidationError as e:
         pytest.fail(f"JSON data does not match PatientFile schema: {e}")
 
@@ -467,3 +472,37 @@ async def test_api_retrieve_discharge_doc__general_error_then_success(
 
     assert isinstance(output, str)
     assert "Most Recent Successful Discharge Letter" in output
+
+
+@pytest.mark.asyncio
+async def test_hix_process_endpoint(monkeypatch):
+    """Test the process endpoint in the API."""
+
+    with open(Path(__file__).parent / "data" / "example_hix_data.json", "r") as f:
+        test_data = json.load(f)
+        test_data = HixInput(**test_data)
+
+    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_HIX", "test")
+    output = await process_hix_data(test_data, FakeDB(), "test")
+
+    assert output.department == "CAR"
+    assert isinstance(output, HixOutput)
+
+
+@pytest.mark.asyncio
+async def test_hix_generate_endpoint(monkeypatch):
+    """Test the generate endpoint in the API."""
+
+    test_data = HixOutput(
+        department="CAR",
+        value="Test value",
+    )
+
+    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_HIX", "test")
+    monkeypatch.setenv("ENVIRONMENT", "acc")
+    output = await generate_hix_discharge_docs(test_data, FakeDB(), "test")
+
+    assert output.message == "Test"
+    assert isinstance(output, LLMOutput)
