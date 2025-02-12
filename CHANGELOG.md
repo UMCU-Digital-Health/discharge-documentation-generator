@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-02-11
+
+### Changed
+- Updated production GPT model version to GPT4 (turbo-2024-04-09)
+- Updated dependencies in requirements.txt
+- Updated Python to 3.11 (Some packages have not been compiled for 3.12 yet)
+
 ## [1.0.4] - 2025-01-29
 
 ### Added

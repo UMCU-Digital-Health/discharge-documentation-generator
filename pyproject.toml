@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "1.0.4"
+version = "1.1.0"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
 ]
 description = "Tool that uses LLM's to automatically generate discharge documentation. Part of the 'AI for administration load' project."
 readme = "README.md"
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -43,18 +43,6 @@ dependencies =[
 test = ["pytest", "pytest-cov", "pytest-asyncio"]
 dev = ["rsconnect-python", "nbstripout", "dvc~=3.39", "dvclive~=3.5", "ipykernel"]
 
-[tool]
-rye = { dev-dependencies = [
-    "ipykernel>=6.29.5",
-    "nbstripout>=0.7.1",
-    "pytest>=8.0.2",
-    "uvicorn>=0.30.1",
-    "pytest-asyncio~=0.23.6",
-    "rsconnect-python>=1.24.0",
-    "jupyter>=1.0.0",
-    "jupyterlab>=4.2.3",
-    "tomli-w~=1.0.0",
-] }
 
 [tool.uv]
 dev-dependencies = [
