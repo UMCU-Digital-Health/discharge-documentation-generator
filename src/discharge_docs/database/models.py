@@ -113,7 +113,9 @@ class ApiRequest(Base):
     api_version: Mapped[str]
     logging_number: Mapped[str] = mapped_column(init=False)
 
-    encounter_relation: Mapped[List["ApiEncounter"]] = relationship(init=False)
+    encounter_relation: Mapped[List["ApiEncounter"]] = relationship(
+        init=False, back_populates="request_relation"
+    )
     feedback_relation: Mapped[List["ApiFeedback"]] = relationship(init=False)
 
 
@@ -138,6 +140,9 @@ class ApiEncounter(Base):
     department: Mapped[str]
 
     generated_doc_relation: Mapped[List["ApiGeneratedDoc"]] = relationship(init=False)
+    request_relation: Mapped["ApiRequest"] = relationship(
+        init=False, back_populates="encounter_relation"
+    )
 
 
 class ApiFeedback(Base):

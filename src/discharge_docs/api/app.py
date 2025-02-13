@@ -61,8 +61,6 @@ else:
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     execution_options=execution_options,
-    pool_pre_ping=True,
-    pool_recycle=3600,
 )
 Base.metadata.create_all(engine)
 
@@ -309,6 +307,11 @@ async def process_and_generate_discharge_docs(
         endpoint="/process-and-generate-discharge-docs",
         api_version=API_VERSION,
     )
+    # Initialize with default values
+    api_request.logging_number = "0"
+    api_request.response_code = 500
+    api_request.runtime = 0
+
     prompt_builder = PromptBuilder(
         temperature=deployment_config_dict["TEMPERATURE"],
         deployment_name=deployment_config_dict[
@@ -377,7 +380,9 @@ async def process_and_generate_discharge_docs(
             generation_date=start_time,
         )
         api_encounter.generated_doc_relation.append(api_discharge_letter)
-        api_request.encounter_relation.append(api_encounter)
+        api_encounter.request_relation = api_request
+        db.merge(api_encounter)
+        db.commit()
 
     end_time = datetime.now()
     runtime = (end_time - start_time).total_seconds()

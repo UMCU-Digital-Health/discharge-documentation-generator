@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-02-12
+
+### Changed
+- Fixed database deadlock issues by committing transactions after each generated discharge letter
+
 ## [1.1.0] - 2025-02-11
 
 ### Changed
