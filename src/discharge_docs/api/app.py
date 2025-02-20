@@ -61,6 +61,7 @@ else:
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     execution_options=execution_options,
+    pool_pre_ping=True,
 )
 Base.metadata.create_all(engine)
 
@@ -311,6 +312,7 @@ async def process_and_generate_discharge_docs(
     api_request.logging_number = "0"
     api_request.response_code = 500
     api_request.runtime = 0
+    db.add(api_request)
 
     prompt_builder = PromptBuilder(
         temperature=deployment_config_dict["TEMPERATURE"],
@@ -372,6 +374,7 @@ async def process_and_generate_discharge_docs(
                 patient_number=str(patient_df["patient_number"].values[0]),
                 department=department,
             )
+            db.add(api_encounter)
 
         api_discharge_letter = ApiGeneratedDoc(
             discharge_letter=discharge_letter,
@@ -381,7 +384,6 @@ async def process_and_generate_discharge_docs(
         )
         api_encounter.generated_doc_relation.append(api_discharge_letter)
         api_encounter.request_relation = api_request
-        db.merge(api_encounter)
         db.commit()
 
     end_time = datetime.now()
@@ -389,7 +391,6 @@ async def process_and_generate_discharge_docs(
     api_request.runtime = runtime
     api_request.response_code = 200
     api_request.logging_number = str(len(processed_data["enc_id"].unique()))
-    db.merge(api_request)
     db.commit()
     return {
         "message": "Success",
@@ -666,5 +667,11 @@ async def save_feedback(
 
 @app.get("/")
 @app.post("/")
-async def root():
-    return {"message": "Hello World"}
+async def root() -> dict:
+    return {
+        "message": "Discharge Docs API",
+        "version": API_VERSION,
+        "swagger-docs": "/docs",
+        "redoc-docs": "/redoc",
+        "status": "OK",
+    }
