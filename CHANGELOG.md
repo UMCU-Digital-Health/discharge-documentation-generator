@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [2.0.0] - 2025-02-11
+### Added
+- included data export pipeline in data_pipeline.py
+- endpoint to remove outdated and all discharge letters
+  
+### Changed
+- Very large refacor cleaning up the codebase
+- removed unneccesary logic in evaluation dashboard
+- combined processing flows for Metavision and HiX data
+- split API into periodic and on-demand API
+- prevented SQL injection into queries
+- updated unittest
+- changed the database structure & fix multiple issues regarding the database (e.g. duplicate enc_id)
+- query to not return test patients and to not run the first day of the admission
+- url of API endpoints updated in line with convention: - in url and _ in function definition.
+- changed way of calling to config variables
+
 ## [1.1.2] - 2025-02-17
 
 ### Changed

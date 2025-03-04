@@ -26,3 +26,11 @@ Choose the desired deployment options.
 A dataset card specifying the dataset can be found [here](/docs/dataset_card.md)
 
 A model card specifying the used model can be found [here](/docs/model_card.md)
+
+## Running data pipeline to get new export for development & testing purposes
+
+To run the data pipeline, run the following command:
+```{bash}
+python run/data_pipeline.py
+```
+Specify the config parameters in data_pipeline.py.

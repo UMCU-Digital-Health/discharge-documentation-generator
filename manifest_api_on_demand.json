@@ -2,8 +2,8 @@
   "version": 1,
   "locale": "en_US.UTF-8",
   "metadata": {
-    "appmode": "python-dash",
-    "entrypoint": "run.evaluation_dashboard.py:app"
+    "appmode": "python-fastapi",
+    "entrypoint": "run.api_on_demand.py:app"
   },
   "python": {
     "version": "3.11.11",
@@ -20,23 +20,11 @@
     "cache/lookup_structs.pickle": {
       "checksum": "a8c90483c8263266885166d076e75442"
     },
-    "data/processed/bulk_generated_docs_gpt.parquet": {
-      "checksum": "63ed52cbf1d27c218b9d855b52626bac"
-    },
-    "data/processed/bulk_generated_docs_gpt_old.parquet": {
-      "checksum": "d1b94091292c335a1e05c50553216fca"
-    },
-    "data/processed/evaluation_data.parquet": {
-      "checksum": "a51c95aab28c580cdaeda76dbf51c063"
-    },
     "pyproject.toml": {
       "checksum": "f4286608f2bc57292a0f77c76433e816"
     },
-    "run/config/auth.toml": {
-      "checksum": "13b7b64ef90b49013743abb1d3391a71"
-    },
-    "run/evaluation_dashboard.py": {
-      "checksum": "c6a15b2ed2424a5cdf0232c16eeb23af"
+    "run/api_on_demand.py": {
+      "checksum": "45d6c23503095cffd4db5093e0f917b0"
     },
     "src/discharge_docs/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
@@ -49,9 +37,6 @@
     },
     "src/discharge_docs/api/pydantic_models.py": {
       "checksum": "2cda619d961786ddff3834f0fcba7ee3"
-    },
-    "src/discharge_docs/dashboard/.gitignore": {
-      "checksum": "f5735dd5e17029105a1d9a0d9ed7d26a"
     },
     "src/discharge_docs/dashboard/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
@@ -121,6 +106,9 @@
     },
     "src/discharge_docs/processing/processing.py": {
       "checksum": "98232e6e863e92ab75f1e891b728dbc5"
+    },
+    "src/discharge_docs/config.py": {
+      "checksum": "f7885ee4aa16f661e58d9546ef2aee0a"
     }
   }
 }

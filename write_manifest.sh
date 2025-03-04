@@ -1,7 +1,5 @@
-#!/bin/bash
 
-# Prompt for the dashboard name
-read -p "For which dashboard do you want to write a manifest file? Use the exact name of the file. " APPLICATION
+read -p "For which application do you want to write a manifest file? Use the exact name of the file within the run folder. You do not need to write 'run/'. " APPLICATION
 APPLICATION=${APPLICATION:-N}
 
 # Prompt to check if dash or api

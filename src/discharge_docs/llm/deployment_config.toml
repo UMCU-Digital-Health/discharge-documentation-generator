@@ -1,0 +1,4 @@
+temperature = 0.2
+deployment_name_acc = "aiva-gpt"
+deployment_name_prod = "aiva-gpt4-new"
+deployment_name_bulk = "aiva-gpt4-new"

@@ -1,47 +1,47 @@
-﻿enc_id;admissionDate;dischargeDate;department;description;value;date
-9.999;01-01-2024;11-01-2024;DH;Anamnese;Reden voor opname: postoperatieve ademhalingsproblemen.;01-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: De patiënt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.
+pseudo_id;enc_id;admissionDate;dischargeDate;description;content;date;length_of_stay;department
+ABC;999999999;2024-01-01;2024-01-11;Anamnese;Reden voor opname: postoperatieve ademhalingsproblemen.;2024-01-01;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.
 Cardiologie: Vitale parameters zijn stabiel.
 Neurologie: De patiënt is verward, vermoedelijk door de anesthesie.
-Infectie: -";01-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.
+Infectie: -";2024-01-01;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.
 Cardiologie: Stabiele vitale parameters.
 Neurologie: Verwardheid blijft aanhouden, vermoeden op delier.
-Infectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.";02-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: beademing-ondersteuning wordt voortgezet.
+Infectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.";2024-01-02;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning wordt voortgezet.
 Cardiologie: Stabiele vitale parameters.
 Neurologie: delier.
-Infectie: minimale verdere stijging in temp, antibiotica worden voortgezet.";03-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: Enige verbetering in de ademhaling, patiënt blijft afhankelijk van beademing.
+Infectie: minimale verdere stijging in temp, antibiotica worden voortgezet.";2024-01-03;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Enige verbetering in de ademhaling, patiënt blijft afhankelijk van beademing.
 Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
 Neurologie: Verwardheid en delier nemen toe.
-Infectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.";04-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: beademing-ondersteuning.
+Infectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.";2024-01-04;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
 Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
 Neurologie: Verwardheid en delier.
-Infectie: constant, antibioticakuur.";05-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: beademing-ondersteuning.
+Infectie: constant, antibioticakuur.";2024-01-05;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
 Cardiologie: - (Geen significante verandering)
 Neurologie: Delier verbetert geleidelijk.
 Infectie: -  constant, antibioticakuur.
-";06-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: De patiënt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.
+";2024-01-06;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.
 Cardiologie: Vitale parameters stabiliseren met behulp van medicatie.
 Neurologie: -
-Infectie:  constant, antibioticakuur.";07-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: - (Geen significante verandering)
+Infectie:  constant, antibioticakuur.";2024-01-07;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: - (Geen significante verandering)
 Cardiologie: - (Geen significante verandering)
 Neurologie: geen delier meer
-Infectie:  constant, antibioticakuur.";08-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: zuurstof, patient zwak  
+Infectie:  constant, antibioticakuur.";2024-01-08;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: zuurstof, patient zwak  
 Cardiologie: - (Geen significante verandering)
 Neurologie: stabiel en helder
-Infectie:  constant, antibioticakuur.";09-01-2024
-9.999;01-01-2024;11-01-2024;DH;Dagstatus;"Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof
+Infectie:  constant, antibioticakuur.";2024-01-09;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof
 Cardiologie: Vitale parameters zijn nu stabiel zonder medicatie.
 Neurologie: -
-Infectie:  constant, antibioticakuur.";10-01-2024
-9.999;01-01-2024;11-01-2024;DH;Ontslagbrief;"
+Infectie:  constant, antibioticakuur.";2024-01-10;10;DEMO
+ABC;999999999;2024-01-01;2024-01-11;Ontslagbrief;"
 Geachte collega, 
 
 In deze brief informeer ik u over de gezondheidstoestand van de heer Jan Jansen bij zijn ontslag van de Intensive Care afdeling. 
@@ -71,4 +71,4 @@ Met vriendelijke groet,
 
 [Naam]  
 [Positie/Functionaris]  
-[Ziekenhuis/Instelling]";10-01-2024
+[Ziekenhuis/Instelling]";2024-01-10;10;DEMO

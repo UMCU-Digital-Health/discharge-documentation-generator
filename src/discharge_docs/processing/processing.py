@@ -1,12 +1,30 @@
 import re
+from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
+import tomli_w
 
 
 def replace_text(input_text):
-    # Regular expression pattern to capture and replace the format
-    # $RepeatedText|...#RepeatedText|...#
+    """
+    Replaces specific text patterns in the input text with formatted text.
+
+    This function uses regular expressions to find and replace patterns in the input
+    text. The patterns are of the format $RepeatedText|...#RepeatedText|...# and
+    RepeatedText|...#RepeatedText|...#. The matched text is replaced with the
+    uppercase version of the repeated text, each surrounded by newlines.
+
+    Parameters
+    ----------
+    input_text : str
+        The input text in which the patterns will be searched and replaced.
+
+    Returns
+    -------
+    str
+        The text with the specified patterns replaced by the formatted text.
+    """
     pattern = r"\$(.*?)(\|.*?#)\1\|.*?#"
 
     def replacement(match):
@@ -20,219 +38,258 @@ def replace_text(input_text):
     return replaced_text
 
 
-def process_data_metavision_dp(df: pd.DataFrame, nifi: bool = False) -> pd.DataFrame:
+def combine_patient_and_docs_data_hix(
+    patient_data: pd.DataFrame, discharge_data: pd.DataFrame
+) -> pd.DataFrame:
+    # combine patient and discharge data for HiX data
+    discharge_data["description"] = "Ontslagbrief"
+    patient_file = pd.concat([patient_data, discharge_data], axis=0).reset_index(
+        drop=True
+    )
+    return patient_file
+
+
+def process_data(
+    patient_data: pd.DataFrame,
+    remove_encs_no_docs: bool = False,
+) -> pd.DataFrame:
     """
-    Process the given DataFrame containing metavision data.
-    The steps were:
-    1. include enc_id per admission
-    2. remove columns not necessary
-    3. Rename columns
-    3.5 add full discharge docs from dataplatform export (TODO)
-    4. include date column
-    5. add length of stay
-    6. remove patients with length of stay 0 days
-    7. remove encounters that do not have a discharge letter
-    8. replace date in rows with 1899 in the date
-    9. rename ontslagbrief
-    10. remove the MS Probleemlijst Date as it is the same as MS Probleemlijst Print but
-        formatted worse
-    11. pseudonomise by hand
+    Processes patient data.
 
-
+    This function processes the provided patient data DataFrame by filtering,
+    formatting, and combining relevant information. It can also remove encounters
+    without discharge documents if specified.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        The DataFrame containing metavision data.
-    nifi : bool
-        Whether the data is from nifi or not to determine datetime processing
+    patient_data : pd.DataFrame
+        The DataFrame containing patient data.
+    remove_encs_no_docs : bool, optional
+        If True, removes encounters without discharge documents, by default False
 
     Returns
     -------
-    pandas.DataFrame
-        The processed DataFrame.
+    pd.DataFrame
+        The processed patient data DataFrame.
     """
-    if not nifi:
-        # replace enc_id per admission (start date and pseudo_id) for privacy
-        df["enc_id"] = df.groupby(["period_start", "pseudo_id"]).ngroup()
+    df = patient_data.copy()
 
-    # Rename and drop columns
-    if "pseudo_id" in df.columns:
-        df = df.drop(columns=["pseudo_id"])
+    df["date"] = pd.to_datetime(df["date"].dt.date)
 
-    df = df.rename(
-        columns={
-            "period_start": "admissionDate",
-            "period_end": "dischargeDate",
-            "location_Location_value_original": "department",
-            "effectiveDateTime": "time",
-            "code_display_original": "description",
-            "valueString": "value",
-            "enc_id": "enc_id",
-            "subject_Patient_value": "patient_number",
+    df = df[df["content"].str.strip() != ""]
+    df = df[df["description"].str.strip() != ""]
+    df = df.dropna(subset=["date", "description", "content"])
+
+    df["description"] = df["description"].replace(
+        "Medische Ontslagbrief - Beloop", "Ontslagbrief"
+    )
+
+    if "Ontslagbrief" in df["description"].unique():
+        df = df.sort_values(by=["enc_id", "date"])
+
+        last_docs = df[df["description"] == "Ontslagbrief"].drop_duplicates(
+            subset=["enc_id"], keep="last"
+        )
+
+        df = pd.concat(
+            [
+                df[df["description"] != "Ontslagbrief"],
+                last_docs,
+            ],
+            axis=0,
+        ).reset_index(drop=True)
+
+    if "dischargeDate" in df.columns:
+        df["length_of_stay"] = pd.to_timedelta(
+            (df["dischargeDate"].dt.date - df["admissionDate"].dt.date)
+        ).dt.days
+
+    if remove_encs_no_docs:
+        encs_with_docs = df.loc[df["description"] == "Ontslagbrief", "enc_id"].unique()
+        df = df[df["enc_id"].isin(encs_with_docs)]
+
+    df["department"] = df["department"].replace(
+        {
+            "Intensive Care Centrum": "IC",
+            "Neonatologie": "NICU",
+            "CAR": "CAR",
         }
     )
 
-    # include date column
-    if nifi:
-        df["time"] = pd.to_datetime(df["time"].astype(float), unit="ms")
-        df["admissionDate"] = pd.to_datetime(
-            df["admissionDate"].astype(float), unit="ms"
+    df = (
+        df.groupby("department")
+        .apply(
+            lambda x: filter_data(x, x.name).assign(department=x.name),
+            include_groups=False,
         )
-    else:
-        df["time"] = pd.to_datetime(df["time"])
-        df["admissionDate"] = pd.to_datetime(df["admissionDate"])
-        df["dischargeDate"] = pd.to_datetime(df["dischargeDate"])
-
-    df["date"] = pd.to_datetime(df["time"].dt.date)
-
-    # include length of stay when available
-    if "dischargeDate" in df.columns and not df["dischargeDate"].isna().all():
-        df["length_of_stay"] = (df["dischargeDate"] - df["admissionDate"]).dt.days
-        # remove patients with length of stay 0 days
-        df = df[df["length_of_stay"] != 0]
-
-    # remove rows where value is empty
-    df = df[
-        ~(
-            df["value"]
-            == "Lichamelijk Onderzoek|Titel#Lichamelijk Onderzoek|Bespreking#"
-        )
-    ]
-
-    df.dropna(subset=["value"], inplace=True)
-    df.drop_duplicates(inplace=True)
-
-    # apply replace_text to all values in the value column
-    df["value"] = df["value"].apply(replace_text)
-
-    if not nifi:
-        # remove encounters that do not have a discharge letter
-        encounters_with_discharge = df.loc[
-            df["description"] == "Medische Ontslagbrief - Beloop", "enc_id"
-        ].unique()
-        df = df[df["enc_id"].isin(encounters_with_discharge)]
-
-    # Function to replace 1899 dates with the most recent date in the group
-    # as the 1899 dates are not valid and contain the discharge docs
-    def replace_1899_dates(dates):
-        # Replace 1899 dates with the most recent date in the series
-        mask = dates.dt.year == 1899
-        if mask.any():
-            max_date = dates.max()
-            dates = dates.where(~mask, max_date)
-        return dates
-
-    df["date"] = df.groupby("enc_id")["date"].transform(replace_1899_dates)
-
-    # subset the data based on the names for sections in patient file
-    df = df[
-        ~(
-            (df["department"] == "Intensive Care Centrum")
-            & (
-                ~df["description"].isin(
-                    [
-                        "Dagstatus - Tractus 12 Conclusie",
-                        "Dagstatus - Tractus 13 Opm dagdienst",
-                        "Dagstatus - Tractus 14 Opm A/N dienst",
-                        "Dagstatus Print Afspraken",
-                        "Dagstatus Print Behandeldoelen",
-                        "Form MS Diagnose 1",
-                        "Form MS Diagnose 2",
-                        "MS Anamnese Overzicht",
-                        "MS Chronologie Eventlijst Print",
-                        "MS Dagstatus Beleid KT",
-                        "MS Dagstatus Beleid LT Print",
-                        "MS Decursus Thuismedicatie",
-                        "MS Decursus Toedracht bij Opname",
-                        "MS Probleemlijst Print",
-                        "MS VoorGeschiedenis Overzicht",
-                        "Medische Ontslagbrief - Beloop",
-                        # "Medische ontslagbrief - Beloop Dictionary",
-                        "Ontslagregistratie - Ontslagbestemming - "
-                        + "Naam ander ziekenhuis/afdeling (niet UMCU)",
-                        "Ontslagregistratie - Ontslagbestemming - "
-                        + "Toelichting bij ontslag naar overige bestemmingen",
-                    ]
-                )
-            )
-        )
-    ]
-    df = df[
-        ~(
-            (df["department"] == "Neonatologie")
-            & (
-                ~df["description"].isin(
-                    [
-                        "Dagstatus - Tractus 01 Lichamelijk Onderzoek",
-                        "Dagstatus - Tractus 02 Respiratie",
-                        "Dagstatus - Tractus 03 Circulatie",
-                        "Dagstatus - Tractus 04 Neurologie",
-                        "Dagstatus - Tractus 05 Infectie",
-                        "Dagstatus - Tractus 06 VB/nierfunctie",
-                        "Dagstatus - Tractus 07 Gastro-Intestinaal",
-                        "Dagstatus - Tractus 08 Milieu Interieur",
-                        "Dagstatus - Tractus 09 Extr/huid",
-                        "Dagstatus - Tractus 10 Psych/soc",
-                        "Dagstatus - Tractus 11 Overig",
-                        "Dagstatus - Tractus 12 Conclusie",
-                        "Dagstatus - Tractus 13 Opm dagdienst",
-                        "Dagstatus - Tractus 14 Opm A/N dienst",
-                        "Dagstatus Print Afspraken",
-                        "Dagstatus Print Behandeldoelen",
-                        "Form MS Diagnose 1",
-                        "Form MS Diagnose 2",
-                        "MS Anamnese Overzicht",
-                        "MS Chronologie Eventlijst Print",
-                        "MS Dagstatus Beleid KT",
-                        "MS Dagstatus Beleid LT Print",
-                        "MS Decursus Thuismedicatie",
-                        "MS Decursus Toedracht bij Opname",
-                        "MS Probleemlijst Print",
-                        "MS VoorGeschiedenis Overzicht",
-                        "MS Gesprek Item Tekst",
-                        # "Medische ontslagbrief - Beloop Dictionary",
-                        "Medische Ontslagbrief - Beloop",
-                        "Ontslagregistratie - Ontslagbestemming - "
-                        + "Naam ander ziekenhuis/afdeling (niet UMCU)",
-                        "Ontslagregistratie - Ontslagbestemming - "
-                        + "Toelichting bij ontslag naar overige bestemmingen",
-                    ]
-                )
-            )
-        )
-    ]
-    df = df.sort_values(by=["department", "description"])
-
-    # rename ontslagbrief
-    df["description"] = (
-        df["description"]
-        .replace("Dagstatus Print Afspraken", "Afspraken")
-        .replace("Dagstatus Print Behandeldoelen", "Behandeldoelen")
-        .replace("Form MS Diagnose 1", "Diagnosecode 1")
-        .replace("Form MS Diagnose 2", "Diagnosecode 2")
-        .replace("MS Anamnese Overzicht", "Anamnese")
-        .replace("MS Chronologie Eventlijst Print", "Eventlijst")
-        .replace("MS Dagstatus Beleid KT", "Korte Termijn Beleid")
-        .replace("MS Dagstatus Beleid LT Print", "Lange Termijn Beleid")
-        .replace("MS Decursus Thuismedicatie", "Thuismedicatie")
-        .replace("MS Decursus Toedracht bij Opname", "Toedracht bij Opname")
-        .replace("MS Probleemlijst Print", "Probleemlijst")
-        .replace("MS VoorGeschiedenis Overzicht", "Voorgeschiedenis Overzicht")
-        .replace("MS Gesprek Item Tekst", "Oudergesprek")
-        .replace("Medische Ontslagbrief - Beloop", "Ontslagbrief")
-        .replace(
-            "Ontslagregistratie - Ontslagbestemming - "
-            + "Naam ander ziekenhuis/afdeling (niet UMCU)",
-            "Ontslagbestemming - Naam ander ziekenhuis/afdeling",
-        )
-        .replace(
-            "Ontslagregistratie - Ontslagbestemming - "
-            + "Toelichting bij ontslag naar overige bestemmingen",
-            "Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen",
-        )
+        .reset_index(drop=True)
     )
+
+    df = df.sort_values(by=["department", "enc_id", "date", "description"]).reset_index(
+        drop=True
+    )
+
     return df
+
+
+def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
+    # filtering and renaming the 'description' column per department
+    metavision_tracti = {
+        "Dagstatus - Tractus 01 Lichamelijk Onderzoek": "Dagstatus - Lichamelijk "
+        + "Onderzoek",
+        "Dagstatus - Tractus 02 Respiratie": "Dagstatus - Respiratie",
+        "Dagstatus - Tractus 03 Circulatie": "Dagstatus - Circulatie",
+        "Dagstatus - Tractus 04 Neurologie": "Dagstatus - Neurologie",
+        "Dagstatus - Tractus 05 Infectie": "Dagstatus - Infectie",
+        "Dagstatus - Tractus 06 VB/nierfunctie": "Dagstatus - VB/nierfunctie",
+        "Dagstatus - Tractus 07 Gastro-Intestinaal": "Dagstatus - Gastro-Intestinaal",
+        "Dagstatus - Tractus 08 Milieu Interieur": "Dagstatus - Milieu Interieur",
+        "Dagstatus - Tractus 09 Extr/huid": "Dagstatus - Extr/huid",
+        "Dagstatus - Tractus 10 Psych/soc": "Dagstatus - Psych/sociaal",
+        "Dagstatus - Tractus 11 Overig": "Dagstatus - Overig",
+    }
+
+    metavision_general = {
+        "Dagstatus - Tractus 12 Conclusie": "Dagstatus - Conclusie",
+        "Dagstatus - Tractus 13 Opm dagdienst": "Dagstatus - Opmerkingen dagdienst",
+        "Dagstatus - Tractus 14 Opm A/N dienst": "Dagstatus - Opmerkingen avond/nacht"
+        + " dienst",
+        "Dagstatus Print Afspraken": "Afspraken",
+        "Dagstatus Print Behandeldoelen": "Behandeldoelen",
+        # "Form MS Diagnose 1": "Diagnosecode 1",
+        # "Form MS Diagnose 2": "Diagnosecode 2",
+        "MS Anamnese Overzicht": "Anamnese",
+        "MS Chronologie Eventlijst Print": "Eventlijst",
+        "MS Dagstatus Beleid KT": "Korte Termijn Beleid",
+        "MS Dagstatus Beleid LT Print": "Lange Termijn Beleid",
+        "MS Decursus Thuismedicatie": "Thuismedicatie",
+        "MS Decursus Toedracht bij Opname": "Toedracht bij Opname",
+        "MS Decursus Item Tekst": "Familiegesprek",
+        "MS Probleemlijst Print": "Probleemlijst",
+        "MS VoorGeschiedenis Overzicht": "Voorgeschiedenis Overzicht",
+        "Ontslagbrief": "Ontslagbrief",
+        "Ontslagregistratie - Ontslagbestemming - "
+        + "Naam ander ziekenhuis/afdeling (niet UMCU)": "Ontslagbestemming - Naam"
+        + " ander ziekenhuis/afdeling",
+        "Ontslagregistratie - Ontslagbestemming - "
+        + "Toelichting bij ontslag naar overige bestemmingen": "Ontslagbestemming - "
+        + "Toelichting bij ontslag naar overige bestemmingen",
+    }
+
+    cardio_general = {
+        "Aanvullend onderzoek": "Aanvullend onderzoek",
+        "Conclusie": "Conclusie",
+        # "Correspondentie": "Correspondentie",
+        "Lichamelijk onderzoek": "Lichamelijk onderzoek",
+        "Beleid": "Beleid",
+        "Anamnese": "Anamnese",
+        "Functieonderzoeken": "Functieonderzoeken",
+        # "Aangevraagde onderzoeken": "Aangevraagde onderzoeken",
+        # "Laboratorium": "Laboratorium",
+        "Reden van komst / Verwijzing": "Reden van komst / Verwijzing",
+        "Uitgevoerde behandeling/verrichting": "Uitgevoerde behandeling/verrichting",
+        "Overige acties": "Overige acties",
+        "Overweging / Differentiaal diagnose": "Overweging / Differentiaal diagnose",
+        "Beloop": "Beloop",
+        "Overdracht": "Overdracht",
+        "Samenvatting": "Samenvatting",
+        # "Vitale functies": "Vitale functies",
+        # "Radiologie": "Radiologie",
+        "Diagnose": "Diagnose",
+        "Actuele medicatie": "Actuele medicatie",
+        # "Microbiologie": "Microbiologie",
+        "Plan": "Plan",
+        "Complicatie": "Complicatie",
+        # "Pathologie": "Pathologie",
+        # "Informed Consent": "Informed Consent",
+        "Familieanamnese": "Familieanamnese",
+        "Medicatie": "Medicatie",
+        "Advies": "Advies",
+        "Voorgeschiedenis": "Voorgeschiedenis",
+        "Ontslagbrief": "Ontslagbrief",
+    }
+
+    if department == "IC":
+        df = df[df["description"].isin(metavision_general.keys())].replace(
+            metavision_general
+        )
+    elif department == "NICU":
+        df = (
+            df[
+                df["description"].isin(metavision_general.keys())
+                | df["description"].isin(metavision_tracti.keys())
+            ]
+            .replace(metavision_general)
+            .replace(metavision_tracti)
+        )
+    elif department == "CAR":
+        df = df[df["description"].isin(cardio_general.keys())].replace(cardio_general)
+    else:
+        raise ValueError(f"Department {department} not recognized")
+    return df
+
+
+def write_encounter_ids(data: pd.DataFrame, n_enc_ids: int) -> None:
+    """
+    Writes the encounter IDs from the data to a TOML file.
+
+    This function processes the provided DataFrame to extract unique encounter IDs
+    for each department, limits the number of encounter IDs per department to the
+    specified number, and writes the result to a TOML file.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The DataFrame containing the encounter data.
+    n_enc_ids : int
+        The number of encounter IDs to keep per department.
+    """
+    # replace certain values in department
+    enc_ids = data[["enc_id", "department"]].drop_duplicates()
+
+    # keep only first n_enc_ids per department
+    enc_ids = enc_ids.groupby("department").head(n_enc_ids)
+    # combine and save as TOML where the table is the department and the encs are a list
+    enc_ids = enc_ids.groupby("department")["enc_id"].apply(list).to_dict()
+    toml_data = {dept: {"ids": ids} for dept, ids in enc_ids.items()}
+
+    with open(
+        Path(__file__).parents[3]
+        / "src"
+        / "discharge_docs"
+        / "dashboard"
+        / "enc_ids.toml",
+        "wb",
+    ) as f:
+        tomli_w.dump(toml_data, f)
+
+
+def get_patient_discharge_docs(
+    df: pd.DataFrame, enc_id: int | None = None
+) -> pd.Series:
+    """
+    Retrieves the discharge documentation for a specific patient based on their
+    encounter ID or if the data is only for one end_id.
+
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame containing the patient data.
+    enc_id : int, optional
+        The encounter ID of the patient.
+
+    Returns
+    -------
+    str
+        The discharge documentation for the patient.
+    """
+    if enc_id is not None:
+        discharge_documentation = df[df["enc_id"] == enc_id]
+    else:
+        discharge_documentation = df
+
+    discharge_documentation = df[df["description"].isin(["Ontslagbrief"])]["content"]
+    return discharge_documentation
 
 
 def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.DataFrame]:
@@ -257,14 +314,12 @@ def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.Data
         patient_file = df
 
     # remove rows with ontslag in the description
-    patient_file = patient_file[
-        ~patient_file.description.str.contains("ontslag", case=False)
-    ]
+    patient_file = patient_file[~patient_file["description"].isin(["Ontslagbrief"])]
 
     patient_file_string = "\n\n".join(
         patient_file.apply(
             lambda row: (
-                f"## {row['description']}\n### Datum: {row['date']}\n\n{row['value']}"
+                f"## {row['description']}\n### Datum: {row['date']}\n\n{row['content']}"
             ),
             axis=1,
         )

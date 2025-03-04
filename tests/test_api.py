@@ -8,16 +8,12 @@ from MockAzureOpenAIEnv import MockAzureOpenAI
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-import discharge_docs.api.app as app
-from discharge_docs.api.app import (
-    HixInput,
-    HixOutput,
-    LLMOutput,
-    MetavisionPatientFile,
-    generate_hix_discharge_docs,
+import discharge_docs.api.app_periodic as app_periodic
+from discharge_docs.api.app_periodic import (
     process_and_generate_discharge_docs,
-    process_hix_data,
-    remove_old_discharge_docs,
+)
+from discharge_docs.api.pydantic_models import (
+    MetavisionPatientFile,
 )
 
 
@@ -68,30 +64,6 @@ class FakeDB(Session):
 
 
 @pytest.mark.asyncio
-async def test_api_discharge_docs(monkeypatch):
-    """Test the process_and_generate_discharge_docs endpoint in the API."""
-    with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
-        test_data = json.load(f)
-        test_data = [MetavisionPatientFile(**item) for item in test_data]
-
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_generate", "test")
-    monkeypatch.setenv("ENVIRONMENT", "acc")
-    output = await process_and_generate_discharge_docs(test_data, FakeDB(), "test")
-    assert output["message"] == "Success"
-    assert isinstance(output["discharge_letter"], str)
-
-
-@pytest.mark.asyncio
-async def test_api_remove_discharge_docs(monkeypatch):
-    """Test the remove_old_discharge_docs endpoint in the API."""
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_remove", "test")
-    output = await remove_old_discharge_docs(datetime(2023, 1, 1), FakeDB(), "test")
-    assert output == {"message": "Success"}
-
-
-@pytest.mark.asyncio
 async def test_api_wrong_api_key(monkeypatch):
     """Test the process_and_generate_discharge_docs endpoint in the API."""
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
@@ -102,7 +74,7 @@ async def test_api_wrong_api_key(monkeypatch):
     except ValidationError as e:
         pytest.fail(f"JSON data does not match PatientFile schema: {e}")
 
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_generate", "test")
 
     try:
@@ -115,79 +87,33 @@ async def test_api_wrong_api_key(monkeypatch):
 @pytest.mark.asyncio
 async def test_api_retrieve_discharge_docs(monkeypatch):
     """Test the retrieve endpoint in the API."""
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
-    output = await app.retrieve_discharge_doc("test_patient_id", FakeDB(), "test")
+    output = await app_periodic.retrieve_discharge_doc("1234", FakeDB(), "test")
     assert isinstance(output, str)
 
 
+@pytest.mark.parametrize(
+    "previous_status", ["Success", "GeneralError", "JSONError", "LengthError"]
+)
 @pytest.mark.asyncio
-async def test_api_retrieve_discharge_doc_success(monkeypatch):
+async def test_api_retrieve_discharge_doc_success(monkeypatch, previous_status):
     """Test retrieving a successful discharge letter for a patient."""
     mock_data = [
         (
-            "Discharge letter content",
-            "enc123",
-            1,
-            "Success",
-            datetime.now() - timedelta(days=8),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            2,
-            "Success",
-            datetime.now() - timedelta(days=7),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            3,
-            "Success",
-            datetime.now() - timedelta(days=6),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            4,
-            "Success",
-            datetime.now() - timedelta(days=5),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            5,
-            "Success",
-            datetime.now() - timedelta(days=4),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            6,
-            "Success",
-            datetime.now() - timedelta(days=3),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            7,
-            "Success",
-            datetime.now() - timedelta(days=2),
-        ),
-        (
-            "Discharge Letter content",
-            "enc123",
-            8,
-            "Success",
-            datetime.now() - timedelta(days=1),
-        ),
-        (
             "Most Recent Successful Discharge Letter",
-            "enc123",
             9,
             "Success",
+            "1234",
             datetime.now(),
+        ),
+        (
+            "Older Discharge Letter",
+            8,
+            previous_status,
+            "1234",
+            datetime.now() - timedelta(days=1),
         ),
     ]
     mock_data = sorted(mock_data, key=lambda x: x[2], reverse=True)
@@ -202,307 +128,97 @@ async def test_api_retrieve_discharge_doc_success(monkeypatch):
             print(f"{stmt} executed with fetchall data...")
             return FakeExecuteSuccess()
 
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
-    output = await app.retrieve_discharge_doc(
-        "test_patient_id", FakeDBWithResults(), "test"
+    output = await app_periodic.retrieve_discharge_doc(
+        "1234", FakeDBWithResults(), "test"
     )
 
     assert isinstance(output, str)
     assert "Most Recent Successful Discharge Letter" in output
+    assert "Older Discharge Letter" not in output
 
 
 @pytest.mark.asyncio
 async def test_api_retrieve_discharge_doc_no_results(monkeypatch):
     """Test retrieving discharge docs with no results for a patient."""
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
-    output = await app.retrieve_discharge_doc("test_patient_id", FakeDB(), "test")
+    output = await app_periodic.retrieve_discharge_doc("1234", FakeDB(), "test")
 
     assert isinstance(output, str)
     assert "Er is geen ontslagbrief in de database gevonden" in output
 
 
 @pytest.mark.asyncio
-async def test_api_retrieve_discharge_doc_older_letter(monkeypatch):
-    """Test retrieving discharge docs with a LengthError."""
+@pytest.mark.parametrize("error", ["GeneralError", "JSONError", "LengthError"])
+@pytest.mark.parametrize("days", [2, 8])
+async def test_api_retrieve_discharge_doc_older_letter(monkeypatch, error, days):
+    """Test retrieving older discharge docs as newer has an error."""
     mock_data = [
         (
-            "Discharge letter content",
-            "enc123",
-            1,
-            "Success",
-            datetime.now() - timedelta(days=8),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            2,
-            "Success",
-            datetime.now() - timedelta(days=7),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            3,
-            "Success",
-            datetime.now() - timedelta(days=6),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            4,
-            "Success",
-            datetime.now() - timedelta(days=5),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            5,
-            "Success",
-            datetime.now() - timedelta(days=4),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            6,
-            "Success",
-            datetime.now() - timedelta(days=3),
-        ),
-        (
-            "Discharge letter content",
-            "enc123",
-            7,
-            "Success",
-            datetime.now() - timedelta(days=2),
-        ),
-        (
-            "Most Recent Successful Discharge Letter",
-            "enc123",
-            8,
-            "Success",
-            datetime.now() - timedelta(days=1),
-        ),
-        (
-            "Too Long Discharge Letter",
-            "enc123",
+            "No discharge letter due to error",
             9,
-            "LengthError",
+            f"{error}",
+            "1234",
             datetime.now(),
         ),
+        (
+            f"Older But Successful Discharge Letter ({days} days ago)",
+            8,
+            "Success",
+            "1234",
+            datetime.now() - timedelta(days=days),
+        ),
     ]
-    mock_data = sorted(mock_data, key=lambda x: x[2], reverse=True)
+    mock_data = sorted(mock_data, key=lambda x: x[1], reverse=True)
 
-    class FakeExecuteLengthError(FakeExecute):
+    class FakeExecuteError(FakeExecute):
         def fetchall(self):
-            print("requested fetchall with LengthError...")
+            print("requested fetchall with Error...")
             return mock_data
 
-    class FakeDBWithLengthError(FakeDB):
+    class FakeDBWithError(FakeDB):
         def execute(self, stmt):
-            print(f"{stmt} executed with LengthError data...")
-            return FakeExecuteLengthError()
+            print(f"{stmt} executed with Error data...")
+            return FakeExecuteError()
 
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
-    output = await app.retrieve_discharge_doc(
-        "test_patient_id", FakeDBWithLengthError(), "test"
+    output = await app_periodic.retrieve_discharge_doc(
+        "1234", FakeDBWithError(), "test"
     )
 
     assert isinstance(output, str)
-    assert "Most Recent Successful Discharge Letter" in output
-
-
-@pytest.mark.asyncio
-async def test_api_retrieve_discharge_doc_outdated(monkeypatch):
-    """Test retrieving an outdated discharge letter."""
-    mock_data = [
-        (
-            "Discharge Letter Content",
-            "enc123",
-            1,
-            "Success",
-            datetime.now() - timedelta(days=8),
-        ),
-        (
-            "Discharge Letter Content",
-            "enc123",
-            2,
-            "Success",
-            datetime.now() - timedelta(days=7),
-        ),
-        (
-            "Discharge Letter Content",
-            "enc123",
-            3,
-            "Success",
-            datetime.now() - timedelta(days=6),
-        ),
-        (
-            "Discharge Letter Content",
-            "enc123",
-            4,
-            "Success",
-            datetime.now() - timedelta(days=5),
-        ),
-        (
-            "Discharge Letter Content",
-            "enc123",
-            5,
-            "Success",
-            datetime.now() - timedelta(days=4),
-        ),
-        (
-            "Discharge Letter Content",
-            "enc123",
-            6,
-            "Success",
-            datetime.now() - timedelta(days=3),
-        ),
-        (
-            "Most Recent Discharge Letter Content",
-            "enc123",
-            7,
-            "Success",
-            datetime.now() - timedelta(days=2),
-        ),
-        (
-            "",
-            "enc123",
-            8,
-            "GeneralError",
-            datetime.now() - timedelta(days=1),
-        ),
-        (
-            "",
-            "enc123",
-            9,
-            "GeneralError",
-            datetime.now(),
-        ),
-    ]
-    mock_data = sorted(mock_data, key=lambda x: x[2], reverse=True)
-
-    class FakeExecuteOutdated(FakeExecute):
-        def fetchall(self):
-            print("requested fetchall with outdated data...")
-            return mock_data
-
-    class FakeDBWithOutdatedData(FakeDB):
-        def execute(self, stmt):
-            print(f"{stmt} executed with outdated data...")
-            return FakeExecuteOutdated()
-
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_retrieve", "test")
-
-    output = await app.retrieve_discharge_doc(
-        "test_patient_id", FakeDBWithOutdatedData(), "test"
-    )
-
-    assert isinstance(output, str)
-    assert "NB Let erop dat deze brief niet afgelopen nacht is gegenereerd" in output
-    assert "Most Recent Discharge Letter Content" in output
+    assert f"Older But Successful Discharge Letter ({days} days ago)" in output
+    assert "No discharge letter due to error" not in output
+    if error == "LengthError":
+        assert (
+            "Dit komt doordat het patientendossier te lang is geworden voor het AI "
+            "model." in output
+        )
+    if days == 2:
+        assert (
+            "NB Let erop dat deze AI-brief niet afgelopen nacht is gegenereerd, maar"
+            f" {days} dagen geleden." in output
+        )
+    elif days == 8:
+        assert (
+            "NB Let erop dat deze AI-brief meer dan een week geleden is gegenereerd, "
+            f"namelijk {days} dagen geleden." in output
+        )
 
 
 @pytest.mark.asyncio
 async def test_api_retrieve_discharge_doc_wrong_api_key(monkeypatch):
     """Test retrieving discharge docs with an incorrect API key."""
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
     try:
-        await app.retrieve_discharge_doc("test_patient_id", FakeDB(), "wrong_api_key")
+        await app_periodic.retrieve_discharge_doc("1234", FakeDB(), "wrong_api_key")
     except HTTPException as e:
         assert e.status_code == 403
         assert e.detail == "You are not authorized to access this endpoint"
-
-
-@pytest.mark.asyncio
-async def test_api_retrieve_discharge_doc__general_error_then_success(
-    monkeypatch,
-):
-    """Test retrieving discharge docs with first a GeneralError, then a success"""
-
-    mock_data = [
-        ("", "enc123", 1, "GeneralError", datetime.now() - timedelta(days=8)),
-        ("", "enc123", 2, "GeneralError", datetime.now() - timedelta(days=7)),
-        ("", "enc123", 3, "GeneralError", datetime.now() - timedelta(days=6)),
-        ("", "enc123", 4, "GeneralError", datetime.now() - timedelta(days=5)),
-        ("", "enc123", 5, "GeneralError", datetime.now() - timedelta(days=4)),
-        ("", "enc123", 6, "GeneralError", datetime.now() - timedelta(days=3)),
-        ("", "enc123", 7, "GeneralError", datetime.now() - timedelta(days=2)),
-        (
-            "Successful Discharge Letter",
-            "enc123",
-            8,
-            "Success",
-            datetime.now() - timedelta(days=1),
-        ),
-        (
-            "Most Recent Successful Discharge Letter",
-            "enc123",
-            9,
-            "Success",
-            datetime.now(),
-        ),
-    ]
-    mock_data = sorted(mock_data, key=lambda x: x[2], reverse=True)
-
-    class FakeExecuteEveryDayEntry(FakeExecute):
-        def fetchall(self):
-            print(
-                "requested fetchall with entries for every day over more than a week..."
-            )
-            return mock_data
-
-    class FakeDBEveryDayEntry(FakeDB):
-        def execute(self, stmt):
-            print(f"{stmt} executed with entries for every day...")
-            return FakeExecuteEveryDayEntry()
-
-    # Use the mocked DB session and mock Azure client
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_retrieve", "test")
-    output = await app.retrieve_discharge_doc(
-        "test_patient_id", FakeDBEveryDayEntry(), "test"
-    )
-
-    assert isinstance(output, str)
-    assert "Most Recent Successful Discharge Letter" in output
-
-
-@pytest.mark.asyncio
-async def test_hix_process_endpoint(monkeypatch):
-    """Test the process endpoint in the API."""
-
-    with open(Path(__file__).parent / "data" / "example_hix_data.json", "r") as f:
-        test_data = json.load(f)
-        test_data = HixInput(**test_data)
-
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_HIX", "test")
-    output = await process_hix_data(test_data, FakeDB(), "test")
-
-    assert output.department == "CAR"
-    assert isinstance(output, HixOutput)
-
-
-@pytest.mark.asyncio
-async def test_hix_generate_endpoint(monkeypatch):
-    """Test the generate endpoint in the API."""
-
-    test_data = HixOutput(
-        department="CAR",
-        value="Test value",
-    )
-
-    monkeypatch.setattr(app, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_HIX", "test")
-    monkeypatch.setenv("ENVIRONMENT", "acc")
-    output = await generate_hix_discharge_docs(test_data, FakeDB(), "test")
-
-    assert output.message == "Test"
-    assert isinstance(output, LLMOutput)

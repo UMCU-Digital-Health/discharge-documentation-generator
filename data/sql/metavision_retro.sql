@@ -7,26 +7,23 @@ SELECT
         ),
         2
     ) AS pseudo_id,
-    enc.subject_Patient_value,  -- Only used in datamanager folder
+    enc.subject_Patient_value as patient_id,  -- Only used in datamanager folder
     enc.identifier_value AS enc_id,
-    enc.period_start,
-    enc.period_end,
-    enc.[status],
-    enc.location_Location_value_original,
-    obs.identifier_value AS obs_id,
-    obs.code_display_original,
-    obs.category_display_original,
-    obs.effectiveDateTime,
-    obs.valueString
+    enc.period_start as admissionDate,
+    enc.period_end as dischargeDate,
+    enc.location_Location_value_original as department,
+    obs.code_display_original as description,
+    obs.effectiveDateTime as date, -- currently it is a timestamp, but will be converted to date in processing
+    obs.valueString as content
 FROM
-    [DWH].[models].[Encounter] enc
-    JOIN [DWH].[models].[Observation] obs ON obs.context_Encounter_system = enc.identifier_system
+    [PUB].[aiva_discharge_docs].[Encounter] enc
+    JOIN [PUB].[aiva_discharge_docs].[Observation] obs ON obs.context_Encounter_system = enc.identifier_system
     AND obs.context_Encounter_value = enc.identifier_value
 WHERE
     1 = 1
     AND enc.[identifier_system] = 'https://metadata.umcutrecht.nl/ids/MetavisionOpname'
-    AND enc.period_end >= '2024-12-01'
-    AND enc.period_end < '2025-01-01'
+    AND enc.period_end >= :start_date
+    AND enc.period_end < :end_date
     AND enc.[serviceProvider_Organization_value] IN ('W', 'U')
     AND enc.[location_Location_value_original] IN (
         'Neonatologie',

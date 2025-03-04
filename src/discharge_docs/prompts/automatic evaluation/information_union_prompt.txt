@@ -1,9 +1,0 @@
-Vergelijk de volgende twee lijsten met informatie (lijst A en lijst B) met elkaar.
-
-Geef een nieuwe lijst terug, met daarin alle unieke stukken informatie die in lijst A, lijst B of in beide lijsten staat, oftewel de vereniging van de twee lijsten.
-De resulterende lijst moet dus minstens zo lang zijn als lijst A en lijst B afzonderlijk.
-Wees kort en bondig in je antwoord, geef alleen een lijst terug met de informatie: ["stuk informatie 1", "stuk informatie 2", ...].
-Geef geen verdere informatie over hoe de twee teksten aan elkaar relateren.
-Als de beide lijsten leeg zijn, geef dan een lege lijst als antwoord: []
-Gebruik 5 tot 10 woorden per stuk informatie.
-Splits stukken informatie die groter zijn op in kleinere stukken.

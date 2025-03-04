@@ -1,9 +1,0 @@
-Vergelijk de volgende twee samenvattingen (samenvatting A en samenvatting B) met elkaar.
-Geef daarbij de volgende scores tussen 0 en 100 terug:
-- Semantische Similariteit Score: Geef een score voor de semantische gelijkenis tussen de twee samenvattingen. Ken een score toe op basis van hoe nauwkeurig de twee samenvattingen overeenkomen. 0 zou geen overeenkomst betekenen, en 100 volledige overeenkomst.
-- Volledigheid Percentage van A: Geef het percentage van de informatie die in samenvatting B staat en terugkomt in samenvatting A. 
-- Volledigheid Percentage van B: Geef het percentage van de informatie die in samenvatting A staat en terugkomt in samenvatting B.
-- Overlap Percentage: Geef het percentage van de inforamtie die in beide samenvattingen staat.  
-
-Geef de scores terug in het volgende format:
-{"Semantische Similariteit Score": *Semantische Similariteit Score*, "Volledigheid Percentage van A": *Volledigheid Percentage van A*, "Volledigheid Percentage van B": *Volledigheid Percentage van B*, "Overlap Percentage": *Overlap Percentage*}

@@ -5,7 +5,7 @@ The main function of this database is to store logging, feedback and evaluation 
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -19,229 +19,176 @@ class Base(DeclarativeBase, MappedAsDataclass):
     pass
 
 
-class DashSession(Base):
-    """Table that stores information about the current session of the dashboard"""
+class Request(Base):
+    """The request table stores general information about each request to the API.
+    This includes the timestamp, response code, runtime, and API version.
+    Each request in the request table is linked to a single row in one of the tables:
+        RequestRetrieve, RequestGenerate, or RequestFeedback, depending on the endpoint.
+    """
 
-    __tablename__ = "dashsession"
+    __tablename__ = "request"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime)
-    user: Mapped[str]
-    groups: Mapped[str]
-    version: Mapped[str]
+    response_code: Mapped[int] = mapped_column(Integer)
+    runtime: Mapped[float] = mapped_column(init=False, nullable=True)
+    api_version: Mapped[str] = mapped_column(String(10))
+    endpoint: Mapped[str] = mapped_column(String(50))
 
-
-class DashUserPrompt(Base):
-    """Table that stores the input (user prompt & selected patient) for the dashboard"""
-
-    __tablename__ = "dashuserprompt"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    prompt: Mapped[str]
-    patient: Mapped[str] = mapped_column(String)
-    session: Mapped[int] = mapped_column(
-        Integer, ForeignKey(DashSession.id), init=False
+    retrieve_relation: Mapped["RequestRetrieve"] = relationship(
+        back_populates="request_relation", init=False
     )
-
-    session_relation: Mapped["DashSession"] = relationship()
-    evaluation_relation: Mapped[List["DashEvaluation"]] = relationship(
-        init=False, back_populates="user_prompt_relation"
+    generate_relation: Mapped["RequestGenerate"] = relationship(
+        back_populates="request_relation", init=False
     )
-    output_relation: Mapped[List["DashOutput"]] = relationship(
-        init=False, back_populates="user_prompt_relation"
+    feedback_relation: Mapped["RequestFeedback"] = relationship(
+        back_populates="request_relation", init=False
     )
 
 
-class DashEvaluation(Base):
-    """Table that stores the output and the different performance metrics
-    of the custom user prompt."""
-
-    __tablename__ = "dashevaluation"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    user_prompt_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(DashUserPrompt.id), init=False
-    )
-    evaluation_metric: Mapped[str]
-    evaluation_value: Mapped[str]
-
-    user_prompt_relation: Mapped["DashUserPrompt"] = relationship(
-        init=False, back_populates="evaluation_relation"
-    )
-
-
-class DashOutput(Base):
-    """Table that stores the output of the GPT call."""
-
-    __tablename__ = "dashoutput"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    user_prompt_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(DashUserPrompt.id), init=False
-    )
-
-    gpt_output_value: Mapped[str]
-
-    user_prompt_relation: Mapped["DashUserPrompt"] = relationship(
-        init=False, back_populates="output_relation"
-    )
-
-
-class ApiRequest(Base):
-    """Table that stores information on API requests. This includes the timestamp,
-    response code, endpoint, runtime, api version and logging number.
-    The logging number's purpose is to do variable logging per endpoint.
-        /process-and-generate-discharge-docs: number of encounters processed
-        /remove_old_discharge_docs: number of discharge letters removed
-        /retrieve_discharge_doc: {encounter_id}_{generated_doc_id} to show for which
-            patient which discharge letter was retrieved
-        /save-feedback: number of feedbacks entries saved (by default 1)
+class RequestRetrieve(Base):
+    """The RequestRetrieve table stores information about the endpoint
+    "/retrieve_discharge_doc".
+    This includes:
+    - the linked Request ID
+    - the request_enc_id: the encounter ID for which the generated doc was requested
+    - a success indicator whether the retrieval request was successful
+        (1 if successful; 0 if unsuccessful)
+    - if the request was succesful, the returned generated document ID
+        if the request was not successful, this field is NULL
+    - if the request was succesful, the number of days old the returned generated doc is
+        if the request was not successful, this field is NULL
     """
 
-    __tablename__ = "apirequest"
+    __tablename__ = "requestretrieve"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime)
-    response_code: Mapped[int] = mapped_column(Integer, index=True, init=False)
-    endpoint: Mapped[str]
-    runtime: Mapped[float] = mapped_column(init=False)
-    api_version: Mapped[str]
-    logging_number: Mapped[str] = mapped_column(init=False)
-
-    encounter_relation: Mapped[List["ApiEncounter"]] = relationship(
-        init=False, back_populates="request_relation"
-    )
-    feedback_relation: Mapped[List["ApiFeedback"]] = relationship(init=False)
-
-
-class ApiEncounter(Base):
-    """Table that stores per API request the encounters for which the discharge
-    letter was updated
-    "encounter_hix_id" is the unique identifier for the encounter.
-        In dp this is identifier_value from Encounter table.
-    """
-
-    __tablename__ = "apiencounter"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    encounter_hix_id: Mapped[str]
-    patient_number: Mapped[str]
-
     request_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(ApiRequest.id), init=False
+        ForeignKey(Request.id), nullable=False, init=False
+    )
+    request_enc_id: Mapped[str]
+    success_ind: Mapped[bool] = mapped_column(Boolean, init=False)
+    generated_doc_id: Mapped[int] = mapped_column(Integer, nullable=True, init=False)
+    nr_days_old: Mapped[int] = mapped_column(Integer, nullable=True, init=False)
+
+    request_relation: Mapped["Request"] = relationship(
+        back_populates="retrieve_relation"
     )
 
-    department: Mapped[str]
 
-    generated_doc_relation: Mapped[List["ApiGeneratedDoc"]] = relationship(init=False)
-    request_relation: Mapped["ApiRequest"] = relationship(
-        init=False, back_populates="encounter_relation"
-    )
-
-
-class ApiFeedback(Base):
-    """Table that stores the feedback given by the user on the retrieved discharge
-    letter.
-    "encounter_hix_id" is the unique identifier for the encounter.
-        In dp this is identifier_value from Encounter table.
+class RequestGenerate(Base):
+    """The RequestGenerate table stores information about the endpoint
+    "/process_and_generate_discharge_docs".  This includes:
+    - the linked Request ID
+    This table serves as a link between the Request table and the GeneratedDoc table.
     """
 
-    __tablename__ = "apifeedback"
+    __tablename__ = "requestgenerate"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    feedback: Mapped[str]
-    encounter_hix_id: Mapped[int]
     request_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(ApiRequest.id), init=False
+        ForeignKey(Request.id), init=False, nullable=False
+    )
+    # TODO bedenk of hier nog andere dingen gelogd moeten worden
+
+    request_relation: Mapped["Request"] = relationship(
+        back_populates="generate_relation"
     )
 
+    generated_doc_relation: Mapped[List["GeneratedDoc"]] = relationship(init=False)
 
-class ApiGeneratedDoc(Base):
-    """Table that stores the generated discharge letters and patiënt numbers"""
 
-    __tablename__ = "apigenerateddoc"
+class Encounter(Base):
+    """The Encounter table stores information about the encounters for which the API was
+    called. This includes:
+    - the enc ID (the "identifier_value" in the dataplatform Encounter table)
+    - the patient ID
+    - the department in which the encounter took place
+    """
+
+    __tablename__ = "encounter"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    discharge_letter: Mapped[str]
+    enc_id: Mapped[str] = mapped_column(String(20), unique=True, nullable=True)
+    patient_id: Mapped[str] = mapped_column(String(20), nullable=True)
+    department: Mapped[str] = mapped_column(String(20))
+    admissionDate: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
+    gen_doc_relation: Mapped[List["GeneratedDoc"]] = relationship(init=False)
+
+
+class GeneratedDoc(Base):
+    """The GeneratedDoc table stores the generated discharge letters and its attributes.
+    This includes:
+    - the linked RequestGenerate ID
+    - the linked Encounter ID
+    - the discharge letter in string format. (this is replaced by "" once removed)
+    - the input token length
+    - a success indicator whether the generation was successful
+        (Success if successful;
+        An error code [LengthError, JSONError, GeneralError] if unsuccessful)
+    - the timestamp of the removal of the generated document
+        (if the document was removed, otherwise NULL)
+    """
+
+    __tablename__ = "generateddoc"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    request_generate_id: Mapped[int] = mapped_column(
+        ForeignKey(RequestGenerate.id), init=False
+    )
+    encounter_id: Mapped[str] = mapped_column(ForeignKey(Encounter.id), init=False)
+    discharge_letter: Mapped[str] = mapped_column(nullable=True)
     input_token_length: Mapped[int]
-    success: Mapped[str]
-    generation_date: Mapped[datetime] = mapped_column(DateTime)
-    encounter_id: Mapped[str] = mapped_column(ForeignKey(ApiEncounter.id), init=False)
-
-
-class EvalPhase1(Base):
-    """Table that stores the evaluation data for phase 1."""
-
-    __tablename__ = "evalphase1"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    user: Mapped[str] = mapped_column(String, nullable=False)
-    timestamp: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    patientid: Mapped[str] = mapped_column(String, nullable=False)
-    letter_evaluated: Mapped[str] = mapped_column(String, nullable=False)
-    highlighted_missings: Mapped[str] = mapped_column(String, nullable=True)
-    highlighted_halucinations: Mapped[str] = mapped_column(String, nullable=True)
-    highlighted_trivial_information: Mapped[str] = mapped_column(String, nullable=True)
-    usability_likert: Mapped[int] = mapped_column(Integer, nullable=False)
-    comments: Mapped[str] = mapped_column(String, nullable=True)
-
-
-class EvalPhase2(Base):
-    """Table that stores the evaluation data for phase 2."""
-
-    __tablename__ = "evalphase2"
-    __table_args__ = {"schema": "discharge_aiva"}
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    user: Mapped[str]
-    timestamp: Mapped[datetime]
-    patientid: Mapped[str]
-    usability_likert: Mapped[int]
-    comments: Mapped[str]
-    evaluated_letter: Mapped[str]
-
-    annotation_relation: Mapped[List["EvalPhase2Annotation"]] = relationship(init=False)
-    extra_questions_relation: Mapped[List["EvalPhase2ExtraQuestions"]] = relationship(
-        init=False
+    success_ind: Mapped[str] = mapped_column(String(20))
+    removed_timestamp: Mapped[datetime] = mapped_column(
+        DateTime, init=False, nullable=True
     )
 
 
-class EvalPhase2Annotation(Base):
-    """Table that stores the annotations for phase 2."""
+class RequestFeedback(Base):
+    """The RequestFeedback table stores information about the endpoint
+    "/save_feeddack". This includes:
+    - the linked FeedbackRequest ID
+    - the request_enc_id: the encounter ID for which the feedback was given
+    This table serves as a link between the Request table and the FeedbackDetails table.
+    """
 
-    __tablename__ = "evalphase2annotation"
+    __tablename__ = "requestfeedback"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    annotation_user: Mapped[str]
-    text: Mapped[str]
-    importance: Mapped[str]
-    duplicate_id: Mapped[int]  # id to refer to by the duplicate column
-    duplicate: Mapped[int] = mapped_column(nullable=True)
-    type: Mapped[str]
-    evalphase2_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(EvalPhase2.id), nullable=True, init=False
+    request_id: Mapped[int] = mapped_column(
+        ForeignKey(Request.id), nullable=False, init=False
+    )
+    request_enc_id: Mapped[str]
+
+    request_relation: Mapped["Request"] = relationship(
+        back_populates="feedback_relation"
     )
 
+    feedback_relation: Mapped[List["FeedbackDetails"]] = relationship(init=False)
 
-class EvalPhase2ExtraQuestions(Base):
-    """Table that stores extra questions for GPT generated letters"""
 
-    __tablename__ = "evalphase2extraquestions"
+class FeedbackDetails(Base):
+    """The FeedbackDetails table stores the feedback questions and its corresponding
+    answers. This includes:
+    - the linked RequestFeedback ID
+    - the feedback question
+    - the feedback answer
+    """
+
+    __tablename__ = "feedbackdetails"
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    question: Mapped[str]
-    answer: Mapped[str]
-    evalphase2_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(EvalPhase2.id), nullable=True, init=False
+    request_feedback_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(RequestFeedback.id), init=False
     )
+    feedback_question: Mapped[str] = mapped_column(String(100))
+    feedback_answer: Mapped[str]

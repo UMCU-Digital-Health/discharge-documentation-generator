@@ -7,18 +7,32 @@ import pytest
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
     get_patient_file,
-    process_data_metavision_dp,
+    process_data,
     replace_text,
 )
 
 
-def test_process_data_nifi_true():
+def test_process_data():
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
         test_data = json.load(f)
         test_data = pd.DataFrame.from_records(test_data)
-
+        dtypes = {
+            "enc_id": int,
+            "admissionDate": "datetime64[ns]",
+            "department": str,
+            "date": "datetime64[ns]",
+            "description": str,
+            "content": str,
+            "pseudo_id": str,
+            "patient_id": int,
+        }
+        test_data["date"] = pd.to_datetime(test_data["date"].astype(float), unit="ms")
+        test_data["admissionDate"] = pd.to_datetime(
+            test_data["admissionDate"].astype(float), unit="ms"
+        )
+        test_data = test_data.astype(dtypes)
     try:
-        processed_data = process_data_metavision_dp(test_data, nifi=True)
+        processed_data = process_data(test_data)
     except Exception as e:
         pytest.fail(f"Error processing data: {e}")
 
@@ -27,16 +41,15 @@ def test_process_data_nifi_true():
         "enc_id",
         "admissionDate",
         "department",
-        "time",
         "date",
         "description",
-        "value",
-        "patient_number",
+        "content",
+        "pseudo_id",
+        "patient_id",
     ]
-    # assert if all expected columns are in processed data
-    assert set(expected_columns).issubset(
-        processed_data
-    ), "Columns should be correctly renamed and unnecessary columns dropped"
+    assert set(expected_columns).issubset(processed_data), (
+        "Columns should be correctly renamed and unnecessary columns dropped"
+    )
 
 
 def test_get_patient_file():
@@ -56,7 +69,7 @@ def test_get_patient_file():
                 pd.Timestamp("2024-01-03"),
                 pd.Timestamp("2024-01-04"),
             ],
-            "value": ["Value 1", "Value 2", "Value 3", "Value 4"],
+            "content": ["content 1", "content 2", "content 3", "content 4"],
         }
     )
 
@@ -68,13 +81,13 @@ def test_get_patient_file():
         "# Patienten dossier\n\n"
         "## Description 1\n"
         "### Datum: 2024-01-01 00:00:00\n\n"
-        "Value 1\n\n"
+        "content 1\n\n"
         "## Description 2\n"
         "### Datum: 2024-01-02 00:00:00\n\n"
-        "Value 2\n\n"
+        "content 2\n\n"
         "## Description 3\n"
         "### Datum: 2024-01-03 00:00:00\n\n"
-        "Value 3"
+        "content 3"
     )
 
     expected_patient_file = pd.DataFrame(
@@ -86,12 +99,10 @@ def test_get_patient_file():
                 pd.Timestamp("2024-01-02"),
                 pd.Timestamp("2024-01-03"),
             ],
-            "value": ["Value 1", "Value 2", "Value 3"],
+            "content": ["content 1", "content 2", "content 3"],
         }
     )
     assert patient_file_string == expected_patient_file_string
-    print(patient_file)
-    print(expected_patient_file)
     pd.testing.assert_frame_equal(patient_file, expected_patient_file)
 
 
