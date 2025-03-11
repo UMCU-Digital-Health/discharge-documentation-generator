@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2025-01-29
+
+### Added
+- Added notebook for analysing time measurements in Metavision
+- Added Scipy as dev dependency for analysis
+- Added Metavision time measurements export
 
 ## [2.0.0] - 2025-02-11
+
 ### Added
 - included data export pipeline in data_pipeline.py
 - endpoint to remove outdated and all discharge letters
