@@ -125,7 +125,9 @@ async def process_hix_data(
     )
     data_df["content"] = data_df["content"].apply(rtf_to_text)
     processed_data = apply_deduce(data_df, "content")
-    processed_data = processed_data[["date", "department", "description", "content"]]
+    processed_data = processed_data[
+        ["date", "department", "description", "content"]
+    ].copy()
     processed_data.loc[:, "enc_id"] = "TEMP_ENC_ID"
 
     processed_data = process_data(processed_data)

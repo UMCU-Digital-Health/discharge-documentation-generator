@@ -5,46 +5,51 @@ from pathlib import Path
 import pytest
 from fastapi.exceptions import HTTPException
 from MockAzureOpenAIEnv import MockAzureOpenAI
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
+import discharge_docs.api.app_on_demand as app_on_demand
 import discharge_docs.api.app_periodic as app_periodic
+from discharge_docs.api.app_on_demand import (
+    generate_hix_discharge_docs,
+    process_hix_data,
+)
 from discharge_docs.api.app_periodic import (
     process_and_generate_discharge_docs,
+    remove_all_discharge_docs,
+    remove_outdated_discharge_docs,
+    retrieve_discharge_doc,
+    save_feedback,
 )
 from discharge_docs.api.pydantic_models import (
+    HixInput,
+    HixOutput,
+    LLMOutput,
     MetavisionPatientFile,
 )
 
 
-class FakeExecute:
+class FakeScalars:
     def all(self):
-        print("requested all results...")
         return []
 
+
+class FakeExecute:
     def scalar_one_or_none(self):
         print("requested scalar one or none...")
-        return None
-
-    def fetchone(self):
-        print("requested fetchone...")
         return None
 
     def fetchall(self):
         print("requested fetchall...")
         return None
 
-    @property
-    def rowcount(self):
-        return 0
+    def scalars(self):
+        print("requested scalars...")
+        return FakeScalars()
 
 
 class FakeDB(Session):
     def commit(self):
         print("committed")
-
-    def merge(self, table):
-        print(f"{table} merged...")
 
     def add(self, tmp):
         print(f"{tmp} added")
@@ -53,44 +58,54 @@ class FakeDB(Session):
         print(f"{stmt} executed...")
         return FakeExecute()
 
-    def scalars(self, stmt):
-        execute_res = FakeExecute()
-        print(f"{stmt} executed (with scalars)...")
-        return execute_res
 
-    def get(self, table, index):
-        print(f"Requesting {table} at index {index}...")
-        return None
+# Test the root endpoint
+@pytest.mark.asyncio
+async def test_root():
+    """Test the root endpoint in the API."""
+    response = await app_periodic.root()
+    assert response == {"message": "Hello World"}
 
 
+# Test the process_and_generate_discharge_docs endpoint
 @pytest.mark.asyncio
 async def test_api_wrong_api_key(monkeypatch):
     """Test the process_and_generate_discharge_docs endpoint in the API."""
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_generate", "test")
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
         test_data = json.load(f)
 
-    try:
-        test_data = [MetavisionPatientFile(**item) for item in test_data]
-    except ValidationError as e:
-        pytest.fail(f"JSON data does not match PatientFile schema: {e}")
+    test_data = [MetavisionPatientFile(**item) for item in test_data]
 
+    with pytest.raises(HTTPException) as e:
+        await process_and_generate_discharge_docs(test_data, FakeDB(), "wrong_api_key")
+    assert e.value.status_code == 403
+    assert e.value.detail == "You are not authorized to access this endpoint"
+
+
+@pytest.mark.asyncio
+async def test_process_and_generate_discharge_docs(monkeypatch):
+    """Test the process_and_generate_discharge_docs endpoint in the API."""
     monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_generate", "test")
+    with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
+        test_data = json.load(f)
 
-    try:
-        await process_and_generate_discharge_docs(test_data, FakeDB(), "wrong_api_key")
-    except HTTPException as e:
-        assert e.status_code == 403
-        assert e.detail == "You are not authorized to access this endpoint"
+    test_data = [MetavisionPatientFile(**item) for item in test_data]
+
+    output = await process_and_generate_discharge_docs(test_data, FakeDB(), "test")
+    assert output == {"message": "Success"}
 
 
+# test the retrieve_discharge_doc endpoint
 @pytest.mark.asyncio
 async def test_api_retrieve_discharge_docs(monkeypatch):
     """Test the retrieve endpoint in the API."""
     monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
-    output = await app_periodic.retrieve_discharge_doc("1234", FakeDB(), "test")
+    output = await retrieve_discharge_doc("1234", FakeDB(), "test")
     assert isinstance(output, str)
 
 
@@ -217,8 +232,81 @@ async def test_api_retrieve_discharge_doc_wrong_api_key(monkeypatch):
     monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_retrieve", "test")
 
-    try:
+    with pytest.raises(HTTPException) as e:
         await app_periodic.retrieve_discharge_doc("1234", FakeDB(), "wrong_api_key")
-    except HTTPException as e:
-        assert e.status_code == 403
-        assert e.detail == "You are not authorized to access this endpoint"
+    assert e.value.status_code == 403
+    assert e.value.detail == "You are not authorized to access this endpoint"
+
+
+# Test the save_feedback endpoint
+@pytest.mark.asyncio
+async def test_api_save_feedback(monkeypatch):
+    """Test the give_feedback endpoint in the API."""
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_feedback", "test")
+
+    output = await save_feedback("1_Ja", FakeDB(), "test")
+    assert output == "success"
+
+
+# Test the remove_outdated_discharge_docs endpoint
+@pytest.mark.asyncio
+async def test_remove_outdated_discharge_docs(monkeypatch):
+    """Test the remove_outdated_discharge_docs endpoint in the API."""
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_remove", "test")
+
+    output = await remove_outdated_discharge_docs([1, 2, 3], FakeDB(), "test")
+    assert output == {"message": "No matching encounters found"}
+
+
+# Test the remove_all_discharge_docs endpoint
+@pytest.mark.asyncio
+async def test_remove_all_discharge_docs(monkeypatch):
+    """Test the remove_all_discharge_docs endpoint in the API."""
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_remove", "test")
+
+    output = await remove_all_discharge_docs([1, 2, 3], FakeDB(), "test")
+    assert output == {"message": "No matching encounters found"}
+
+
+# Test on demand root
+@pytest.mark.asyncio
+async def test_root_on_demand():
+    """Test the root endpoint in the API."""
+    response = await app_on_demand.root()
+    assert response == {"message": "Hello World"}
+
+
+# Test process hix data
+@pytest.mark.asyncio
+async def test_process_hix_data(monkeypatch):
+    """Test the process_hix_data endpoint in the API."""
+    monkeypatch.setattr(app_on_demand, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_HIX", "test")
+    with open(Path(__file__).parent / "data" / "example_hix_data.json", "r") as f:
+        test_data = json.load(f)
+
+    test_data = HixInput(**test_data)
+
+    output = await process_hix_data(test_data, FakeDB(), "test")
+    assert isinstance(output, HixOutput)
+
+
+# test the generate_hix_discharge_docs endpoint
+@pytest.mark.asyncio
+async def test_generate_hix_discharge_docs(monkeypatch):
+    """Test the generate_hix_discharge_docs endpoint in the API."""
+    monkeypatch.setattr(app_on_demand, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_HIX", "test")
+
+    hix_output = HixOutput(department="NICU", value="Example patient file string")
+
+    output = await generate_hix_discharge_docs(hix_output, FakeDB(), "test")
+    assert isinstance(output, LLMOutput)
+    assert output.message == (
+        f"Deze brief is door AI gegenereerd op: "
+        f"{datetime.now():%d-%m-%Y %H:%M}\n\n\n"
+        "Test\nTest\n\n"
+    )

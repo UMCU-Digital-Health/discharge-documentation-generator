@@ -15,7 +15,7 @@ class LLMConfig(BaseModel):
     deployment_name_env: str
 
 
-def load_config(config_path: Path = CONFIG_PATH) -> dict:
+def load_config(config_path: Path = CONFIG_PATH) -> LLMConfig:
     with open(config_path, "rb") as f:
         deployment_config_dict = tomli.load(f)
     deployment_name_env = deployment_config_dict[

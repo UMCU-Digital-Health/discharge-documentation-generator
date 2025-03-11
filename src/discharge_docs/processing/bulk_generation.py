@@ -3,14 +3,13 @@ from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
+from openai import AzureOpenAI
 
 from discharge_docs.config import DEPLOYMENT_NAME_BULK, TEMPERATURE
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
     get_template_prompt,
-    load_enc_ids,
 )
-from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.llm.prompt import (
     load_all_templates_prompts_into_dict,
     load_prompts,
@@ -24,12 +23,24 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-def bulk_generate(data: pd.DataFrame, save_folder: Path) -> None:
+def bulk_generate(
+    data: pd.DataFrame, save_folder: Path, enc_ids_dict: dict, client: AzureOpenAI
+) -> None:
+    """Bulk generate disharge documents for all encounters in the data.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Dataframe containing patient data
+    save_folder : Path
+        Path to save the generated documents
+    enc_ids_dict : dict
+        Dictionary containing encounter IDs
+    client : AzureOpenAI
+        OpenAI client object to interact with the API
+    """
     logger.info(f"Running with deployment name: {DEPLOYMENT_NAME_BULK}")
 
-    client = initialise_azure_connection()
-
-    enc_ids_dict = load_enc_ids()
     all_enc_ids = [enc_id for enc_ids in enc_ids_dict.values() for enc_id in enc_ids]
 
     user_prompt, system_prompt = load_prompts()

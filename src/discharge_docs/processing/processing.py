@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 import pandas as pd
 import tomli_w
@@ -292,7 +292,9 @@ def get_patient_discharge_docs(
     return discharge_documentation
 
 
-def get_patient_file(df: pd.DataFrame, enc_id: int = None) -> Tuple[str, pd.DataFrame]:
+def get_patient_file(
+    df: pd.DataFrame, enc_id: Optional[int] = None
+) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves the patient file for a given encounter ID from a DataFrame.
 

@@ -400,7 +400,7 @@ async def save_feedback(
         endpoint="/save-feedback",
     )
     requestfeedback = RequestFeedback(
-        request_enc_id=int(feedback.split("_")[0]), request_relation=request_db
+        request_enc_id=feedback.split("_")[0], request_relation=request_db
     )
     db.add(requestfeedback)
     db.commit()

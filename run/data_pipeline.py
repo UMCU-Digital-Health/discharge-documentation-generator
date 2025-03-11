@@ -4,9 +4,12 @@ from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
+from openai import AzureOpenAI
 from sqlalchemy import create_engine, text
 from striprtf.striprtf import rtf_to_text
 
+from discharge_docs.dashboard.helper import load_enc_ids
+from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.processing.bulk_generation import bulk_generate
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
@@ -129,7 +132,7 @@ def run_processing() -> None:
     logger.info('Processing complete and saved to "data/processed" folder')
 
 
-def run_bulk_generation() -> None:
+def run_bulk_generation(client: AzureOpenAI) -> None:
     # this function generates bulk letters based for the processed data
     if KEEP_OLD_BULK_LETTERS:
         bulk_letters = pd.read_parquet(
@@ -141,7 +144,13 @@ def run_bulk_generation() -> None:
         logger.info("Old bulk letters saved to 'bulk_generated_docs_gpt_old.parquet'")
 
     data = pd.read_parquet(Path(processed_data_folder / "evaluation_data.parquet"))
-    bulk_generate(data, save_folder=processed_data_folder)
+    enc_ids_dict = load_enc_ids()
+    bulk_generate(
+        data,
+        save_folder=processed_data_folder,
+        enc_ids_dict=enc_ids_dict,
+        client=client,
+    )
     logger.info("Bulk generation of letters complete")
 
 
@@ -159,4 +168,5 @@ if __name__ == "__main__":
         run_processing()
 
     if BULK_GENERATE_LETTERS:
-        run_bulk_generation()
+        client = initialise_azure_connection()
+        run_bulk_generation(client)

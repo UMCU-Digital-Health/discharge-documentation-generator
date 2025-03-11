@@ -3,7 +3,7 @@ The main function of this database is to store logging, feedback and evaluation 
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import (
@@ -113,10 +113,12 @@ class Encounter(Base):
     __table_args__ = {"schema": "discharge_aiva"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    enc_id: Mapped[str] = mapped_column(String(20), unique=True, nullable=True)
-    patient_id: Mapped[str] = mapped_column(String(20), nullable=True)
+    enc_id: Mapped[Optional[str]] = mapped_column(
+        String(20), unique=True, nullable=True
+    )
+    patient_id: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     department: Mapped[str] = mapped_column(String(20))
-    admissionDate: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    admissionDate: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     gen_doc_relation: Mapped[List["GeneratedDoc"]] = relationship(init=False)
 
@@ -143,7 +145,7 @@ class GeneratedDoc(Base):
         ForeignKey(RequestGenerate.id), init=False
     )
     encounter_id: Mapped[str] = mapped_column(ForeignKey(Encounter.id), init=False)
-    discharge_letter: Mapped[str] = mapped_column(nullable=True)
+    discharge_letter: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     input_token_length: Mapped[int]
     success_ind: Mapped[str] = mapped_column(String(20))
     removed_timestamp: Mapped[datetime] = mapped_column(

@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
@@ -31,10 +30,7 @@ def test_process_data():
             test_data["admissionDate"].astype(float), unit="ms"
         )
         test_data = test_data.astype(dtypes)
-    try:
-        processed_data = process_data(test_data)
-    except Exception as e:
-        pytest.fail(f"Error processing data: {e}")
+    processed_data = process_data(test_data)
 
     # Test whether unnecessary columns are dropped and columns are correctly renamed
     expected_columns = [

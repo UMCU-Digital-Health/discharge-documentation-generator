@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 import tomli
@@ -13,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 def highlight(
-    text, selected_words: str, mark_color: str = "yellow", text_color: str = "black"
+    text: Union[str, list],
+    selected_words: str,
+    mark_color: str = "yellow",
+    text_color: str = "black",
 ) -> list:
     """Highlight selected words in the given text.
 
@@ -41,6 +45,8 @@ def highlight(
                 ),
             )
             i += 2
+        # Can contain empty strings if the selected word is at the start or end
+        sequences = [s for s in sequences if s != ""]
         return sequences
     else:
         for i, t in enumerate(text):
@@ -206,8 +212,8 @@ def get_data_from_patient_admission(
     ----------
     patient_admission : str
         The identifier of the patient admission.
-    data_dict : dict
-        A dictionary containing data for patient admissions.
+    data : pd.DataFrame
+        The dataframe containing information on patient admissions.
 
     Returns
     -------
@@ -232,6 +238,8 @@ def get_template_prompt(
         The identifier of the patient admission.
     template_prompt_dict : dict
         A dictionary containing template prompts for patient admissions.
+    enc_ids_dict : dict
+        A dictionary containing enc_ids for different departments.
 
     Returns
     -------
@@ -243,6 +251,7 @@ def get_template_prompt(
     for department, encounters in enc_ids_dict.items():
         if int(patient_admission) in encounters:
             return template_prompt_dict[department], department
+    raise ValueError("Patient admission not found in enc_ids_dict")
 
 
 def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
@@ -271,9 +280,9 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
             if data is not None:
                 if data[data["enc_id"] == enc_id].empty:
                     continue
-                length_of_stay = data[data["enc_id"] == enc_id][
-                    "length_of_stay"
-                ].values[0]
+                length_of_stay = pd.Series(
+                    data.loc[data["enc_id"] == enc_id, "length_of_stay"]
+                ).to_numpy()[0]
                 patients_list.append(
                     {
                         "label": f"Patiënt {idx} ({department} {length_of_stay} dagen)",
@@ -286,59 +295,7 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
     return values_list
 
 
-def get_patients_from_list_names_pilot(
-    df_dict: dict, enc_ids_dict: dict
-) -> tuple[dict, dict]:
-    """
-    Get patients' data and values list from a dictionary of dataframes and a dictionary
-    of enc_ids.
-
-    Parameters
-    ----------
-    df_dict : dict
-        A dictionary containing dataframes for different departments.
-    enc_ids_dict : dict
-        A dictionary containing enc_ids and their different departments for different
-        users.
-
-    Returns
-    -------
-    tuple[dict, dict]
-        A tuple containing patients' data and values list.
-        The patients' data is a dictionary with patient keys as keys and corresponding
-        dataframes as values.
-        The values list is a dictionary with department names as keys and a list of
-        patients as values.
-    """
-    patients_data = {}
-    values_list = {}
-
-    for user, enc in enc_ids_dict.items():
-        patients_list = []
-
-        for idx, encounter in enumerate(enc, start=1):
-            enc_id = encounter[0]
-            department = encounter[1]
-            df = df_dict.get(department, None)
-            if df is not None:
-                patient_key = f"patient_{idx}_{department.lower()}_{enc_id}"
-                patients_data[patient_key] = df[df["enc_id"] == enc_id]
-                label_days = patients_data[patient_key]["length_of_stay"].values[0]
-                patients_list.append(
-                    {
-                        "label": f"Patiënt {idx} ({department} {label_days} dagen)",
-                        "value": patient_key,
-                    }
-                )
-        if patients_list:
-            values_list[user] = patients_list
-
-    return patients_data, values_list
-
-
-def load_stored_discharge_letters(
-    df: pd.DataFrame, selected_enc_id: str
-) -> list[html.Div] | str:
+def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> str:
     """Load discharge letters for a specific patient.
 
     Parameters
@@ -358,11 +315,13 @@ def load_stored_discharge_letters(
 
     discharge_document = df.loc[
         df["enc_id"] == int(selected_enc_id), "generated_doc"
-    ].values[0]
+    ].to_numpy()[0]
     return str(discharge_document)
 
 
-def format_generated_doc(generated_doc: list[dict], format_type: str) -> str:
+def format_generated_doc(
+    generated_doc: list[dict], format_type: str
+) -> Union[str, list[html.Div]]:
     """Convert the generated document to plain text or markdown with headers.
 
     Parameters
@@ -377,6 +336,8 @@ def format_generated_doc(generated_doc: list[dict], format_type: str) -> str:
     str
         The plain text version of the generated document.
     """
+    if format_type not in ["markdown", "plain"]:
+        raise ValueError("Invalid format type. Please choose 'markdown' or 'plain'.")
 
     output_structured = []
     output_plain = ""
@@ -393,7 +354,5 @@ def format_generated_doc(generated_doc: list[dict], format_type: str) -> str:
         output_plain += f"{category_pair['Beloop tijdens opname']}\n\n"
     if format_type == "markdown":
         return output_structured
-    elif format_type == "plain":
-        return output_plain
     else:
-        return ""
+        return output_plain
