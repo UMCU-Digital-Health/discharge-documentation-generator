@@ -385,7 +385,10 @@ def display_stored_discharge_documentation(
     )
     output = load_stored_discharge_letters(stored_bulk_gpt, selected_patient_admission)
 
-    return output_old, output
+    formatted_output_old = format_generated_doc(output_old, format_type="markdown")
+    formatted_output = format_generated_doc(output, format_type="markdown")
+
+    return formatted_output_old, formatted_output
 
 
 @app.callback(
@@ -443,9 +446,7 @@ def display_generated_discharge_doc(
         user_prompt=user_prompt,
         template_prompt=template_prompt,
     )
-    generated_doc = discharge_letter
-
-    generated_output = format_generated_doc(generated_doc, format_type="markdown")
+    generated_output = format_generated_doc(discharge_letter, format_type="markdown")
     return generated_output
 
 

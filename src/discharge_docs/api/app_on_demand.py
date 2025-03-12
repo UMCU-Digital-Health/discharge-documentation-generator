@@ -206,13 +206,13 @@ async def generate_hix_discharge_docs(
         template_prompt=template_prompt,
     )
 
-    if discharge_letter[0]["Categorie"] in [
+    if list(discharge_letter.keys())[0] in [
         "LengthError",
         "JSONError",
         "GeneralError",
     ]:
-        success = discharge_letter[0]["Categorie"]
-        discharge_letter = discharge_letter[0]["Beloop tijdens opname"]
+        outcome = list(discharge_letter.keys())[0]
+        discharge_letter = discharge_letter[outcome]
 
     else:
         discharge_letter = format_generated_doc(discharge_letter, format_type="plain")
@@ -221,7 +221,7 @@ async def generate_hix_discharge_docs(
             f"Deze brief is door AI gegenereerd op: "
             f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter}"
         )
-        success = "Success"
+        outcome = "Success"
 
     encounter_db = Encounter(
         enc_id=None, patient_id=None, department=department, admissionDate=None
@@ -231,7 +231,7 @@ async def generate_hix_discharge_docs(
     gendoc_db = GeneratedDoc(
         discharge_letter=discharge_letter,
         input_token_length=token_length,
-        success_ind=success,
+        success_ind=outcome,
     )
     request_generate.generated_doc_relation.append(gendoc_db)
     encounter_db.gen_doc_relation.append(gendoc_db)

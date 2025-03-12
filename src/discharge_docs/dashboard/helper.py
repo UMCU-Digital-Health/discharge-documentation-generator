@@ -295,7 +295,7 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
     return values_list
 
 
-def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> str:
+def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dict:
     """Load discharge letters for a specific patient.
 
     Parameters
@@ -307,51 +307,55 @@ def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> str
 
     Returns
     -------
-    list[html.Div]
-        A list of HTML Div elements representing the discharge letters for the patient.
+    dict
+        The pre-generated and stored discharge letters for the patient.
     """
     if int(selected_enc_id) not in df["enc_id"].values:
-        return "Er is geen opgeslagen documentatie voor deze patient."
+        return {
+            "Geen Ontslagbrief": "Er is geen opgeslagen documentatie voor deze patiënt."
+        }
 
     discharge_document = df.loc[
         df["enc_id"] == int(selected_enc_id), "generated_doc"
-    ].to_numpy()[0]
-    return str(discharge_document)
+    ].values[0]
+
+    discharge_document = json.loads(discharge_document)
+
+    return discharge_document
 
 
-def format_generated_doc(
-    generated_doc: list[dict], format_type: str
-) -> Union[str, list[html.Div]]:
+def format_generated_doc(generated_doc: dict, format_type: str) -> str | list[html.Div]:
     """Convert the generated document to plain text or markdown with headers.
 
     Parameters
     ----------
-    generated_doc : list[dict]
+    generated_doc : dict
         The generated document in a list of dict.
     format_type : str
         The desired format type of the generated document.
 
     Returns
     -------
-    str
-        The plain text version of the generated document.
+    dict | str
+        The structured version of the generated document (dict) if format is 'markdown'.
+        The plain text version of the generated document if format is 'plain'.
     """
     if format_type not in ["markdown", "plain"]:
         raise ValueError("Invalid format type. Please choose 'markdown' or 'plain'.")
 
     output_structured = []
     output_plain = ""
-    for category_pair in generated_doc:
+    for header in generated_doc.keys():
         output_structured.append(
             html.Div(
                 [
-                    html.Strong(category_pair["Categorie"]),
-                    dcc.Markdown(category_pair["Beloop tijdens opname"]),
+                    html.Strong(header),
+                    dcc.Markdown(generated_doc[header]),
                 ]
             )
         )
-        output_plain += f"{category_pair['Categorie']}\n"
-        output_plain += f"{category_pair['Beloop tijdens opname']}\n\n"
+        output_plain += f"{header}\n"
+        output_plain += f"{generated_doc[header]}\n\n"
     if format_type == "markdown":
         return output_structured
     else:

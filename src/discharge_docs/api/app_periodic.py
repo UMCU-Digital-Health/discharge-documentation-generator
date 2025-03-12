@@ -156,13 +156,13 @@ async def process_and_generate_discharge_docs(
             template_prompt=template_prompt,
         )
 
-        if discharge_letter[0]["Categorie"] in [
+        if list(discharge_letter.keys())[0] in [
             "LengthError",
             "JSONError",
             "GeneralError",
         ]:
-            success = discharge_letter[0]["Categorie"]
-            discharge_letter = discharge_letter[0]["Beloop tijdens opname"]
+            outcome = list(discharge_letter.keys())[0]
+            discharge_letter = discharge_letter[outcome]
 
         else:
             discharge_letter = format_generated_doc(
@@ -170,11 +170,11 @@ async def process_and_generate_discharge_docs(
             )
 
             discharge_letter = (
-                f"Deze brief is door AI gegenereerd voor patientnummer: "
+                f"Deze brief is door AI gegenereerd voor patiëntnummer: "
                 f"{patient_df['patient_id'].values[0]} op: "
                 f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter}"
             )
-            success = "Success"
+            outcome = "Success"
 
         encounter_db = db.execute(
             select(Encounter).where(Encounter.enc_id == str(enc_id))
@@ -195,7 +195,7 @@ async def process_and_generate_discharge_docs(
         gendoc_db = GeneratedDoc(
             discharge_letter=discharge_letter,
             input_token_length=token_length,
-            success_ind=success,
+            success_ind=outcome,
         )
         requestgenerate.generated_doc_relation.append(gendoc_db)
         encounter_db.gen_doc_relation.append(gendoc_db)

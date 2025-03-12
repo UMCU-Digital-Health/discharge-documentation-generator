@@ -143,22 +143,29 @@ def test_get_patients_values():
 def test_load_stored_discharge_letters():
     """Tests the load_stored_discharge_letters function"""
     df = pd.DataFrame(
-        {"enc_id": [1, 2, 3], "generated_doc": ["letter 1", "letter 2", "letter 3"]},
+        {
+            "enc_id": [1, 2, 3],
+            "generated_doc": [
+                '{"beloop": "letter 1"}',
+                '{"beloop": "letter 2"}',
+                '{"beloop": "letter 3"}',
+            ],
+        }
     )
     discharge_letter = load_stored_discharge_letters(df, "1")
-    assert discharge_letter == "letter 1"
+    assert discharge_letter == {"beloop": "letter 1"}
     discharge_letter = load_stored_discharge_letters(df, "5")
-    assert discharge_letter == "Er is geen opgeslagen documentatie voor deze patient."
+    assert discharge_letter == {
+        "Geen Ontslagbrief": "Er is geen opgeslagen documentatie voor deze patiënt."
+    }
 
 
 def test_format_generated_doc():
     """Tests the format_generated_doc function"""
-    generated_doc = [
-        {
-            "Categorie": "test",
-            "Beloop tijdens opname": "dit is een test string",
-        }
-    ]
+    generated_doc = {
+        "test": "dit is een test string",
+    }
+
     formatted_doc = format_generated_doc(generated_doc, "plain")
     assert formatted_doc == "test\ndit is een test string\n\n"
 

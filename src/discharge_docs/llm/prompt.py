@@ -35,6 +35,9 @@ def load_template_prompt(department: str) -> str:
     str
         The template prompt for the specified department.
     """
+    if department == "DEMO":
+        department = "NICU"
+
     with open(
         Path(__file__).parent / "prompts" / (department + "_template_prompt.txt"),
         "r",

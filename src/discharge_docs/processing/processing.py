@@ -326,6 +326,6 @@ def get_patient_file(
             axis=1,
         )
     )
-    patient_file_string = "# Patienten dossier\n\n" + patient_file_string
+    patient_file_string = "# Patiënten dossier\n\n" + patient_file_string
 
     return patient_file_string, patient_file

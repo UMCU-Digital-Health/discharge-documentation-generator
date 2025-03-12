@@ -74,7 +74,7 @@ def test_get_patient_file():
 
     # Assert the expected output
     expected_patient_file_string = (
-        "# Patienten dossier\n\n"
+        "# Patiënten dossier\n\n"
         "## Description 1\n"
         "### Datum: 2024-01-01 00:00:00\n\n"
         "content 1\n\n"

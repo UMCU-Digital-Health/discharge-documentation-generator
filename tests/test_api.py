@@ -308,5 +308,5 @@ async def test_generate_hix_discharge_docs(monkeypatch):
     assert output.message == (
         f"Deze brief is door AI gegenereerd op: "
         f"{datetime.now():%d-%m-%Y %H:%M}\n\n\n"
-        "Test\nTest\n\n"
+        "Categorie1\nBeloop1\n\nCategorie2\nBeloop2\n\n"
     )

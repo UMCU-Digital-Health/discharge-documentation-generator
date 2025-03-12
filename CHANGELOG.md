@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-03-11
+### Changed
+- updated the API version to "2024-10-21"
+- updates the format that OpenAI API returns the response (in json format) and updates to the prompt and response handling accordingly
+- updated CAR prompt based on pre-pilot results
+- removed logic for 'addition prompt' which was not used
+
 ## [2.0.2] - 2025-03-11
 
 ### Changed

@@ -83,7 +83,7 @@ def test_prompt_builder():
         user_prompt=user_prompt,
         template_prompt=template_prompt,
     )
-    assert isinstance(discharge_letter, list)
+    assert isinstance(discharge_letter, dict)
 
 
 def test_load_all_templates_prompts_into_dict():

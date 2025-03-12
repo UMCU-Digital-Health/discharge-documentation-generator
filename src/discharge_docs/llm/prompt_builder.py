@@ -4,7 +4,6 @@ This module contains the PromptBuilder class for generating prompts for the GPT 
 
 import json
 import logging
-import re
 
 import tiktoken
 from openai import AzureOpenAI
@@ -43,7 +42,6 @@ class PromptBuilder:
         system_prompt: str,
         user_prompt: str,
         template_prompt: str,
-        addition_prompt: str | None = None,
     ) -> int:
         """Get the token length of the input for the GPT model.
 
@@ -57,8 +55,6 @@ class PromptBuilder:
             the user prompt for the GPT model
         template_prompt : str
             the template prompt for the GPT model
-        addition_prompt : str | None, optional
-            additional prompt for the GPT model, by default None
 
         Returns
         -------
@@ -66,8 +62,6 @@ class PromptBuilder:
             The number of tokens in the prompt
         """
         total_prompt = patient_file + template_prompt + user_prompt + system_prompt
-        if addition_prompt is not None:
-            total_prompt += addition_prompt
         encoding = tiktoken.get_encoding(self.token_encoding)
         token_length = len(encoding.encode(total_prompt))
         return token_length
@@ -78,8 +72,7 @@ class PromptBuilder:
         system_prompt: str,
         user_prompt: str,
         template_prompt: str,
-        addition_prompt: str | None = None,
-    ) -> list[dict]:
+    ) -> dict:
         """
         Generate discharge documentation using GPT model.
 
@@ -93,8 +86,6 @@ class PromptBuilder:
             The user prompt for the GPT model.
         template_prompt : str
             The template prompt for the GPT model.
-        addition_prompt : str, optional
-            Additional prompt for the GPT model, by default None.
 
         Returns
         -------
@@ -117,75 +108,45 @@ class PromptBuilder:
                 },
                 {"role": "user", "content": patient_file},
             ]
-            if addition_prompt is not None:
-                messages.append(
-                    {
-                        "role": "user",
-                        "content": addition_prompt,
-                    }
-                )
 
             token_length = self.get_token_length(
                 patient_file=patient_file,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 template_prompt=template_prompt,
-                addition_prompt=addition_prompt,
             )
             if token_length > self.max_context_length:
                 logger.error(
                     f"Token length {token_length} exceeds maximum context length"
                 )
-                return [
-                    {
-                        "Categorie": "LengthError",
-                        "Beloop tijdens opname": "De omvang van het patientendossier is"
-                        + " te groot geworden voor het GPT model. Daardoor kan er geen "
-                        + "ontslagbrief worden gegenereerd. Schrijf de ontslagbrief op"
-                        + " de normale manier.",
-                    }
-                ]
+                return {
+                    "LengthError": "De omvang van het patientendossier is"
+                    + " te groot geworden voor het AI model. Daardoor kan er geen "
+                    + "ontslagbrief worden gegenereerd. Schrijf de ontslagbrief op"
+                    + " de oude manier.",
+                }
+
             logger.info("Sending request to GPT model...")
             response = self.client.chat.completions.create(
                 model=self.deployment_name,
                 messages=messages,
                 temperature=self.temperature,
+                response_format={"type": "json_object"},
             )
-            logger.info("Parsing response to JSON...")
             try:
-                content = response.model_dump()["choices"][0]["message"]["content"]
-                cleaned_content = (
-                    re.sub(
-                        "```(json)?",
-                        "",
-                        content,
-                    ),
-                )
-                cleaned_content = re.sub(r"\]\s*\.*\s*$", "]", cleaned_content[0])
-                reply = json.loads(cleaned_content, strict=False)
-                success = True
-            except json.JSONDecodeError:
-                success = False
+                reply = json.loads(response.choices[0].message.content)
+                return reply
+            except Exception as e:
+                logger.error(f"Error converting to JSON: {e}")
+                return {
+                    "JSONError": "Er is een fout opgetreden bij het "
+                    + "genereren van de ontslagbrief met AI. Schrijf de ontslagbrief op"
+                    + " de oude manier.",
+                }
 
-            if not success:
-                logger.error("Failed to parse response to JSON.")
-                return [
-                    {
-                        "Categorie": "JSONError",
-                        "Beloop tijdens opname": "Het GPT model heeft gefaald bij het "
-                        + "genereren van de ontslagbrief. Schrijf de ontslagbrief op de"
-                        + " normale manier.",
-                    }
-                ]
-
-            return reply
         except Exception as e:
             logger.error(f"Error generating discharge documentation: {e}")
-            return [
-                {
-                    "Categorie": "GeneralError",
-                    "Beloop tijdens opname": "Er is een fout opgetreden bij het "
-                    + "genereren van de ontslagbrief. Schrijf de ontslagbrief op de "
-                    + "normale manier.",
-                }
-            ]
+            return {
+                "GeneralError": "Er is een fout opgetreden bij het genereren van de "
+                + "ontslagbrief met AI. Schrijf de ontslagbrief op de oude manier."
+            }

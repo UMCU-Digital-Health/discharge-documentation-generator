@@ -31,7 +31,7 @@ DB_PASSWD = os.getenv("DB_PASSWD")
 PROCESSING = True  # set only to False when processing has already been done
 ADD_DEMO_PATIENT = True
 
-BULK_GENERATE_LETTERS = False
+BULK_GENERATE_LETTERS = True
 KEEP_OLD_BULK_LETTERS = True
 
 
@@ -121,6 +121,8 @@ def run_processing() -> None:
             sep=";",
             parse_dates=["admissionDate", "dischargeDate", "date"],
         )
+        if demo_patient["enc_id"].isin(combined_data["enc_id"]).any():
+            logger.warning("Demo patient enc_id already in data.")
         combined_data = pd.concat([demo_patient, combined_data], axis=0).reset_index(
             drop=True
         )
