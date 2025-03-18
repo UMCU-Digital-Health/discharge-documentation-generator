@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 from MockAzureOpenAIEnv import MockAzureOpenAI
 
 from discharge_docs.config import DEPLOYMENT_NAME_ACC, TEMPERATURE
@@ -10,7 +11,12 @@ from discharge_docs.llm.prompt import (
     load_prompts,
     load_template_prompt,
 )
-from discharge_docs.llm.prompt_builder import PromptBuilder
+from discharge_docs.llm.prompt_builder import (
+    ContextLengthError,
+    GeneralError,
+    JSONError,
+    PromptBuilder,
+)
 from discharge_docs.processing.processing import get_patient_file, process_data
 
 
@@ -49,7 +55,7 @@ def test_prompt_builder():
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
         deployment_name=DEPLOYMENT_NAME_ACC,
-        client=MockAzureOpenAI,
+        client=MockAzureOpenAI(),
     )
 
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
@@ -103,3 +109,71 @@ def test_load_all_templates_prompts_into_dict():
     assert "DEMO" in template_prompts_dict
     assert isinstance(template_prompts_dict["DEMO"], str)
     assert len(template_prompts_dict["DEMO"]) > 0
+
+
+def test_context_length_error():
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name="aiva-gpt",
+        client=MockAzureOpenAI(),
+    )
+    prompt_builder.max_context_length = 10
+
+    with pytest.raises(ContextLengthError) as e:
+        prompt_builder.generate_discharge_doc(
+            patient_file="This is a patient file.",
+            system_prompt="This is a system prompt.",
+            user_prompt="This is a user prompt.",
+            template_prompt="This is a template prompt.",
+        )
+    assert str(e.value) == "Token length exceeds maximum context length"
+    assert e.value.type == "LengthError"
+    assert e.value.dutch_message == (
+        "De omvang van het patientendossier is te groot geworden voor het AI model."
+        " Daardoor kan er geen ontslagbrief worden gegenereerd."
+        " Schrijf de ontslagbrief op de oude manier."
+    )
+
+
+def test_json_error():
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name="aiva-gpt",
+        client=MockAzureOpenAI(json_error=True),
+    )
+
+    with pytest.raises(JSONError) as e:
+        prompt_builder.generate_discharge_doc(
+            patient_file="This is a patient file.",
+            system_prompt="This is a system prompt.",
+            user_prompt="This is a user prompt.",
+            template_prompt="This is a template prompt.",
+        )
+    assert str(e.value) == "Error converting response to JSON"
+    assert e.value.type == "JSONError"
+    assert e.value.dutch_message == (
+        "Er is een fout opgetreden bij het genereren van de ontslagbrief met AI."
+        " Schrijf de ontslagbrief op de oude manier."
+    )
+
+
+def test_general_error():
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name="aiva-gpt",
+        client=MockAzureOpenAI(general_error=True),
+    )
+
+    with pytest.raises(GeneralError) as e:
+        prompt_builder.generate_discharge_doc(
+            patient_file="This is a patient file.",
+            system_prompt="This is a system prompt.",
+            user_prompt="This is a user prompt.",
+            template_prompt="This is a template prompt.",
+        )
+    assert str(e.value) == "Error generating discharge docs"
+    assert e.value.type == "GeneralError"
+    assert e.value.dutch_message == (
+        "Er is een fout opgetreden bij het genereren van de ontslagbrief met AI."
+        " Schrijf de ontslagbrief op de oude manier."
+    )

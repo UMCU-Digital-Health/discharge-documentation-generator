@@ -11,6 +11,43 @@ from openai import AzureOpenAI
 logger = logging.getLogger(__name__)
 
 
+class ContextLengthError(Exception):
+    """Exception raised when the token length exceeds the maximum context length."""
+
+    def __init__(self) -> None:
+        self.type = "LengthError"
+        self.dutch_message = (
+            "De omvang van het patientendossier is te groot geworden voor het AI model."
+            " Daardoor kan er geen ontslagbrief worden gegenereerd."
+            " Schrijf de ontslagbrief op de oude manier."
+        )
+        super().__init__("Token length exceeds maximum context length")
+
+
+class JSONError(Exception):
+    """Exception raised when there is an error converting the response to JSON."""
+
+    def __init__(self) -> None:
+        self.type = "JSONError"
+        self.dutch_message = (
+            "Er is een fout opgetreden bij het genereren van de ontslagbrief met AI."
+            " Schrijf de ontslagbrief op de oude manier."
+        )
+        super().__init__("Error converting response to JSON")
+
+
+class GeneralError(Exception):
+    """Exception raised when there is a general error generating the discharge docs."""
+
+    def __init__(self) -> None:
+        self.type = "GeneralError"
+        self.dutch_message = (
+            "Er is een fout opgetreden bij het genereren van de ontslagbrief met AI."
+            " Schrijf de ontslagbrief op de oude manier."
+        )
+        super().__init__("Error generating discharge docs")
+
+
 class PromptBuilder:
     def __init__(
         self,
@@ -91,62 +128,59 @@ class PromptBuilder:
         -------
         dict
             The generated discharge documentation as a dictionary.
+
+        Raises
+        ------
+        ContextLengthError
+            If the token length exceeds the maximum context length.
+        JSONError
+            If there is an error converting the response to JSON.
+        GeneralError
+            If there is a general error generating the discharge documentation.
         """
+        messages = [
+            {
+                "role": "system",
+                "content": system_prompt,
+            },
+            {
+                "role": "user",
+                "content": user_prompt,
+            },
+            {
+                "role": "user",
+                "content": template_prompt,
+            },
+            {"role": "user", "content": patient_file},
+        ]
+
+        token_length = self.get_token_length(
+            patient_file=patient_file,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            template_prompt=template_prompt,
+        )
+        if token_length > self.max_context_length:
+            logger.error(f"Token length {token_length} exceeds maximum context length")
+            raise ContextLengthError()
+
+        logger.info("Sending request to GPT model...")
         try:
-            messages = [
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": template_prompt,
-                },
-                {"role": "user", "content": patient_file},
-            ]
-
-            token_length = self.get_token_length(
-                patient_file=patient_file,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                template_prompt=template_prompt,
-            )
-            if token_length > self.max_context_length:
-                logger.error(
-                    f"Token length {token_length} exceeds maximum context length"
-                )
-                return {
-                    "LengthError": "De omvang van het patientendossier is"
-                    + " te groot geworden voor het AI model. Daardoor kan er geen "
-                    + "ontslagbrief worden gegenereerd. Schrijf de ontslagbrief op"
-                    + " de oude manier.",
-                }
-
-            logger.info("Sending request to GPT model...")
             response = self.client.chat.completions.create(
                 model=self.deployment_name,
-                messages=messages,
+                messages=messages,  # type: ignore
                 temperature=self.temperature,
                 response_format={"type": "json_object"},
             )
-            try:
-                reply = json.loads(response.choices[0].message.content)
-                return reply
-            except Exception as e:
-                logger.error(f"Error converting to JSON: {e}")
-                return {
-                    "JSONError": "Er is een fout opgetreden bij het "
-                    + "genereren van de ontslagbrief met AI. Schrijf de ontslagbrief op"
-                    + " de oude manier.",
-                }
-
+            if response.choices[0].message.content is None:
+                raise Exception("Empty response from GPT model")
         except Exception as e:
             logger.error(f"Error generating discharge documentation: {e}")
-            return {
-                "GeneralError": "Er is een fout opgetreden bij het genereren van de "
-                + "ontslagbrief met AI. Schrijf de ontslagbrief op de oude manier."
-            }
+            raise GeneralError() from e
+
+        try:
+            reply = json.loads(response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"Error converting to JSON: {e}")
+            raise JSONError() from e
+        return reply

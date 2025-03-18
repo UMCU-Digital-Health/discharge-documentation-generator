@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-03-17
+
+### Changed
+- Updated the promptbuilder to raise custom exceptions for cleaner exception handling in the API
+- Updated dependencies
+- Updated initialise_azure_connection to raise an error when not all environment variables are set
+- Fixed some minor typing errors in evaluation dashboard
+
 ## [2.1.0] - 2025-03-11
+
 ### Changed
 - updated the API version to "2024-10-21"
 - updates the format that OpenAI API returns the response (in json format) and updates to the prompt and response handling accordingly

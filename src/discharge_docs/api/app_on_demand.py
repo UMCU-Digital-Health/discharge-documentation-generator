@@ -31,7 +31,12 @@ from discharge_docs.llm.prompt import (
     load_prompts,
     load_template_prompt,
 )
-from discharge_docs.llm.prompt_builder import PromptBuilder
+from discharge_docs.llm.prompt_builder import (
+    ContextLengthError,
+    GeneralError,
+    JSONError,
+    PromptBuilder,
+)
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
     get_patient_file,
@@ -199,22 +204,13 @@ async def generate_hix_discharge_docs(
     token_length = prompt_builder.get_token_length(
         patient_file_string, system_prompt, user_prompt, template_prompt
     )
-    discharge_letter = prompt_builder.generate_discharge_doc(
-        patient_file=patient_file_string,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        template_prompt=template_prompt,
-    )
-
-    if list(discharge_letter.keys())[0] in [
-        "LengthError",
-        "JSONError",
-        "GeneralError",
-    ]:
-        outcome = list(discharge_letter.keys())[0]
-        discharge_letter = discharge_letter[outcome]
-
-    else:
+    try:
+        discharge_letter = prompt_builder.generate_discharge_doc(
+            patient_file=patient_file_string,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            template_prompt=template_prompt,
+        )
         discharge_letter = format_generated_doc(discharge_letter, format_type="plain")
 
         discharge_letter = (
@@ -222,6 +218,9 @@ async def generate_hix_discharge_docs(
             f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter}"
         )
         outcome = "Success"
+    except (ContextLengthError, JSONError, GeneralError) as e:
+        outcome = e.type
+        discharge_letter = e.dutch_message
 
     encounter_db = Encounter(
         enc_id=None, patient_id=None, department=department, admissionDate=None
