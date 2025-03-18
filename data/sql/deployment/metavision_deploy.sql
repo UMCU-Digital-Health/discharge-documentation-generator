@@ -1,4 +1,5 @@
-  SELECT
+-- This query is used in the NiFi flow to retrieve the patient files for Metavision departments.
+SELECT
     CONVERT(
         VARCHAR(64),
         HASHBYTES(
@@ -19,6 +20,7 @@ FROM
     [PUB].[aiva_discharge_docs].[Encounter] enc
     JOIN [PUB].[aiva_discharge_docs].[Observation] obs ON obs.context_Encounter_system = enc.identifier_system
     AND obs.context_Encounter_value = enc.identifier_value
+    LEFT JOIN [PUB].[aiva_discharge_docs].[Patient] pat ON enc.subject_Patient_value = pat.identifier_value
 WHERE
     1 = 1
         AND enc.[identifier_system] = 'https://metadata.umcutrecht.nl/ids/MetavisionOpname'
@@ -32,3 +34,4 @@ WHERE
         AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag')
         AND obs.code_display_original IS NOT NULL
         AND enc.period_start < CAST(GETDATE() - 1 AS DATE) -- Only include encounters that are at least 1 day old
+        AND pat.isTestpatient IS NULL -- Exclude test patients, NULL occurs for regular patient encounters as PUB only contains isTestpatient = 1

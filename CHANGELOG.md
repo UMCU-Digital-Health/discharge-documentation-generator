@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2025-03-11
+
+### Added
+- Added analysis of differences between AI-generated letter and Metavision letter
+
+### Changed
+- Added explanations to SQL queries
+
 ## [2.2.0] - 2025-03-17
 
 ### Changed

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.2.0"
+version = "2.2.1"
 authors = [
   { name="Ruben Peters", email="r.peters-7@umcutrecht.nl" },
   { name="Laura Veerhoek", email="l.p.veerhoek@umcutrecht.nl" },
@@ -54,6 +54,7 @@ dev-dependencies = [
     "rsconnect-python>=1.24.0",
     "jupyter>=1.0.0",
     "jupyterlab>=4.2.3",
+    "nltk>=3.9.1",
     "scipy>=1.15.1",
 ]
 
@@ -80,3 +81,6 @@ extend-immutable-calls = [
     "fastapi.params.Depends",
     "Security",
 ]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"

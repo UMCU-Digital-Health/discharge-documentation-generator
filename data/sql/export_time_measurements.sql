@@ -1,3 +1,4 @@
+-- This query is used to extract the time measurements of the Metavision disharge form.
 use PUB
 go
  

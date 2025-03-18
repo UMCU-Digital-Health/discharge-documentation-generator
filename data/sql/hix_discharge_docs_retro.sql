@@ -1,3 +1,4 @@
+-- This query retrospectively retrieves the discharge docs for HiX departments (currenctly only CAR)
 SELECT DISTINCT
     CONVERT(
         VARCHAR(64),

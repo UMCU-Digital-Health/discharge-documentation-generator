@@ -1,3 +1,4 @@
+-- This query retrospectively retrieves the patient files and discharge docs for Metavision departments
 SELECT
     CONVERT(
         VARCHAR(64),
