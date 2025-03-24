@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2025-03-18
+
+### Changed
+- Updated GitHub actions to use uv
+- Removed unused dependencies
+- Updated pyproject.toml
+- Updated dependencies and changed evaluation dashboard to work under dash 3.0
+
 ## [2.2.1] - 2025-03-11
 
 ### Added
