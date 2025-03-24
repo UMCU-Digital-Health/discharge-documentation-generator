@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from datetime import datetime
@@ -5,16 +6,21 @@ from pathlib import Path
 
 import pandas as pd
 import tomli
+from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.responses import PlainTextResponse
 from fastapi.security.api_key import APIKeyHeader
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
+from discharge_docs.api.api_helper import (
+    check_authorisation,
+    process_retrieved_discharge_letters,
+    remove_outdated_discharge_docs,
+)
 from discharge_docs.api.pydantic_models import MetavisionPatientFile
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
-from discharge_docs.dashboard.helper import format_generated_doc
 from discharge_docs.database.connection import get_connection_string, get_engine
 from discharge_docs.database.models import (
     Base,
@@ -108,10 +114,7 @@ async def process_and_generate_discharge_docs(
     HTTPException
         403 error when the api_key is not authorized
     """
-    if key != os.environ["X_API_KEY_generate"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_generate")
 
     start_time = datetime.now()
     logger.info("Processing and generating endpoint called")
@@ -161,19 +164,12 @@ async def process_and_generate_discharge_docs(
                 user_prompt=user_prompt,
                 template_prompt=template_prompt,
             )
-            discharge_letter = format_generated_doc(
-                discharge_letter, format_type="plain"
-            )
+            discharge_letter = json.dumps(discharge_letter)
 
-            discharge_letter = (
-                f"Deze brief is door AI gegenereerd voor patiëntnummer: "
-                f"{patient_df['patient_id'].values[0]} op: "
-                f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter}"
-            )
             outcome = "Success"
         except (ContextLengthError, JSONError, GeneralError) as e:
             outcome = e.type
-            discharge_letter = e.dutch_message
+            discharge_letter = None
 
         encounter_db = db.execute(
             select(Encounter).where(Encounter.enc_id == str(enc_id))
@@ -201,6 +197,8 @@ async def process_and_generate_discharge_docs(
         db.add(gendoc_db)
         db.commit()
 
+        remove_outdated_discharge_docs(db, encounter_db.id)
+
     end_time = datetime.now()
     runtime = (end_time - start_time).total_seconds()
     request_db.runtime = runtime
@@ -213,7 +211,7 @@ async def process_and_generate_discharge_docs(
     }
 
 
-@app.get("/retrieve-discharge_doc/{enc_id}", response_class=PlainTextResponse)
+@app.get("/retrieve-discharge-doc/{enc_id}", response_class=PlainTextResponse)
 async def retrieve_discharge_doc(
     enc_id: str,
     db: Session = Depends(get_session),
@@ -237,17 +235,17 @@ async def retrieve_discharge_doc(
     Returns
     -------
     str
-        The discharge document for the patient in plain text.
+        The discharge document for the patient in plain text or a message.
 
     Raises
     ------
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.environ["X_API_KEY_retrieve"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_retrieve")
+
+    logger.info("Retrieve discharge doc endpoint called")
+
     start_time = datetime.now()
     request_db = Request(
         timestamp=start_time,
@@ -262,13 +260,13 @@ async def retrieve_discharge_doc(
     )
     db.add(requestretrieve)
 
-    # Fetch the last 7 discharge letters for the given encounter ID
     query = (
         select(
             GeneratedDoc.discharge_letter,
             GeneratedDoc.id,
             GeneratedDoc.success_ind,
             Encounter.enc_id,
+            Encounter.patient_id,
             Request.timestamp,
         )
         .join(Encounter, GeneratedDoc.encounter_id == Encounter.id)
@@ -287,64 +285,17 @@ async def retrieve_discharge_doc(
             "generated_doc_id",
             "success_ind",
             "enc_id",
+            "patient_id",
             "timestamp",
         ],
     )
-    if result_df.empty:
-        returned_message = (
-            "Er is geen ontslagbrief in de database gevonden voor deze patiënt. "
-            "Dit komt voor bij patiënten in hun eerste 24 uur van de opname. "
-            "Indien de patient nog is opgenomen, zal morgen een AI-ontslagbrief worden "
-            "gegenereerd \n\n"
-            "Als dit toch onverwachts is, neem dan contact op met de key-users op "
-            "jouw afdeling en/of met de afdeling Digital Health via "
-            "ai-support@umcutrecht.nl"
-        )
-        requestretrieve.success_ind = False
-    else:
-        # filter for the successful letters
-        most_recent_successful_letter = result_df[
-            result_df["success_ind"] == "Success"
-        ].iloc[0]
-        requestretrieve.success_ind = True
 
-        # add note if letter older than today is retrieved
-        nr_days_old = (
-            datetime.now().date() - most_recent_successful_letter["timestamp"].date()
-        ).days
-        message_parts = []
-
-        if nr_days_old > 0:
-            if nr_days_old > 7:
-                message_parts.append(
-                    "NB Let erop dat deze AI-brief meer dan een week geleden is "
-                    f"gegenereerd, namelijk {nr_days_old} dagen geleden.\n"
-                )
-            else:
-                message_parts.append(
-                    "NB Let erop dat deze AI-brief niet afgelopen nacht is gegenereerd,"
-                    f" maar {nr_days_old} dagen geleden.\n"
-                )
-            if result_df.iloc[0]["success_ind"] == "LengthError":
-                message_parts.append(
-                    "Dit komt doordat het patientendossier te lang is geworden voor het"
-                    " AI model.\n\n"
-                )
-            else:
-                message_parts.append("\n\n")
-
-        message_parts.append(f"{most_recent_successful_letter['discharge_letter']}")
-        returned_message = "".join(message_parts)
-
-        requestretrieve.generated_doc_id = int(
-            most_recent_successful_letter["generated_doc_id"]
-        )
-        requestretrieve.nr_days_old = nr_days_old
-
-    # manually filter out [LEEFTIJD-1]-jarige from message as it is a DEDUCE-placeholder
-    returned_message = returned_message.replace(" [LEEFTIJD-1]-jarige", "")
-    # IC letters only have one heading (beloop) so filter it out, NICU has others
-    returned_message = returned_message.replace("\n\nBeloop\n", "\n\n")
+    message, success_ind, generated_doc_id, nr_days_old = (
+        process_retrieved_discharge_letters(result_df)
+    )
+    requestretrieve.success_ind = success_ind
+    requestretrieve.generated_doc_id = generated_doc_id
+    requestretrieve.nr_days_old = nr_days_old
 
     end_time = datetime.now()
     runtime = (end_time - start_time).total_seconds()
@@ -352,7 +303,7 @@ async def retrieve_discharge_doc(
     request_db.response_code = 200
     db.commit()
 
-    return returned_message
+    return message
 
 
 @app.post("/save-feedback/{feedback}", response_class=PlainTextResponse)
@@ -384,14 +335,11 @@ async def save_feedback(
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.environ["X_API_KEY_feedback"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_feedback")
 
-    start_time = datetime.now()
     logger.info("Save feedback endpoint called")
 
+    start_time = datetime.now()
     request_db = Request(
         timestamp=start_time,
         response_code=500,
@@ -420,122 +368,19 @@ async def save_feedback(
     return "success"
 
 
-@app.post("/remove-outdated-discharge-docs")
-async def remove_outdated_discharge_docs(
-    enc_ids: list[int],
-    db: Session = Depends(get_session),
-    key: str = Depends(header_scheme),
-) -> dict:
-    """Remove the outdated discharge letters for the given encounters.
-    Outdated discharge letters are those which are replaced by a newer succesfully
-    generated version of the discharge letter.
-    This function is called periodically to remove outdated discharge letters.
-
-    Parameters
-    ----------
-    enc_ids : list[int]
-        The encounter IDs of the patients to remove the outdated discharge letters for.
-    db : Session, optional
-        The database session, by default Depends(get_db)
-    key : str, optional
-        The API key for authorization, by default Depends(header_scheme)
-
-    Returns
-    -------
-    dict
-        A dictionary indicating the success of the operation.
-
-    Raises
-    ------
-    HTTPException
-        Raises a 403 error when the API key is not authorized.
-    """
-    if key != os.environ["X_API_KEY_remove"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
-    logger.info("Remove outdated discharge docs endpoint called")
-
-    start_time = datetime.now()
-    request_db = Request(
-        timestamp=start_time,
-        response_code=500,
-        api_version=API_VERSION,
-        endpoint="/remove-outdated-discharge-docs",
-    )
-    db.add(request_db)
-    db.commit()
-
-    # Get encounter records matching the provided enc_ids
-    encounters = (
-        db.execute(select(Encounter).where(Encounter.enc_id.in_(enc_ids)))
-        .scalars()
-        .all()
-    )
-
-    if not encounters:
-        logger.warning(
-            "No matching encounters found when trying to remove outdated docs"
-        )
-        return {"message": "No matching encounters found"}
-
-    # Extract the Encounter database primary keys for these encounters
-    encounter_db_ids = [enc.id for enc in encounters]
-
-    # Define the subquery to get the latest document for each encounter
-    latest_doc_subquery = (
-        select(
-            GeneratedDoc.encounter_id, func.max(GeneratedDoc.id).label("latest_doc_id")
-        )
-        .where(
-            GeneratedDoc.encounter_id.in_(encounter_db_ids),
-            GeneratedDoc.success_ind == "Success",
-        )
-        .group_by(GeneratedDoc.encounter_id)
-        .subquery()
-    )
-
-    # Define the main query to fetch outdated documents
-    outdated_docs_query = (
-        select(GeneratedDoc)
-        .join(
-            latest_doc_subquery,
-            GeneratedDoc.encounter_id == latest_doc_subquery.c.encounter_id,
-        )
-        .where(GeneratedDoc.id != latest_doc_subquery.c.latest_doc_id)
-    )
-
-    # Execute the query
-    outdated_docs = db.execute(outdated_docs_query).scalars().all()
-
-    # Remove outdated discharge letters
-    for doc in outdated_docs:
-        doc.discharge_letter = None
-        doc.removed_timestamp = datetime.now()
-
-    end_time = datetime.now()
-    runtime = (end_time - start_time).total_seconds()
-    request_db.runtime = runtime
-    request_db.response_code = 200
-    db.commit()
-
-    return {"message": "Success"}
-
-
 @app.post("/remove-all-discharge-docs")
 async def remove_all_discharge_docs(
-    enc_ids: list[int],
+    n_months: int = 7,
     db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
 ) -> dict:
-    """Remove all discharge letters for the given encounters. This endpoint is used once
-    a patient has been discharged and the AI generated draft discharge letter is no
-    longer needed/used after a set period of time.
+    """Remove all discharge letters that have been generated n_months months ago, or
+    longer.
 
     Parameters
     ----------
-    enc_ids : list[int]
-        The encounter IDs of the patients to remove the discharge letters for.
+    n_months : int, optional
+        The number of months ago the discharge letters should be removed, by default 7
     db : Session, optional
         The database session, by default Depends(get_db)
     key : str, optional
@@ -551,11 +396,10 @@ async def remove_all_discharge_docs(
     HTTPException
         Raises a 403 error when the API key is not authorized.
     """
-    if key != os.environ["X_API_KEY_remove"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_remove")
+
     logger.info("Remove all discharge docs endpoint called")
+
     start_time = datetime.now()
     request_db = Request(
         timestamp=start_time,
@@ -566,30 +410,22 @@ async def remove_all_discharge_docs(
     db.add(request_db)
     db.commit()
 
-    # Get encounter records matching the provided enc_ids
-    encounters = (
-        db.execute(select(Encounter).where(Encounter.enc_id.in_(enc_ids)))
-        .scalars()
-        .all()
-    )
-    if not encounters:
-        logger.warning("No matching encounters found when trying to remove docs")
-        return {"message": "No matching encounters found"}
-
-    # Extract the Encounter database primary keys for these encounters
-    encounter_db_ids = [enc.id for enc in encounters]
-
-    # Get all discharge documents for the encounters
-    all_docs = (
-        db.execute(
-            select(GeneratedDoc).where(GeneratedDoc.encounter_id.in_(encounter_db_ids))
+    query = (
+        select(GeneratedDoc)
+        .join(RequestGenerate, GeneratedDoc.request_generate_id == RequestGenerate.id)
+        .join(Request, RequestGenerate.request_id == Request.id)
+        .where(
+            Request.timestamp < datetime.now() - relativedelta(months=n_months),
+            GeneratedDoc.removed_timestamp.is_(None),
         )
-        .scalars()
-        .all()
     )
 
-    # Remove all discharge letters
-    for doc in all_docs:
+    docs_to_be_removed = db.execute(query).scalars().all()
+    if not docs_to_be_removed:
+        logger.warning("No discharge documents were found to remove")
+        return {"message": "No matching discharge docs found"}
+
+    for doc in docs_to_be_removed:
         doc.discharge_letter = None
         doc.removed_timestamp = datetime.now()
 
@@ -599,6 +435,7 @@ async def remove_all_discharge_docs(
     request_db.response_code = 200
     db.commit()
 
+    logger.info(f"Removed {len(docs_to_be_removed)} discharge docs")
     return {"message": "Success"}
 
 

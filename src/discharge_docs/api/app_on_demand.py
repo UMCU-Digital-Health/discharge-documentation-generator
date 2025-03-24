@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from datetime import datetime
@@ -17,7 +18,6 @@ from discharge_docs.api.pydantic_models import (
     LLMOutput,
 )
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
-from discharge_docs.dashboard.helper import format_generated_doc  # TODO move to llm
 from discharge_docs.database.connection import get_connection_string, get_engine
 from discharge_docs.database.models import (
     Base,
@@ -27,6 +27,7 @@ from discharge_docs.database.models import (
     RequestGenerate,
 )
 from discharge_docs.llm.connection import initialise_azure_connection
+from discharge_docs.llm.helper import format_generated_doc
 from discharge_docs.llm.prompt import (
     load_prompts,
     load_template_prompt,
@@ -211,6 +212,7 @@ async def generate_hix_discharge_docs(
             user_prompt=user_prompt,
             template_prompt=template_prompt,
         )
+        discharge_letter_json = json.dumps(discharge_letter)
         discharge_letter = format_generated_doc(discharge_letter, format_type="plain")
 
         discharge_letter = (
@@ -228,7 +230,7 @@ async def generate_hix_discharge_docs(
     db.add(encounter_db)
 
     gendoc_db = GeneratedDoc(
-        discharge_letter=discharge_letter,
+        discharge_letter=discharge_letter_json,
         input_token_length=token_length,
         success_ind=outcome,
     )

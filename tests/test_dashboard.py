@@ -5,7 +5,6 @@ from dash import html
 from pandas.testing import assert_frame_equal
 
 from discharge_docs.dashboard.helper import (
-    format_generated_doc,
     get_authorized_patients,
     get_data_from_patient_admission,
     get_patients_values,
@@ -23,6 +22,7 @@ from discharge_docs.dashboard.layout import (
     get_patient_data_card,
     get_patient_selection_div,
 )
+from discharge_docs.llm.helper import format_generated_doc
 
 
 def test_layout_functions():
@@ -132,11 +132,11 @@ def test_get_patients_values():
     )
     patients_values = get_patients_values(df, enc_ids_dict)
     assert patients_values["test"] == [
-        {"label": "Patiënt 1 (test 1 dagen)", "value": 1},
-        {"label": "Patiënt 2 (test 2 dagen)", "value": 2},
+        {"label": "Patiënt 1 (test 1 dagen) [opname 1]", "value": 1},
+        {"label": "Patiënt 2 (test 2 dagen) [opname 2]", "value": 2},
     ]
     assert patients_values["test2"] == [
-        {"label": "Patiënt 1 (test2 3 dagen)", "value": 3},
+        {"label": "Patiënt 1 (test2 3 dagen) [opname 3]", "value": 3},
     ]
 
 
@@ -156,7 +156,8 @@ def test_load_stored_discharge_letters():
     assert discharge_letter == {"beloop": "letter 1"}
     discharge_letter = load_stored_discharge_letters(df, "5")
     assert discharge_letter == {
-        "Geen Ontslagbrief": "Er is geen opgeslagen documentatie voor deze patiënt."
+        "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": "Er is geen opgeslagen"
+        " documentatie voor deze patiënt."
     }
 
 

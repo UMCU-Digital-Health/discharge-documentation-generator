@@ -35,6 +35,9 @@
     "src/discharge_docs/api/app_periodic.py": {
       "checksum": "3bbd8656f3b65c13723e1915402ac1dc"
     },
+    "src/discharge_docs/api/api_helper.py": {
+      "checksum": "e806dab2d04ab8e1c2802dd3504d45f7"
+    },
     "src/discharge_docs/api/pydantic_models.py": {
       "checksum": "2cda619d961786ddff3834f0fcba7ee3"
     },
@@ -94,6 +97,9 @@
     },
     "src/discharge_docs/llm/prompts/user_prompt.txt": {
       "checksum": "c20c7cfe6f15c6ee16330d15f2ea16b1"
+    },
+    "src/discharge_docs/llm/helper.py": {
+      "checksum": "68a2af77d57c89ea8eb2567eb82e1c6c"
     },
     "src/discharge_docs/processing/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"

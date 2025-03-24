@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.3] - 2025-03-24
+
+### Changed
+- Changed the way the discharge letter is stored in the database to JSON
+- Altered the way removal of older discharge documentation is handled
+- updated url of api endpoint to fit the convention
+- moved some logic to an api_helper file for readability
+- adapted the logic in the bulk generation and data pipeline to work more robustly (both with the new JSON format and for not always overwriting previously generated discharge documents if not desirable) 
+- reverted Dash to version 2 to prevent stringcase errors
+
 ## [2.2.2] - 2025-03-18
 
 ### Changed

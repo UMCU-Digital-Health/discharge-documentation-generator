@@ -164,7 +164,6 @@ class PromptBuilder:
             logger.error(f"Token length {token_length} exceeds maximum context length")
             raise ContextLengthError()
 
-        logger.info("Sending request to GPT model...")
         try:
             response = self.client.chat.completions.create(
                 model=self.deployment_name,

@@ -7,7 +7,7 @@ from typing import Union
 
 import pandas as pd
 import tomli
-from dash import dcc, html
+from dash import html
 from flask import Request
 
 logger = logging.getLogger(__name__)
@@ -285,7 +285,8 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
                 ).to_numpy()[0]
                 patients_list.append(
                     {
-                        "label": f"Patiënt {idx} ({department} {length_of_stay} dagen)",
+                        "label": f"Patiënt {idx} ({department} {length_of_stay} dagen)"
+                        f" [opname {enc_id}]",
                         "value": enc_id,
                     }
                 )
@@ -312,7 +313,9 @@ def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dic
     """
     if int(selected_enc_id) not in df["enc_id"].values:
         return {
-            "Geen Ontslagbrief": "Er is geen opgeslagen documentatie voor deze patiënt."
+            "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": (
+                "Er is geen opgeslagen documentatie voor deze patiënt."
+            )
         }
 
     discharge_document = df.loc[
@@ -322,41 +325,3 @@ def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dic
     discharge_document = json.loads(discharge_document)
 
     return discharge_document
-
-
-def format_generated_doc(generated_doc: dict, format_type: str) -> str | list[html.Div]:
-    """Convert the generated document to plain text or markdown with headers.
-
-    Parameters
-    ----------
-    generated_doc : dict
-        The generated document in a list of dict.
-    format_type : str
-        The desired format type of the generated document.
-
-    Returns
-    -------
-    dict | str
-        The structured version of the generated document (dict) if format is 'markdown'.
-        The plain text version of the generated document if format is 'plain'.
-    """
-    if format_type not in ["markdown", "plain"]:
-        raise ValueError("Invalid format type. Please choose 'markdown' or 'plain'.")
-
-    output_structured = []
-    output_plain = ""
-    for header in generated_doc.keys():
-        output_structured.append(
-            html.Div(
-                [
-                    html.Strong(header),
-                    dcc.Markdown(generated_doc[header]),
-                ]
-            )
-        )
-        output_plain += f"{header}\n"
-        output_plain += f"{generated_doc[header]}\n\n"
-    if format_type == "markdown":
-        return output_structured
-    else:
-        return output_plain

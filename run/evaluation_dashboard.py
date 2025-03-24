@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
 from discharge_docs.dashboard.helper import (
-    format_generated_doc,
     get_authorization,
     get_authorized_patients,
     get_data_from_patient_admission,
@@ -26,6 +25,7 @@ from discharge_docs.dashboard.helper import (
 )
 from discharge_docs.dashboard.layout import get_layout_evaluation_dashboard
 from discharge_docs.llm.connection import initialise_azure_connection
+from discharge_docs.llm.helper import format_generated_doc
 from discharge_docs.llm.prompt import (
     load_all_templates_prompts_into_dict,
     load_prompts,
@@ -383,8 +383,12 @@ def display_stored_discharge_documentation(
     )
     output = load_stored_discharge_letters(stored_bulk_gpt, selected_patient_admission)
 
-    formatted_output_old = format_generated_doc(output_old, format_type="markdown")
-    formatted_output = format_generated_doc(output, format_type="markdown")
+    formatted_output_old = format_generated_doc(
+        output_old, format_type="markdown", manual_filtering=True
+    )
+    formatted_output = format_generated_doc(
+        output, format_type="markdown", manual_filtering=True
+    )
 
     return formatted_output_old, formatted_output
 
@@ -444,7 +448,10 @@ def display_generated_discharge_doc(
         user_prompt=user_prompt,
         template_prompt=template_prompt,
     )
-    generated_output = format_generated_doc(discharge_letter, format_type="markdown")
+    generated_output = format_generated_doc(
+        discharge_letter, format_type="markdown", manual_filtering=True
+    )
+
     return generated_output
 
 
@@ -474,4 +481,4 @@ def show_prompts(n: int, is_open: bool) -> bool:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    app.run_server(debug=True, port=8050)

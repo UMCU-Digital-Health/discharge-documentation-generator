@@ -92,7 +92,6 @@ class RequestGenerate(Base):
     request_id: Mapped[int] = mapped_column(
         ForeignKey(Request.id), init=False, nullable=False
     )
-    # TODO bedenk of hier nog andere dingen gelogd moeten worden
 
     request_relation: Mapped["Request"] = relationship(
         back_populates="generate_relation"

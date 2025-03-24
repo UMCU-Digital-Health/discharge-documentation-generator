@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 import discharge_docs.api.app_on_demand as app_on_demand
 import discharge_docs.api.app_periodic as app_periodic
+from discharge_docs.api.api_helper import remove_outdated_discharge_docs
 from discharge_docs.api.app_on_demand import (
     generate_hix_discharge_docs,
     process_hix_data,
@@ -16,7 +17,6 @@ from discharge_docs.api.app_on_demand import (
 from discharge_docs.api.app_periodic import (
     process_and_generate_discharge_docs,
     remove_all_discharge_docs,
-    remove_outdated_discharge_docs,
     retrieve_discharge_doc,
     save_feedback,
 )
@@ -117,17 +117,19 @@ async def test_api_retrieve_discharge_doc_success(monkeypatch, previous_status):
     """Test retrieving a successful discharge letter for a patient."""
     mock_data = [
         (
-            "Most Recent Successful Discharge Letter",
+            '{"Letter": "Most Recent Successful Discharge Letter"}',
             9,
             "Success",
             "1234",
+            "123456",
             datetime.now(),
         ),
         (
-            "Older Discharge Letter",
+            '{"Letter": "Older Successful Discharge Letter"}',
             8,
             previous_status,
             "1234",
+            "123456",
             datetime.now() - timedelta(days=1),
         ),
     ]
@@ -173,17 +175,19 @@ async def test_api_retrieve_discharge_doc_older_letter(monkeypatch, error, days)
     """Test retrieving older discharge docs as newer has an error."""
     mock_data = [
         (
-            "No discharge letter due to error",
+            None,
             9,
             f"{error}",
             "1234",
+            "123456",
             datetime.now(),
         ),
         (
-            f"Older But Successful Discharge Letter ({days} days ago)",
+            '{"Letter": "Older But Successful Discharge Letter"}',
             8,
             "Success",
             "1234",
+            "123456",
             datetime.now() - timedelta(days=days),
         ),
     ]
@@ -207,7 +211,7 @@ async def test_api_retrieve_discharge_doc_older_letter(monkeypatch, error, days)
     )
 
     assert isinstance(output, str)
-    assert f"Older But Successful Discharge Letter ({days} days ago)" in output
+    assert "Older But Successful Discharge Letter" in output
     assert "No discharge letter due to error" not in output
     if error == "LengthError":
         assert (
@@ -250,14 +254,10 @@ async def test_api_save_feedback(monkeypatch):
 
 
 # Test the remove_outdated_discharge_docs endpoint
-@pytest.mark.asyncio
-async def test_remove_outdated_discharge_docs(monkeypatch):
+def test_remove_outdated_discharge_docs():
     """Test the remove_outdated_discharge_docs endpoint in the API."""
-    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
-    monkeypatch.setenv("X_API_KEY_remove", "test")
-
-    output = await remove_outdated_discharge_docs([1, 2, 3], FakeDB(), "test")
-    assert output == {"message": "No matching encounters found"}
+    output = remove_outdated_discharge_docs(FakeDB(), 1)
+    assert output is None
 
 
 # Test the remove_all_discharge_docs endpoint
@@ -267,8 +267,8 @@ async def test_remove_all_discharge_docs(monkeypatch):
     monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
     monkeypatch.setenv("X_API_KEY_remove", "test")
 
-    output = await remove_all_discharge_docs([1, 2, 3], FakeDB(), "test")
-    assert output == {"message": "No matching encounters found"}
+    output = await remove_all_discharge_docs(7, FakeDB(), "test")
+    assert output == {"message": "No matching discharge docs found"}
 
 
 # Test on demand root
