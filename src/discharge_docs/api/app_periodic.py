@@ -421,10 +421,6 @@ async def remove_all_discharge_docs(
     )
 
     docs_to_be_removed = db.execute(query).scalars().all()
-    if not docs_to_be_removed:
-        logger.warning("No discharge documents were found to remove")
-        return {"message": "No matching discharge docs found"}
-
     for doc in docs_to_be_removed:
         doc.discharge_letter = None
         doc.removed_timestamp = datetime.now()
@@ -435,8 +431,12 @@ async def remove_all_discharge_docs(
     request_db.response_code = 200
     db.commit()
 
-    logger.info(f"Removed {len(docs_to_be_removed)} discharge docs")
-    return {"message": "Success"}
+    if len(docs_to_be_removed) > 0:
+        logger.info(f"Removed {len(docs_to_be_removed)} discharge docs")
+        return {"message": "Success"}
+    else:
+        logger.warning("No discharge documents were found to remove")
+        return {"message": "No matching discharge docs found"}
 
 
 @app.get("/")

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.4] - 2025-03-25
+
+### Changed
+- Fixed logging of 500 error after succesfully removing no patients
+- Fix small typing errors
+
 ## [2.2.3] - 2025-03-24
 
 ### Changed

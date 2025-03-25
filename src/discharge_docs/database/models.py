@@ -70,8 +70,10 @@ class RequestRetrieve(Base):
     )
     request_enc_id: Mapped[str]
     success_ind: Mapped[bool] = mapped_column(Boolean, init=False)
-    generated_doc_id: Mapped[int] = mapped_column(Integer, nullable=True, init=False)
-    nr_days_old: Mapped[int] = mapped_column(Integer, nullable=True, init=False)
+    generated_doc_id: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, init=False
+    )
+    nr_days_old: Mapped[int | None] = mapped_column(Integer, nullable=True, init=False)
 
     request_relation: Mapped["Request"] = relationship(
         back_populates="retrieve_relation"
