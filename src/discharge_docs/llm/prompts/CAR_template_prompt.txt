@@ -5,3 +5,7 @@ Schrijf in verleden tijd.
 Begin met "Bovengenoemde patiënt werd opgenomen voor [reden van komst]."
 Onder 'Conclusie' moet je genummerd de hoofdproblemen die speelden tijdens deze opname, inclusief de behandelingen die zijn uitgevoerd tijdens de opname, zoals bijvoorbeeld operaties of het starten van medicatie. Haal deze informatie uit de stukken getiteld 'Conclusie'.  Schrijf alle afkortingen uit. 
 Start met het eerste punt: "Reden van opname: [reden van opname]".
+
+
+# format
+Het format wordt dan: {"Beloop": "Tekstuele samenvatting van beloop zoals hierboven omschreven", "Conclusie": "Tekstuele samenvatting van conclusie zoals hierboven omschreven"}.

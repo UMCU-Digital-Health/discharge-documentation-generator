@@ -16,11 +16,12 @@ COMMAND="rsconnect write-manifest $APP_TYPE \
 --exclude logs --exclude notebooks --exclude output --exclude tests --exclude build \
 --exclude .dvc --exclude .github --exclude .ruff_cache --exclude .coverage \
 --exclude .pytest_cache --exclude .env --exclude .venv --exclude .vscode \
---exclude docs --exclude run/cache --exclude \"**/*.db\" --exclude \"**/*.pyc\""
+--exclude docs --exclude \"**/*.db\" --exclude \"**/*.pyc\" \
+--exclude \"**/*.egg-info/*\""
 
 # Conditionally exclude data/raw directory
 if [ "$DATA_BOOL" == "N" ] || [ "$DATA_BOOL" == "n" ]; then
-    COMMAND="$COMMAND --exclude data/raw --exclude data/sql"
+    COMMAND="$COMMAND --exclude data/raw --exclude data/sql --exclude data/examples" 
 fi
 
 # Execute the command

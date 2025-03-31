@@ -6,7 +6,7 @@
     "entrypoint": "run.api_on_demand.py:app"
   },
   "python": {
-    "version": "3.11.11",
+    "version": "3.11.10",
     "package_manager": {
       "name": "pip",
       "version": "25.0.1",
@@ -15,46 +15,58 @@
   },
   "files": {
     "requirements.txt": {
-      "checksum": "c058849973a10926cce5720a97177869"
+      "checksum": "e79894a8382dfae3f7d4af82fda1505b"
     },
-    "cache/lookup_structs.pickle": {
-      "checksum": "a8c90483c8263266885166d076e75442"
+    "manifest_api_on_demand.json": {
+      "checksum": "e085e05b76918bf058df73b41d50c1ed"
     },
     "pyproject.toml": {
-      "checksum": "f4286608f2bc57292a0f77c76433e816"
+      "checksum": "2434d5f61d5229252b9dcf9af75ae7c8"
     },
     "run/api_on_demand.py": {
       "checksum": "45d6c23503095cffd4db5093e0f917b0"
     },
+    "run/cache/lookup_structs.pickle": {
+      "checksum": "106fa1e8c2bd34582651c85f50f30003"
+    },
+    "run/cache/lookup_structs.pickle.dvc": {
+      "checksum": "3207bac51d62d5cb378d778367c30133"
+    },
     "src/discharge_docs/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
+    "src/discharge_docs/api/api_helper.py": {
+      "checksum": "2e6fa22576ff1902b7cf990575a0d351"
+    },
     "src/discharge_docs/api/app_on_demand.py": {
-      "checksum": "bc56663f6df672c5e5eb4c4e721c1f8f"
+      "checksum": "4434fcf8d147f9132465704563487cda"
     },
     "src/discharge_docs/api/app_periodic.py": {
-      "checksum": "3bbd8656f3b65c13723e1915402ac1dc"
-    },
-    "src/discharge_docs/api/api_helper.py": {
-      "checksum": "e806dab2d04ab8e1c2802dd3504d45f7"
+      "checksum": "6f0d8aa0beb33e5fc43d94957167c80d"
     },
     "src/discharge_docs/api/pydantic_models.py": {
       "checksum": "2cda619d961786ddff3834f0fcba7ee3"
+    },
+    "src/discharge_docs/config.py": {
+      "checksum": "a3f519a443902081a93c424d62056070"
+    },
+    "src/discharge_docs/dashboard/.gitignore": {
+      "checksum": "f5735dd5e17029105a1d9a0d9ed7d26a"
     },
     "src/discharge_docs/dashboard/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/dashboard/enc_ids.toml": {
-      "checksum": "07468dd2088990f6ae0fd56f3543afd5"
+      "checksum": "448a28875a22ddf516e86eb620d62dec"
     },
     "src/discharge_docs/dashboard/enc_ids.toml.dvc": {
-      "checksum": "fcfdd681724c86eae0c07683f90c92b6"
+      "checksum": "68c74c6b44dc52052c6daf161a04304b"
     },
     "src/discharge_docs/dashboard/helper.py": {
-      "checksum": "843e1cd7fb2cb082d050a7726f07af11"
+      "checksum": "805695438599ed748cada0f6c7f99e19"
     },
     "src/discharge_docs/dashboard/layout.py": {
-      "checksum": "f9f2fe7c28e5b108faeca7bc3f36b755"
+      "checksum": "f3b012e28b8710ef9866a2ca47b8c59e"
     },
     "src/discharge_docs/database/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
@@ -63,25 +75,28 @@
       "checksum": "ffcd51c264e311baa5a4802856781404"
     },
     "src/discharge_docs/database/models.py": {
-      "checksum": "4171dda81edca188e936f93df1d1e744"
+      "checksum": "25ddbe385e9f87941ce1c8da88d804db"
     },
     "src/discharge_docs/llm/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/llm/connection.py": {
-      "checksum": "ff7197903168a789ee9e58ebb657f28f"
+      "checksum": "62d431f055119cbbcdfb98845990f61d"
     },
     "src/discharge_docs/llm/deployment_config.toml": {
-      "checksum": "23a458bc36d61c819b49635dfd1d0735"
+      "checksum": "060c6f184d106e402a579edae656e12e"
+    },
+    "src/discharge_docs/llm/helper.py": {
+      "checksum": "68a2af77d57c89ea8eb2567eb82e1c6c"
     },
     "src/discharge_docs/llm/prompt.py": {
-      "checksum": "d213ef9307043010f7610e7ed3720301"
+      "checksum": "fc4bd69aae6424787fb9260591d524aa"
     },
     "src/discharge_docs/llm/prompt_builder.py": {
-      "checksum": "5494cc87528a72cfe05b0d79a6151d45"
+      "checksum": "1ed58dc7a2c03e43eaf415e94c5c3088"
     },
     "src/discharge_docs/llm/prompts/CAR_template_prompt.txt": {
-      "checksum": "1c5dfe415e139f03d1baf65317f15ce5"
+      "checksum": "ce4bf8ad3f8b262d588ab667f001c2a2"
     },
     "src/discharge_docs/llm/prompts/IC_template_prompt.txt": {
       "checksum": "d304f44aef3d499a97b091315df8d0d8"
@@ -96,25 +111,19 @@
       "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
     },
     "src/discharge_docs/llm/prompts/user_prompt.txt": {
-      "checksum": "c20c7cfe6f15c6ee16330d15f2ea16b1"
-    },
-    "src/discharge_docs/llm/helper.py": {
-      "checksum": "68a2af77d57c89ea8eb2567eb82e1c6c"
+      "checksum": "d5816a0bde09f6644d4ab6877a7bf6d1"
     },
     "src/discharge_docs/processing/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/discharge_docs/processing/bulk_generation.py": {
-      "checksum": "af13ac3abb4252f89f661dbbc8353c46"
+      "checksum": "4284dee13b36c7c850dbe2294c619aba"
     },
     "src/discharge_docs/processing/deduce_text.py": {
       "checksum": "aeeb619eb7bcaa35bb707b247e47737c"
     },
     "src/discharge_docs/processing/processing.py": {
-      "checksum": "98232e6e863e92ab75f1e891b728dbc5"
-    },
-    "src/discharge_docs/config.py": {
-      "checksum": "f7885ee4aa16f661e58d9546ef2aee0a"
+      "checksum": "2a4ec3d29ed49b55123308ac1a485587"
     }
   }
 }

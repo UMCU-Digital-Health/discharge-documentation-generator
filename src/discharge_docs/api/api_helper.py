@@ -48,6 +48,7 @@ def remove_outdated_discharge_docs(db: Session, encounter_db_id: int) -> None:
 
     outdated_docs_query = select(GeneratedDoc).where(
         GeneratedDoc.encounter_id == encounter_db_id,
+        GeneratedDoc.success_ind == "Success",
         GeneratedDoc.id.notin_(select(latest_two_docs_subquery.c.id)),
         GeneratedDoc.removed_timestamp.is_(None),
     )
@@ -106,11 +107,14 @@ def process_retrieved_discharge_letters(
         )
         return returned_message, False, None, None
 
-    successful_letters = result_df[result_df["success_ind"] == "Success"]
+    successful_letters = result_df[
+        (result_df["success_ind"] == "Success")
+        & (result_df["discharge_letter"].notnull())
+    ]
     if successful_letters.empty:  # option 2
         message = [
             "Er is geen succesvol gegenereerde ontslagbrief in de database gevonden "
-            "voor deze patiënt."
+            "voor deze patiënt. "
         ]
         if result_df.iloc[0]["success_ind"] == "LengthError":
             message.append(

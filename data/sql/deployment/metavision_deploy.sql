@@ -35,3 +35,4 @@ WHERE
         AND obs.code_display_original IS NOT NULL
         AND enc.period_start < CAST(GETDATE() - 1 AS DATE) -- Only include encounters that are at least 1 day old
         AND pat.isTestpatient IS NULL -- Exclude test patients, NULL occurs for regular patient encounters as PUB only contains isTestpatient = 1
+        AND enc.subject_Patient_value NOT IN ('6476687', 'Intensive Ca_21', 'testbed3', '55667788899', '1234123')

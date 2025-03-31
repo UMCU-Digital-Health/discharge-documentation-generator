@@ -2,3 +2,8 @@ Er is een categorie: 'Beloop'.
 
 Schrijf onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid. Wees duidelijk in welke beweegredenen belangrijk waren. Schrijf beknopt en focus op diagnoses in plaatst van symptomen.
 Het is belangrijk dat zowel wat over de respiratie als de hemodynamiek gedocumenteerd wordt. Schrijf het beloop in maximaal 300 woorden op.
+
+
+
+# format
+Het format wordt dan: {"Beloop": "Tekstuele samenvatting van beloop zoals hierboven omschreven"}.

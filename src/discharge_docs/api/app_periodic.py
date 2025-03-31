@@ -212,6 +212,12 @@ async def process_and_generate_discharge_docs(
 
 
 @app.get("/retrieve-discharge-doc/{enc_id}", response_class=PlainTextResponse)
+@app.get(  # TODO remove this endpoint in the next release
+    "/retrieve_discharge_doc/{enc_id}",
+    response_class=PlainTextResponse,
+    deprecated=True,
+    operation_id="retrieve_discharge_doc_deprecated",
+)
 async def retrieve_discharge_doc(
     enc_id: str,
     db: Session = Depends(get_session),

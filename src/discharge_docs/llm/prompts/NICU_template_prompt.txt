@@ -20,3 +20,19 @@ Benoem voor elke categorie de volgende zaken:
  
 Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie. 
 Lees eerst de complete status voordat je een samenvatting maakt. Dit is uiterst belangrijk. Gebruik geen individuele items uit de verschillende teksten. Wees beschrijvend en maak in elke categorie een samenvatting van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de samenvatting.
+
+
+
+# format
+Het format wordt dan:
+{"Respiratie": "Tekstuele samenvatting van Respiratie zoals hierboven omschreven",
+"Circulatie": "Tekstuele samenvatting van Circulatie zoals hierboven omschreven",
+"Neurologie": "Tekstuele samenvatting van Neurologie zoals hierboven omschreven",
+"Infectie": "Tekstuele samenvatting van Infectie zoals hierboven omschreven",
+"VB/Nierfunctie": "Tekstuele samenvatting van VB/Nierfunctie zoals hierboven omschreven",
+"Milieu interieure": "Tekstuele samenvatting van Milieu interieure zoals hierboven omschreven",
+"Gastro-intestinaal": "Tekstuele samenvatting van Gastro-intestinaal zoals hierboven omschreven",
+"Psych/SOC": "Tekstuele samenvatting van Psych/SOC zoals hierboven omschreven",
+"Extr/huid": "Tekstuele samenvatting van Extr/huid zoals hierboven omschreven",
+"Ontslag": "Tekstuele samenvatting van Ontslag zoals hierboven omschreven",
+"Overig": "Tekstuele samenvatting van Overig zoals hierboven omschreven"}.

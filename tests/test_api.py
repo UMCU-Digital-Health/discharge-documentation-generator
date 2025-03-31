@@ -242,6 +242,41 @@ async def test_api_retrieve_discharge_doc_wrong_api_key(monkeypatch):
     assert e.value.detail == "You are not authorized to access this endpoint"
 
 
+@pytest.mark.asyncio
+async def test_api_retrieve_discharge_doc_only_removed_letters(monkeypatch):
+    """Test retrieving discharge docs when all previous letters were removed."""
+    mock_data = [
+        (
+            None,
+            9,
+            "Success",
+            "1234",
+            "123456",
+            datetime.now(),
+        ),
+    ]
+
+    class FakeExecuteRemoved(FakeExecute):
+        def fetchall(self):
+            return mock_data
+
+    class FakeDBWithRemoved(FakeDB):
+        def execute(self, stmt):
+            return FakeExecuteRemoved()
+
+    monkeypatch.setattr(app_periodic, "client", MockAzureOpenAI())
+    monkeypatch.setenv("X_API_KEY_retrieve", "test")
+
+    output = await app_periodic.retrieve_discharge_doc(
+        "1234", FakeDBWithRemoved(), "test"
+    )
+    assert isinstance(output, str)
+    assert (
+        "Er is geen succesvol gegenereerde ontslagbrief in de database gevonden"
+        in output
+    )
+
+
 # Test the save_feedback endpoint
 @pytest.mark.asyncio
 async def test_api_save_feedback(monkeypatch):

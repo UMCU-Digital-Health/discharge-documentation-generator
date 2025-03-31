@@ -47,7 +47,7 @@ def load_template_prompt(department: str) -> str:
 
 
 def load_all_templates_prompts_into_dict(
-    departments: list = None,
+    departments: list | None = None,
 ) -> dict:
     """Load all template prompts for the specified departments into a dictionary.
 

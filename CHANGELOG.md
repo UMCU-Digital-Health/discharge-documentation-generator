@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.5] - 2025-03-25
+
+### Changed
+- Fix user prompt to make sure the right category names are used
+- Fixed the remove outdated docs function, to only remove succesfull docs
+- Bugfix to solve JSON error in retrieve API endpoint when all historic letter are removed.
+- Updated manifest files
+- Updated query to remove test patients from Metavision that are not flagged as test patients in hix.
+
 ## [2.2.4] - 2025-03-25
 
 ### Changed

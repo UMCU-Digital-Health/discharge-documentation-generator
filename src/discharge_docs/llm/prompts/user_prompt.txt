@@ -11,4 +11,4 @@ Gebruik lopende zinnen om het beloop te omschrijven.​​
 
 Het antwoord moet in het volgende JSON format gegeven worden:​
 {"Categorie1": *Tekstuele samenvatting van het beloop voor categorie 1*, "Categorie2": *Tekstuele samenvatting van het beloop voor categorie 2*}​
-Welke opties er zijn voor 'categorie' en hoe veel categorieën er zijn, wordt hieronder uitgelegd.
+De namen van de categorieën ("Categorie1" en "Categorie2" in het voorbeeld), moeten worden vervangen door de echte categorieën, die hieronder staan beschreven.
