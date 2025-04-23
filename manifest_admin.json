@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "locale": "en_US.UTF-8",
+  "metadata": {
+    "appmode": "python-streamlit",
+    "entrypoint": "run/admin_dashboard.py"
+  },
+  "python": {
+    "version": "3.11.10",
+    "package_manager": {
+      "name": "pip",
+      "version": "25.0.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "e79894a8382dfae3f7d4af82fda1505b"
+    },
+    ".dvcignore": {
+      "checksum": "34659c119a2634fe318cd6a4822df435"
+    },
+    ".gitignore": {
+      "checksum": "4205c84875529c6c7fd6bf5c8df77395"
+    },
+    ".python-version": {
+      "checksum": "c0479ff484dacd51dc5ba0461b16b9bf"
+    },
+    "CHANGELOG.md": {
+      "checksum": "a79a30912728d5bd756a0e96faa95ccc"
+    },
+    "README.md": {
+      "checksum": "ff182b24ecf553311a4e61e0e19a6408"
+    },
+    "deploy.sh": {
+      "checksum": "1fab0774b96a2eb422551e7dfa65323f"
+    },
+    "manifest_admin.json": {
+      "checksum": "dd6b2465470a3db7f62555f740c1d3fa"
+    },
+    "manifest_api_on_demand.json": {
+      "checksum": "07355e4f6ce0ea685ee8617c54e36176"
+    },
+    "manifest_api_periodic.json": {
+      "checksum": "9697912af0bd947cdf7741cc31e23379"
+    },
+    "manifest_eval.json": {
+      "checksum": "9bf070b6e9d5c9a96ed552fec53765a9"
+    },
+    "pyproject.toml": {
+      "checksum": "56f92d3b681a6005f0a8316eac285746"
+    },
+    "run/admin_dashboard.py": {
+      "checksum": "a1587824733f5981b8366f91fa049879"
+    },
+    "run/api_on_demand.py": {
+      "checksum": "45d6c23503095cffd4db5093e0f917b0"
+    },
+    "run/api_periodic.py": {
+      "checksum": "cca3e6e863ba5387590be8de50f049dc"
+    },
+    "run/cache/lookup_structs.pickle": {
+      "checksum": "106fa1e8c2bd34582651c85f50f30003"
+    },
+    "run/cache/lookup_structs.pickle.dvc": {
+      "checksum": "3207bac51d62d5cb378d778367c30133"
+    },
+    "run/config/auth.toml": {
+      "checksum": "d0e677c632bd07a873c7d8fc24d473fd"
+    },
+    "run/config/auth.toml.dvc": {
+      "checksum": "75e063eb344973950f3a659d7fca0b65"
+    },
+    "run/config/auth_example.toml": {
+      "checksum": "0b12e286b05ff89b8ce360b2dc22710e"
+    },
+    "run/config/auth_fase1.toml": {
+      "checksum": "3a16bb1b6b2cf25dd2c0662ff7023c26"
+    },
+    "run/data_pipeline.py": {
+      "checksum": "db985bd0d3f6b38587c25b5b6ff22aa9"
+    },
+    "run/evaluation_dashboard.py": {
+      "checksum": "97b570e56b49f598e68d9685fc3e96a8"
+    },
+    "src/discharge_docs/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/api/api_helper.py": {
+      "checksum": "4ff3a49383fe8f8a86e604eb57d8e321"
+    },
+    "src/discharge_docs/api/app_on_demand.py": {
+      "checksum": "4434fcf8d147f9132465704563487cda"
+    },
+    "src/discharge_docs/api/app_periodic.py": {
+      "checksum": "de25bd8d65473235b9ac1825261fbee4"
+    },
+    "src/discharge_docs/api/pydantic_models.py": {
+      "checksum": "2cda619d961786ddff3834f0fcba7ee3"
+    },
+    "src/discharge_docs/config.py": {
+      "checksum": "a3f519a443902081a93c424d62056070"
+    },
+    "src/discharge_docs/dashboard/.gitignore": {
+      "checksum": "f5735dd5e17029105a1d9a0d9ed7d26a"
+    },
+    "src/discharge_docs/dashboard/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/dashboard/enc_ids.toml": {
+      "checksum": "448a28875a22ddf516e86eb620d62dec"
+    },
+    "src/discharge_docs/dashboard/enc_ids.toml.dvc": {
+      "checksum": "68c74c6b44dc52052c6daf161a04304b"
+    },
+    "src/discharge_docs/dashboard/helper.py": {
+      "checksum": "805695438599ed748cada0f6c7f99e19"
+    },
+    "src/discharge_docs/dashboard/layout.py": {
+      "checksum": "f3b012e28b8710ef9866a2ca47b8c59e"
+    },
+    "src/discharge_docs/database/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/database/connection.py": {
+      "checksum": "ffcd51c264e311baa5a4802856781404"
+    },
+    "src/discharge_docs/database/helper.py": {
+      "checksum": "c5693c2ec25a20e625165a4656eab88a"
+    },
+    "src/discharge_docs/database/models.py": {
+      "checksum": "25ddbe385e9f87941ce1c8da88d804db"
+    },
+    "src/discharge_docs/llm/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/llm/connection.py": {
+      "checksum": "62d431f055119cbbcdfb98845990f61d"
+    },
+    "src/discharge_docs/llm/deployment_config.toml": {
+      "checksum": "060c6f184d106e402a579edae656e12e"
+    },
+    "src/discharge_docs/llm/helper.py": {
+      "checksum": "68a2af77d57c89ea8eb2567eb82e1c6c"
+    },
+    "src/discharge_docs/llm/prompt.py": {
+      "checksum": "fc4bd69aae6424787fb9260591d524aa"
+    },
+    "src/discharge_docs/llm/prompt_builder.py": {
+      "checksum": "1ed58dc7a2c03e43eaf415e94c5c3088"
+    },
+    "src/discharge_docs/llm/prompts/CAR_template_prompt.txt": {
+      "checksum": "9fa0fff373b48d36e5f75ae35a54c78f"
+    },
+    "src/discharge_docs/llm/prompts/IC_template_prompt.txt": {
+      "checksum": "f5d91960217c7ba12ecaecb9b9bcf18e"
+    },
+    "src/discharge_docs/llm/prompts/NICU_template_prompt.txt": {
+      "checksum": "24ab5e34efd98f2ffaf3570ebd77ba06"
+    },
+    "src/discharge_docs/llm/prompts/PSY_template_prompt.txt": {
+      "checksum": "9ad286d824b70e72b5ab988897105ce6"
+    },
+    "src/discharge_docs/llm/prompts/system_prompt.txt": {
+      "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
+    },
+    "src/discharge_docs/llm/prompts/user_prompt.txt": {
+      "checksum": "cbf67ecdf920ad706487e8fc8c304be0"
+    },
+    "src/discharge_docs/processing/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/discharge_docs/processing/bulk_generation.py": {
+      "checksum": "4284dee13b36c7c850dbe2294c619aba"
+    },
+    "src/discharge_docs/processing/deduce_text.py": {
+      "checksum": "aeeb619eb7bcaa35bb707b247e47737c"
+    },
+    "src/discharge_docs/processing/processing.py": {
+      "checksum": "2a4ec3d29ed49b55123308ac1a485587"
+    },
+    "uv.lock": {
+      "checksum": "205b982f099534d0d959528579ef3655"
+    },
+    "write_manifest.sh": {
+      "checksum": "89457b5246654b25b71b7bad8793bc19"
+    }
+  }
+}

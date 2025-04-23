@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.2.5"
+version = "2.3.0"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
@@ -28,12 +28,14 @@ dependencies = [
     "tiktoken~=0.5",
     "tomli~=2.0",
     "pyarrow>=14.0",
-    "dash<3.0",  # new Dash version has breaking changes
+    "dash<3.0", # new Dash version has breaking changes
     "fastapi>=0.111.0",
     "pymssql>=2.3.0",
     "striprtf>=0.0.26",
     "tomli-w>=1.2.0",
     "rich>=13.9.4",
+    "altair>=5.5.0",
+    "streamlit>=1.44.0",
 ]
 
 [dependency-groups]

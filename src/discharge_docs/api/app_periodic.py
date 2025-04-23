@@ -15,6 +15,7 @@ from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from discharge_docs.api.api_helper import (
+    ApiEndpoint,
     check_authorisation,
     process_retrieved_discharge_letters,
     remove_outdated_discharge_docs,
@@ -82,7 +83,7 @@ def get_session():
         yield session
 
 
-@app.post("/process-and-generate-discharge-docs")
+@app.post(ApiEndpoint.PROCESS_GENERATE_DOC.value)
 async def process_and_generate_discharge_docs(
     data: list[MetavisionPatientFile],
     db: Session = Depends(get_session),
@@ -122,7 +123,7 @@ async def process_and_generate_discharge_docs(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/process-and-generate-discharge-docs",
+        endpoint=ApiEndpoint.PROCESS_GENERATE_DOC.value,
     )
 
     requestgenerate = RequestGenerate(request_relation=request_db)
@@ -257,7 +258,7 @@ async def retrieve_discharge_doc(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/retrieve-discharge-doc",
+        endpoint=ApiEndpoint.RETRIEVE_DISCHARGE_DOC.value,
     )
 
     requestretrieve = RequestRetrieve(
@@ -350,7 +351,7 @@ async def save_feedback(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/save-feedback",
+        endpoint=ApiEndpoint.SAVE_FEEDBACK.value,
     )
     requestfeedback = RequestFeedback(
         request_enc_id=feedback.split("_")[0], request_relation=request_db
@@ -374,7 +375,7 @@ async def save_feedback(
     return "success"
 
 
-@app.post("/remove-all-discharge-docs")
+@app.post(ApiEndpoint.REMOVE_ALL_DISCHARGE_DOCS.value)
 async def remove_all_discharge_docs(
     n_months: int = 7,
     db: Session = Depends(get_session),
@@ -411,7 +412,7 @@ async def remove_all_discharge_docs(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/remove-all-discharge-docs",
+        endpoint=ApiEndpoint.REMOVE_ALL_DISCHARGE_DOCS.value,
     )
     db.add(request_db)
     db.commit()

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime
+from enum import Enum
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -11,6 +12,19 @@ from discharge_docs.database.models import GeneratedDoc
 from discharge_docs.llm.helper import format_generated_doc, manual_filtering_message
 
 logger = logging.getLogger(__name__)
+
+
+class ApiEndpoint(Enum):
+    """
+    Enum class to define the API endpoints which are logged to the Request table
+    """
+
+    PROCESS_GENERATE_DOC = "/process-and-generate-discharge-docs"
+    RETRIEVE_DISCHARGE_DOC = "/retrieve-discharge-doc"
+    SAVE_FEEDBACK = "/save-feedback"
+    REMOVE_ALL_DISCHARGE_DOCS = "/remove-all-discharge-docs"
+    PROCESS_HIX_DATA = "/process-hix-data"
+    GENERATE_HIX_DOC = "/generate-hix-discharge-docs"
 
 
 def check_authorisation(key: str, stored_key: str) -> None:

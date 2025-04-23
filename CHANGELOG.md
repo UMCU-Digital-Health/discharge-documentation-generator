@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+
+## [2.3.0] - 2025-04-04
+
+### Added
+- add admin dashboard
+
+### Changed
+- Updated endpoints to use an Enum to prevent typo's
+
 ## [2.2.5] - 2025-03-25
 
 ### Changed

@@ -12,6 +12,7 @@ from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.orm import Session
 from striprtf.striprtf import rtf_to_text
 
+from discharge_docs.api.api_helper import ApiEndpoint
 from discharge_docs.api.pydantic_models import (
     HixInput,
     HixOutput,
@@ -78,7 +79,7 @@ def get_session():
         yield session
 
 
-@app.post("/process-hix-data")
+@app.post(ApiEndpoint.PROCESS_HIX_DATA.value)
 async def process_hix_data(
     data: HixInput,
     db: Session = Depends(get_session),
@@ -115,7 +116,7 @@ async def process_hix_data(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/proces_hix_data",
+        endpoint=ApiEndpoint.PROCESS_HIX_DATA.value,
     )
     db.add(request_db)
     db.commit()
@@ -150,7 +151,7 @@ async def process_hix_data(
     return HixOutput(department=department, value=patient_file_string)
 
 
-@app.post("/generate-hix-discharge-docs")
+@app.post(ApiEndpoint.GENERATE_HIX_DOC.value)
 async def generate_hix_discharge_docs(
     data: HixOutput,
     db: Session = Depends(get_session),
@@ -182,7 +183,7 @@ async def generate_hix_discharge_docs(
         timestamp=start_time,
         response_code=500,
         api_version=API_VERSION,
-        endpoint="/generate-hix-discharge-docs",
+        endpoint=ApiEndpoint.GENERATE_HIX_DOC.value,
     )
     request_generate = RequestGenerate(request_relation=request_db)
     db.add(request_generate)
