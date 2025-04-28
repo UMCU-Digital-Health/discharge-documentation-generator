@@ -1,8 +1,9 @@
 name: Push main to public repo on release
 
 on:
+  workflow_dispatch:
   release:
-    types: [published]
+    types: [published, created]
 
 jobs:
   push:
@@ -11,7 +12,7 @@ jobs:
       - name: Checkout the tag from the release
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || v0.0.2}}
           fetch-depth: 0
 
       - name: Setup Git user
@@ -24,4 +25,4 @@ jobs:
           TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
           git remote add public https://x-access-token:${TOKEN}@github.com/UMCU-Digital-Health/discharge-documentation-generator
-          git push public ${{ github.event.release.tag_name }}:refs/tags/${{ github.event.release.tag_name }} --force
+          git push public ${{ github.event.release.tag_name || v0.0.2 }}:refs/tags/${{ github.event.release.tag_name || v0.0.2 }} --force

@@ -24,6 +24,12 @@ jobs:
     - name: Install dependencies
       run: uv sync --all-extras --dev
 
+    - name: Cache DEDUCE dependencies
+      uses: actions/cache@v4
+      with:
+        path: run/cache/lookup_structs.pickle
+        key: ${{ runner.os }}-deduce-${{ hashFiles('**/requirements.txt') }}
+
     - name: Running Unit tests
       run: uv run pytest tests/ --doctest-modules --cov=src --cov-report=xml
 
