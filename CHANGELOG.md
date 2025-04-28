@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2025-04-24
 
+### Added
+- Added a GitHub action to automatically sync the repo with the public repo
+
+### Changed
+- Updated the action to use the specific tag associated with the release
 
 ## [2.3.0] - 2025-04-04
 
