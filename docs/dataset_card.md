@@ -1,17 +1,17 @@
 ## Dataset Description
 
-- **Repository:** [https://github.com/UMCU-Digital-Health/Discharge_Documentation_Generator](https://github.com/UMCU-Digital-Health/Discharge_Documentation_Generator)
+- **Repository:** [https://github.com/UMCU-Digital-Health/Discharge_Documentation_Generator](https://github.com/UMC Utrecht-Digital-Health/Discharge_Documentation_Generator)
 - **Point of Contact:** [Laura Veerhoek](mailto:l.p.veerhoek@umcutrecht.nl), [Ruben Peters](mailto:r.peters-7@umcutrecht.nl)
 
 Based on the dataset card template from huggingface, which can be found [here](https://github.com/huggingface/datasets/blob/main/templates/README_guide.md#table-of-contents).
 
 ### Dataset Summary
 
-The dataset consists of discharge letters and patient files from NICU, IC, Cardiology and Psychiatry departments. It was exported in May 2024 and covers the patients that were admitted between March and May 2024. The language is Dutch and contains medical terminology.  
+The data used in this project is a collection of medical discharge documents and patient files from the UMC Utrecht hospital from the NICU, ICU and Cardiology department. The dataset is used to perform prompt engineering was a retrospective set of admissions over a period of a few months in 2023 and 2024. The language is Dutch and contains medical terminology.  
 
 ### Supported Tasks and Leaderboards
 
-- `Summarization`: The dataset is used to summaries medical discharge documents. Success on this task is measured by clinical evaluation and optionally by metrics like ROUGE and using LLMs to score the quality of generated documents.
+- `Summarization`: The dataset is used to summaries medical discharge notes into a course of a patient's admission. Success on this task is measured periodically according to a post market surveillance plan.
 
 ### Languages
 
@@ -20,24 +20,23 @@ The language present in the dataset is Dutch. The text contains Dutch medical te
 ## Dataset Structure
 
 ### Data Instances
+There are two data sources and formats possible within the UMC Utrecht, depending on the electronic health record system used. The two systems are HiX and Metavision. The data is stored in a SQL database and can be queried using SQL queries. Examples of the two data sources are shown below. The data format is also specified in various pydantic dataclasses, which can be found in [/src/api/pydantic_models.py](/src/api/pydantic_models.py).
 
 #### HiX Discharge docs
 ```
 {
     'pseudo_id': 'FHEU73824HFWYU87',
     'specialty_Organization_value: 'CAR',
-    'enc_id': 56482357,
+    'identifier_value': 1234567,
     'period_start': '2024-04-20',
     'period_end': '2024-04-25',
-    'status': 'finished',
     'type2_display_original': 'Ontslagbericht',
     'created': '2024-04-25',
-    'docStatus': 'final',
     'content_attachment1_plain_data': 'Actual discharge text'
 }
 ```
 
-Can be joined with patient files using the enc_id
+Can be joined with patient files using the identifier_value
 
 #### HiX patient files
 
@@ -45,36 +44,29 @@ Can be joined with patient files using the enc_id
 {
     'pseudo_id': 'FHEU73824HFWYU87',
     'specialty_Organization_value: 'CAR',
-    'enc_id': 56482357,
+    'identifier_value': 1234567,
     'period_start': '2024-04-20',
     'period_end': '2024-04-25',
-    'status': 'finished',
-    'qn_id': 'CS549357',
-    'category_display': 'Cardiologie',
-    'name': 'CAR Consult',
-    'qr_id': 523895,
-    'authored': '2024-04-21 09:00:00',
-    'created': '2024-04-21 09:00:00',
-    'qri_id': 74920572,
-    'item_text': 'Beleid',
-    'item_answer_value_valueString': 'actual patient file info'
+    'NAAM': 'CAR Consult - beleid',
+    'TEXT': 'actual patient file info',
+    'DATE': '2024-04-21 09:00:00',
 }
 ```
 
-Can be joined with discharge documents using the enc_id
+Can be joined with discharge documents using the identifier_value
 
 #### Metavision data
 
 ```
 {
-    'enc_id': 0123456,
     'pseudo_id': 'FHEIJW7832J932FD',
+    'location_Location_value_original': 'Neonatologie',
+    'identifier_value': 1234567,
     'period_start': '2024-04-12',
     'period_end': '2024-04-14',
-    'location_Location_value_original': 'Neonatologie',
-    'effectiveDateTime': '2024-04-12 11:00:00',
-    'valueString': 'Reden voor opname: postoperatieve ademhalingsproblemen.',
     'code_display_original': 'Anamnese'
+    'valueString': 'Reden voor opname: postoperatieve ademhalingsproblemen.',
+    'effectiveDateTime': '2024-04-12 11:00:00',
 },
 ```
 
@@ -83,41 +75,32 @@ Can be joined with discharge documents using the enc_id
 #### HiX Discharge Docs
 - `pseudo_id`: string with pseudonomised patientid
 - `specialty_Organization_value` string containing specialization
-- `enc_id`: integer with the encounter id
+- `identifier_value`: integer with the encounter id
 - `period_start`: datetime with start of patient admission
 - `period_end`: datetime with end of patient admission
-- `status`: string with status of patient admission
 - `type2_display_original`: string with type of document
 - `created`: datetime of the creation time of the document
-- `docStatus`: string with status of the document
 - `content_attachment1_plain_data`: string with actual content of the document
 
 #### HiX Patient files
 - `pseudo_id`: string with pseudonomised patientid
 - `specialty_Organization_value` string containing specialization
-- `enc_id`: integer with the encounter id
+- `identifier_value`: integer with the encounter id
 - `period_start`: datetime with start of patient admission
 - `period_end`: datetime with end of patient admission
-- `status`: string with status of patient admission
-- `qn_id`: int with id of the questionnaire
-- `category_display`: string with the display name of the questionnaire
-- `name`: string with the name of the questionnaire
-- `qr_id`: int id of the questionnaire response
-- `authored`: datetime when the file was authored
-- `created`: datetime when the file was created
-- `qri_id`: int of the questionnaire response item
-- `item_text`: string of the item name
-- `item_answer_value_valueString`: string of the actual patient file
+- `NAAM`: string of the item name
+- `TEXT`: string of the actual patient file
+- `DATE`: datetime of the item creation time
 
 #### Metavision data
-- `end_id`: int with the encounter id
 - `pseudo_id`: string of pseudonomised patient id
+- `location_Location_value_original` : string of the department
+- `identifier_value`: int with the encounter id
 - `period_start` : datetime of the start of admission
 - `period_end` : datetime of the end of admission
-- `location_Location_value_original` : string of the department
-- `effectiveDateTime` : datetime of when the field was authored
-- `valueString` : string with actual data
 - `code_display_original` : string of the field display value
+- `valueString` : string with actual data
+- `effectiveDateTime` : datetime of when the field was authored
 
 ### Data Splits
 
@@ -131,20 +114,19 @@ The dataset was created to aid in the task of writing medical discharge document
 
 ### Source Data
 
-The sources of the data are electronic health record (EHR) systems, specifically HiX and Metavision. The data is being provided by the dataplatform maintained by the UMCU.
+The sources of the data are electronic health record (EHR) systems, specifically HiX and Metavision. The data is being provided by the dataplatform maintained by the UMC Utrecht.
 
 #### Initial Data Collection and Normalization
 
-The data is collected using the SQL-queries found in the [/data/sql/](/data/sql/) folder. It's filtered on the departments currently enrolled in this project (NICU, IC, Cardiology and Psychiatry) and for the evaluation the period of April - May 2024 is chosen. Furthermore the patient records that are used for the discharge documentation are written during their admission. 
+The data is collected using the SQL-queries found in the [/data/sql/](/data/sql/) folder. This can be done either though [/run/data_pipeline.py](/run/data_pipeline.py), or through running the query directly on the SQL server.
 
 #### Who are the source language producers?
 
 The data is human generated. Both patient files and discharge documents are written by physicians and physician-assistants. These documents were written in the EHR as part of their normal administration process. 
-The people represented in the data are patients from the UMCU that were admitted in one of the participating departments during the period April - May 2024.
 
 ### Annotations
 
-The dataset does not contain annotations
+The dataset does not contain annotations.
 
 
 ### Personal and Sensitive Information
@@ -156,13 +138,13 @@ However this process is not perfect and the data could still contain privacy-sen
 
 ### Social Impact of Dataset
 
-This dataset could positively impact society by minimizing both human-made errors and time spend writing discharge documents. This will enable health care providers to spend more of their time on actual care instead of administration. This is important since the pressure on the health care system will only increase with a population that will both live longer and consists of a bigger part of the total population.
+This dataset could positively impact society by minimizing both human-made errors and time spent writing discharge documents. This will enable health care providers to spend more of their time on actual care instead of administration. This is important since the pressure on the health care system will only increase with a population that will both live longer and consists of a bigger part of the total population.
 
 This risk of this dataset is that it contains very sensitive information and the quality of the patients files might not always be as good, for example containing spelling errors as well as many (not generally known) abbreviations.
 
 ### Discussion of Biases
 
-The dataset only contains data from patients at the UMCU. However since the intended use of this dataset is limited to the UMCU, this bias is not a problem and therefore no steps were taken to mitigate this bias.
+The dataset only contains data from patients at the UMC Utrecht. However since the intended use of this dataset is currently limited to the UMC Utrecht, this bias is not a problem and therefore no steps were taken to mitigate this bias.
 
 ### Other Known Limitations
 

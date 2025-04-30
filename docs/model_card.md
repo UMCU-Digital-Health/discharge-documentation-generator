@@ -4,7 +4,7 @@
 # Model Card for Discharge Documentation generator
 
 The model used for this project is GPT-4, trained by OpenAI and made available through Azure OpenAI.
-The model version is `1106-Preview`
+The model version is `turbo-2024-04-09`
 
 ## Model Details
 
@@ -59,11 +59,12 @@ Annotations are performed by students and checked by clinicians.
 
 ### Results
 
-TBA
+Results will follow in the form of a paper soon to be published. Link will be added here when available.
 
 #### Summary
 
-TBA
+Model performance is deemed acceptable, but not perfect. The model is able to generate a draft discharge letter that is a good starting point for the writing process. However, the model does not always include all relevant information in the summary, whereas it also inclused information not relevant in the summary. Additionally, it can also include hallucinations. Therefore, the AI generated letter should always be checked by a physician before sending it to the next treating physician.
+The exact performance of the model has been communicated to the clinicians who are using the application in practice.
 
 ## Environmental Impact [optional]
 
@@ -88,12 +89,14 @@ Since GPT-4 is a proprietary model running on Azure resources, it's not entirely
 
 [DOI](https://doi.org/10.48550/arXiv.2303.08774)
 
-## More Information [optional]
+## More Information 
+<!-- [optional] -->
 
 * (GPT-4 system card)[https://cdn.openai.com/papers/gpt-4-system-card.pdf]
 * (Azure OpenAI)[https://azure.microsoft.com/en-us/products/ai-services/openai-service]
 
-## Model Card Authors [optional]
+## Model Card Authors 
+<!-- [optional] -->
 
 
 * Laura Veerhoek

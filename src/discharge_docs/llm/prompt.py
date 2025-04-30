@@ -55,7 +55,7 @@ def load_all_templates_prompts_into_dict(
     ----------
     departments : list, optional
         The list of departments for which to load the template prompts.
-        Defaults to ["NICU", "IC", "CAR", "PSY"].
+        Defaults to ["NICU", "IC", "CAR"].
 
     Returns
     -------
@@ -63,7 +63,7 @@ def load_all_templates_prompts_into_dict(
         A dictionary containing the template prompts for each department.
     """
     if departments is None:
-        departments = ["NICU", "IC", "CAR", "PSY"]
+        departments = ["NICU", "IC", "CAR"]
     output_dict = {x: load_template_prompt(x) for x in departments}
     output_dict["DEMO"] = load_template_prompt("NICU")
     return output_dict
