@@ -101,9 +101,6 @@
     "src/discharge_docs/llm/prompts/NICU_template_prompt.txt": {
       "checksum": "581e5d53f9def87bd89045a9688a980c"
     },
-    "src/discharge_docs/llm/prompts/PSY_template_prompt.txt": {
-      "checksum": "9ad286d824b70e72b5ab988897105ce6"
-    },
     "src/discharge_docs/llm/prompts/system_prompt.txt": {
       "checksum": "b9103b28894965fe1d3bc2cb30eb7432"
     },
