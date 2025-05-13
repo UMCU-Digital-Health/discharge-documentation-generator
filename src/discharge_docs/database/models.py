@@ -195,3 +195,20 @@ class FeedbackDetails(Base):
     )
     feedback_question: Mapped[str] = mapped_column(String(100))
     feedback_answer: Mapped[str]
+
+
+class DashboardLogging(Base):
+    """The DashboardLogging table stores the e-mail address of the user who logged in
+    and which discharge letter was retrieved at what time."""
+
+    __tablename__ = "dashboardlogging"
+    __table_args__ = {"schema": "discharge_aiva"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    user_email: Mapped[str] = mapped_column(String(100))
+    discharge_letter_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey(GeneratedDoc.id)
+    )
+    timestamp: Mapped[datetime]
+
+    discharge_letter_relation: Mapped["GeneratedDoc"] = relationship(init=False)

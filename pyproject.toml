@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.3.5"
+version = "2.4.0"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
@@ -22,13 +22,13 @@ dependencies = [
     "deduce<=3.0.3",
     "matplotlib~=3.8",
     "plotly~=5.18",
-    "dash-bootstrap-components<2.0",
+    "dash-bootstrap-components>=2.0",
     "pandas~=2.1",
     "SQLAlchemy~=2.0",
     "tiktoken~=0.5",
     "tomli~=2.0",
     "pyarrow>=14.0",
-    "dash<3.0", # new Dash version has breaking changes
+    "dash>=3.0",
     "fastapi>=0.111.0",
     "pymssql>=2.3.0",
     "striprtf>=0.0.26",
@@ -51,6 +51,7 @@ dev = [
     "pytest-cov>=6.0.0",
     "ipywidgets>=8.1.5",
     "dvc>=3.59.1",
+    "alembic>=1.15.2",
 ]
 lint = ["ruff>=0.11.0"]
 

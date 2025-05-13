@@ -21,7 +21,7 @@ def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
         children=[
             dbc.NavItem(html.Div(id="logged_in_user", className="text-white me-5"))
             if view_user
-            else None,
+            else "",
         ],
         brand=[
             html.Img(
@@ -74,7 +74,7 @@ def get_patient_selection_div(add_discharge_selection: bool = False) -> dbc.Row:
             width=4,
         )
     else:
-        discharge_selection = None
+        discharge_selection = ""
 
     patient_selection_div = dbc.Row(
         [
@@ -186,7 +186,7 @@ def get_patient_data_card(
                     ]
                 )
                 if date_and_section_selection
-                else None,
+                else "",
                 dbc.CardBody(
                     [
                         html.H2("Patiëntendossier:"),
@@ -547,6 +547,65 @@ def get_demo_layout() -> html.Div:
                     dbc.Col(patient_file_card, width=6),
                     dbc.Col(gpt_card, width=6),
                 ]
+            ),
+        ]
+    )
+    return layout
+
+
+def get_external_dashboard_layout() -> html.Div:
+    """Create and return a layout for the external dashboard."""
+
+    layout = html.Div(
+        [
+            get_navbar(view_user=True, header_title="Ontslagbrief dashboard"),
+            dbc.Row(
+                dbc.Col(
+                    [
+                        dbc.Label("Selecteer een patiënt", class_name="my-2"),
+                        dcc.Dropdown(id="patient-select", searchable=True),
+                    ],
+                    width={"size": 6, "offset": 3},
+                ),
+            ),
+            dbc.Row(
+                dbc.Col(
+                    dbc.Table(
+                        [
+                            html.Thead(
+                                [html.Td("Status"), html.Td("Aantal dagen oud")]
+                            ),
+                            html.Tr([html.Td(id="success-td"), html.Td(id="days-td")]),
+                        ],
+                        bordered=True,
+                    ),
+                    width={"size": 2, "offset": 5},
+                    class_name="mt-2",
+                ),
+            ),
+            dbc.Row(
+                dbc.Col(
+                    get_discharge_doc_card(
+                        placeholder_text="Selecteer een patient...",
+                        id="doc-card",
+                        markdown_or_div="markdown",
+                    ),
+                    width={"size": 6, "offset": 3},
+                    class_name="mt-2",
+                )
+            ),
+            dbc.Row(
+                dbc.Col(
+                    dcc.Clipboard(
+                        id="copy-to-clipboard",
+                        style={
+                            "fontSize": 20,
+                            "display": "inline-block",
+                        },
+                        title="Copy to clipboard",
+                    ),
+                    width={"size": 6, "offset": 3},
+                )
             ),
         ]
     )

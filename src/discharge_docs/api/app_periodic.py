@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -21,8 +20,8 @@ from discharge_docs.api.api_helper import (
     remove_outdated_discharge_docs,
 )
 from discharge_docs.api.pydantic_models import MetavisionPatientFile
-from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
-from discharge_docs.database.connection import get_connection_string, get_engine
+from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE, setup_root_logger
+from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
     Base,
     Encounter,
@@ -50,23 +49,15 @@ from discharge_docs.processing.processing import (
     process_data,
 )
 
+setup_root_logger()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 load_dotenv()
 
 with open(Path(__file__).parents[3] / "pyproject.toml", "rb") as f:
     config = tomli.load(f)
 API_VERSION = config["project"]["version"]
 
-if not os.getenv("DB_USER"):
-    logger.warning("Using debug SQLite database...")
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-    execution_options = {"schema_translate_map": {"discharge_aiva": None}}
-else:
-    SQLALCHEMY_DATABASE_URL = get_connection_string()
-    execution_options = None
-
-engine = get_engine(SQLALCHEMY_DATABASE_URL, execution_options)
+engine = get_engine()
 Base.metadata.create_all(engine)
 
 header_scheme = APIKeyHeader(name="X-API-KEY")

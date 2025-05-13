@@ -316,7 +316,7 @@ def display_patient_file(
             returnable.append(row["content"])
             returnable.append(html.Br())
 
-        if search_bar_input is not None:
+        if search_bar_input is not None and search_bar_input != "":
             returnable = highlight(returnable, search_bar_input)
 
         return returnable
@@ -481,4 +481,4 @@ def show_prompts(n: int, is_open: bool) -> bool:
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8050)
+    app.run(debug=True, port=8050)

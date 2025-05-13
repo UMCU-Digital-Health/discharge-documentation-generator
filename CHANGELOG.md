@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2025-04-22
+
+### Added
+- Added a dashboard for retrieving discharge documentation when integration in EHR is not possible
+- Added an example json file to test the API
+
+### Changed
+- Update all requirements and specifically Dash to version 3
+- Fixed a bug in the evaluation dashboard: When deleting the input search string the dashboard no longer highlights everything
+- Fixed some typing errors in the layout functions
+- Changed seting up of logging and db connections in all tools to allow using local debug db
+
 ## [2.3.5] - 2025-05-06
 
 ### Changed
