@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class MetavisionPatientFile(BaseModel):
+class PatientFile(BaseModel):
     enc_id: int
     pseudo_id: str
     patient_id: str

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.4.0"
+version = "2.4.1"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },

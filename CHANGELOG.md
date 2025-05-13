@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2025-05-13
+
+### Changed
+- Updated deployment query to incorporate CAR for periodic generation
+- Changed name of pydantic model from MetavisionPatientFile to PatientFile, since it is now used for both Metavision and Cardiology
+
 ## [2.4.0] - 2025-04-22
 
 ### Added

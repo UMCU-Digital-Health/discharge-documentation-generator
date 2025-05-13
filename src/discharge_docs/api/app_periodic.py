@@ -19,7 +19,7 @@ from discharge_docs.api.api_helper import (
     process_retrieved_discharge_letters,
     remove_outdated_discharge_docs,
 )
-from discharge_docs.api.pydantic_models import MetavisionPatientFile
+from discharge_docs.api.pydantic_models import PatientFile
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE, setup_root_logger
 from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
@@ -76,7 +76,7 @@ def get_session():
 
 @app.post(ApiEndpoint.PROCESS_GENERATE_DOC.value)
 async def process_and_generate_discharge_docs(
-    data: list[MetavisionPatientFile],
+    data: list[PatientFile],
     db: Session = Depends(get_session),
     key: str = Depends(header_scheme),
 ) -> dict:

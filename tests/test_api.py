@@ -24,7 +24,7 @@ from discharge_docs.api.pydantic_models import (
     HixInput,
     HixOutput,
     LLMOutput,
-    MetavisionPatientFile,
+    PatientFile,
 )
 
 
@@ -76,7 +76,7 @@ async def test_api_wrong_api_key(monkeypatch):
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
         test_data = json.load(f)
 
-    test_data = [MetavisionPatientFile(**item) for item in test_data]
+    test_data = [PatientFile(**item) for item in test_data]
 
     with pytest.raises(HTTPException) as e:
         await process_and_generate_discharge_docs(test_data, FakeDB(), "wrong_api_key")
@@ -92,7 +92,7 @@ async def test_process_and_generate_discharge_docs(monkeypatch):
     with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
         test_data = json.load(f)
 
-    test_data = [MetavisionPatientFile(**item) for item in test_data]
+    test_data = [PatientFile(**item) for item in test_data]
 
     output = await process_and_generate_discharge_docs(test_data, FakeDB(), "test")
     assert output == {"message": "Success"}
