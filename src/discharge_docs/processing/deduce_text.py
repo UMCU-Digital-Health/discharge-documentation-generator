@@ -1,8 +1,11 @@
+import logging
 from pathlib import Path
 
 import pandas as pd
 from deduce import Deduce
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 tqdm.pandas()
 
@@ -33,4 +36,5 @@ def apply_deduce(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
             lambda x: deduce.deidentify(x, disabled={"dates"}).deidentified_text
         )
     )
+    logger.info(f"DEDUCE applied to column '{col_name}', for {len(df)} rows.")
     return df

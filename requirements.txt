@@ -27,9 +27,9 @@ certifi==2025.4.26
     #   httpcore
     #   httpx
     #   requests
-charset-normalizer==3.4.1
+charset-normalizer==3.4.2
     # via requests
-click==8.1.8
+click==8.2.1
     # via
     #   flask
     #   streamlit
@@ -45,7 +45,7 @@ dash==3.0.4
     # via
     #   dash-bootstrap-components
     #   discharge-docs
-dash-bootstrap-components==2.0.2
+dash-bootstrap-components==2.0.3
     # via discharge-docs
 deduce==3.0.3
     # via discharge-docs
@@ -57,7 +57,7 @@ fastapi==0.115.12
     # via discharge-docs
 flask==3.0.3
     # via dash
-fonttools==4.57.0
+fonttools==4.58.0
     # via matplotlib
 frozendict==2.4.6
     # via
@@ -67,7 +67,7 @@ gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
     # via streamlit
-greenlet==3.2.1 ; (python_full_version < '3.14' and platform_machine == 'AMD64') or (python_full_version < '3.14' and platform_machine == 'WIN32') or (python_full_version < '3.14' and platform_machine == 'aarch64') or (python_full_version < '3.14' and platform_machine == 'amd64') or (python_full_version < '3.14' and platform_machine == 'ppc64le') or (python_full_version < '3.14' and platform_machine == 'win32') or (python_full_version < '3.14' and platform_machine == 'x86_64')
+greenlet==3.2.2 ; (python_full_version < '3.14' and platform_machine == 'AMD64') or (python_full_version < '3.14' and platform_machine == 'WIN32') or (python_full_version < '3.14' and platform_machine == 'aarch64') or (python_full_version < '3.14' and platform_machine == 'amd64') or (python_full_version < '3.14' and platform_machine == 'ppc64le') or (python_full_version < '3.14' and platform_machine == 'win32') or (python_full_version < '3.14' and platform_machine == 'x86_64')
     # via sqlalchemy
 h11==0.16.0
     # via httpcore
@@ -89,9 +89,9 @@ jinja2==3.1.6
     #   altair
     #   flask
     #   pydeck
-jiter==0.9.0
+jiter==0.10.0
     # via openai
-jsonschema==4.23.0
+jsonschema==4.24.0
     # via altair
 jsonschema-specifications==2025.4.1
     # via jsonschema
@@ -103,11 +103,11 @@ markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
-matplotlib==3.10.1
+matplotlib==3.10.3
     # via discharge-docs
 mdurl==0.1.2
     # via markdown-it-py
-narwhals==1.37.0
+narwhals==1.41.0
     # via altair
 nest-asyncio==1.6.0
     # via dash
@@ -119,7 +119,7 @@ numpy==1.26.4
     #   pandas
     #   pydeck
     #   streamlit
-openai==1.76.0
+openai==1.82.0
     # via discharge-docs
 packaging==24.2
     # via
@@ -139,17 +139,17 @@ plotly==5.24.1
     # via
     #   dash
     #   discharge-docs
-protobuf==5.29.4
+protobuf==6.31.0
     # via streamlit
 pyarrow==20.0.0
     # via
     #   discharge-docs
     #   streamlit
-pydantic==2.11.3
+pydantic==2.11.5
     # via
     #   fastapi
     #   openai
-pydantic-core==2.33.1
+pydantic-core==2.33.2
     # via pydantic
 pydeck==0.9.1
     # via streamlit
@@ -186,11 +186,11 @@ retrying==1.3.4
     # via dash
 rich==14.0.0
     # via discharge-docs
-rpds-py==0.24.0
+rpds-py==0.25.1
     # via
     #   jsonschema
     #   referencing
-setuptools==80.0.0
+setuptools==80.9.0
     # via dash
 six==1.17.0
     # via
@@ -202,11 +202,11 @@ sniffio==1.3.1
     # via
     #   anyio
     #   openai
-sqlalchemy==2.0.40
+sqlalchemy==2.0.41
     # via discharge-docs
 starlette==0.46.2
     # via fastapi
-streamlit==1.44.1
+streamlit==1.45.1
     # via discharge-docs
 striprtf==0.0.29
     # via discharge-docs
@@ -222,7 +222,7 @@ tomli==2.2.1
     # via discharge-docs
 tomli-w==1.2.0
     # via discharge-docs
-tornado==6.4.2
+tornado==6.5.1
     # via streamlit
 tqdm==4.67.1
     # via openai
@@ -239,7 +239,7 @@ typing-extensions==4.13.2
     #   sqlalchemy
     #   streamlit
     #   typing-inspection
-typing-inspection==0.4.0
+typing-inspection==0.4.1
     # via pydantic
 tzdata==2025.2
     # via pandas
@@ -251,5 +251,5 @@ werkzeug==3.0.6
     # via
     #   dash
     #   flask
-zipp==3.21.0
+zipp==3.22.0
     # via importlib-metadata
