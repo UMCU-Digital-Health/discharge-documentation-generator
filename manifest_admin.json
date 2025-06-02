@@ -74,9 +74,6 @@
     "run/config/auth_example.toml": {
       "checksum": "0b12e286b05ff89b8ce360b2dc22710e"
     },
-    "run/config/auth_fase1.toml": {
-      "checksum": "3a16bb1b6b2cf25dd2c0662ff7023c26"
-    },
     "run/data_pipeline.py": {
       "checksum": "db985bd0d3f6b38587c25b5b6ff22aa9"
     },

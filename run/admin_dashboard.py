@@ -18,8 +18,6 @@ from discharge_docs.database.helper import (
 
 load_dotenv()
 
-SESSIONMAKER = sessionmaker(bind=get_engine())
-
 
 def kpi_page():
     """Page that contains basic KPIs for the discharge documentation project"""
@@ -317,12 +315,15 @@ if __name__ == "__main__":
     st.title("AIvA Discharge Documentation Generator - Admin Dashboard")
 
     with st.sidebar:
+        env = st.radio("Database omgeving", ["PROD", "ACC"], index=0)
         default_start_date = datetime.now() - timedelta(days=14)
         default_end_date = datetime.now()
         date_input = st.date_input(
             "Selecteer een tijdsperiode",
             (default_start_date, default_end_date),
         )
+
+    SESSIONMAKER = sessionmaker(bind=get_engine(env=env))
 
     nav = st.navigation(
         [st.Page(kpi_page, title="KPIs"), st.Page(monitoring_page, title="Monitoring")]

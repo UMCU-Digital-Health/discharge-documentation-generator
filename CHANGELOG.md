@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.3] - 2025-06-02
+
+### Added
+- Added functionality to the admin dashboard in order to switch between the acceptance and production database environments
+
 ## [2.4.2] - 2025-05-27
 
 ### Changed

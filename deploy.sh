@@ -8,9 +8,9 @@ done
 
 read -p "What do you want to deploy? Options: 'eval'/1 ; 'api-periodic-acc'/2 ; 'api-periodic-prod'/3  ; 'api-on-demand-acc'/4 ; 'api-on-demand-prod'/5 ; 'admin'/6 ; 'discharge-dashboard'/7 ;" APPLICATION
 
-read -p "Have you updated the environment variables in Posit Connect? (y/n)" ANSWER
+read -p "Here is a reminder to check whether the environment variables need to be updated in Posit Connect. Continue? (y/n)" ANSWER
 if [[ $ANSWER == 'n' || $ANSWER == "N" ]]; then
-    echo "Please don't forget to update the environment variables in Posit Connect"
+    echo "Please update the environment variables in Posit Connect"
     return
 fi
 

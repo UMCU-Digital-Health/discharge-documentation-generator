@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_connection_string(
+    env: str | None = None,
     db_user: str | None = None,
     db_passwd: str | None = None,
     db_host: str | None = None,
@@ -20,6 +21,9 @@ def get_connection_string(
 
     Parameters
     ----------
+    env : str, optional
+        The environment to use, by default "None", alternatively 'ACC' or 'PROD'
+        If None, the default environment configured in the environment variables is used
     db_user : str, optional
         Username of the service account, by default None
     db_passwd : str, optional
@@ -38,9 +42,15 @@ def get_connection_string(
     """
     db_user = db_user or os.getenv("DB_USER", "")
     db_passwd = db_passwd or os.getenv("DB_PASSWD")
-    db_host = db_host or os.getenv("DB_HOST")
     db_port = db_port or os.getenv("DB_PORT")
-    db_database = db_database or os.getenv("DB_DATABASE")
+    if env is None:
+        db_host = db_host or os.getenv("DB_HOST")
+        db_database = db_database or os.getenv("DB_DATABASE")
+    elif env == "ACC" or env == "PROD":
+        db_host = db_host or os.getenv(f"DB_HOST_{env}")
+        db_database = db_database or os.getenv(f"DB_DATABASE_{env}")
+    else:
+        raise ValueError(f"Invalid environment: {env}")
 
     if db_user == "":
         logger.warning("Using debug SQLite database...")
@@ -48,13 +58,15 @@ def get_connection_string(
             "schema_translate_map": {"discharge_aiva": None}
         }
 
+    logger.info(f"Connecting to {db_host} and database {db_database}")
+
     return (
         f"mssql+pymssql://{db_user}:{db_passwd}@{db_host}:{db_port}/{db_database}",
         None,
     )
 
 
-def get_engine(connection_str: str | None = None) -> Engine:
+def get_engine(connection_str: str | None = None, env: str | None = None) -> Engine:
     """Get the SQLAlchemy engine
 
     Optionally use the parameter to override the connection string
@@ -63,6 +75,10 @@ def get_engine(connection_str: str | None = None) -> Engine:
     ----------
     connection_str : str, optional
         The connection string to the database, by default None
+    env : str, optional
+        The environment to use, by default None, alternatively 'ACC' or 'PROD'
+        If None, the default environment configured in the environment variables is used
+        Only used when connection_str is None
 
     Returns
     -------
@@ -70,7 +86,7 @@ def get_engine(connection_str: str | None = None) -> Engine:
         The SQLAlchemy engine used for queries
     """
     if connection_str is None:
-        connection_str, execution_options = get_connection_string()
+        connection_str, execution_options = get_connection_string(env=env)
     else:
         connection_str, execution_options = connection_str, None
     return create_engine(
