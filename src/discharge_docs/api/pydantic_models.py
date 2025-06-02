@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+
+logger = logging.getLogger(__name__)
 
 
 class PatientFile(BaseModel):
@@ -9,9 +12,21 @@ class PatientFile(BaseModel):
     patient_id: str
     admissionDate: datetime
     department: str
-    date: datetime
+    date: datetime | None
     content: str
     description: str
+
+    @field_validator("date", mode="after")
+    @classmethod
+    def convert_date(cls, value: datetime | None) -> datetime | None:
+        """Convert dates with year 2999 to None.
+
+        This is a workaround for HiX dates that use dates with year 2999 as None
+        """
+        if value is not None and value.year == 2999:
+            logger.warning("Received date with year 2999, converting to None.")
+            return None
+        return value
 
 
 class LLMOutput(BaseModel):

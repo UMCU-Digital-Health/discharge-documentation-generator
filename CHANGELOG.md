@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.4] - 2025-06-02
+
+### Changed
+- Updated the PatientFile model to deal with None dates from HiX, using a default value of '2999-12-31' and added a unit test
+
 ## [2.4.3] - 2025-06-02
 
 ### Added

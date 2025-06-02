@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from discharge_docs.api.pydantic_models import PatientFile
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
     get_patient_file,
@@ -130,3 +131,27 @@ def test_apply_deduce():
         "This is some sensitive information: [PERSOON-1]",
         "",
     ]
+
+
+def test_process_dates():
+    """Test that the date conversion works correctly and that dates with year 2999 are
+    converted to None.
+    """
+    with open(Path(__file__).parent / "data" / "example_data.json", "r") as f:
+        test_data = json.load(f)
+
+    # Normal flow with valid dates
+    test_data_validated = [PatientFile(**item) for item in test_data]
+    test_data_after_validation = [item.model_dump() for item in test_data_validated]
+    test_data_df = pd.DataFrame.from_records(test_data_after_validation)
+
+    assert test_data_df["date"].dtype == "datetime64[ns, UTC]"
+
+    # Test with a None date from HiX, using a date with year 2999
+    test_data[1]["date"] = "2999-12-31T23:59:59Z"
+    test_data_validated = [PatientFile(**item) for item in test_data]
+    test_data_after_validation = [item.model_dump() for item in test_data_validated]
+    test_data_df = pd.DataFrame.from_records(test_data_after_validation)
+
+    assert test_data_df["date"].dtype == "datetime64[ns, UTC]"
+    assert pd.isna(test_data_df["date"].iloc[1])
