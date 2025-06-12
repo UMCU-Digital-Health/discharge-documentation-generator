@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.5] - 2025-06-06
+
+### Changed
+- Updated the message the users sees after calling the retrieve endpoint (bugfix)
+
 ## [2.4.4] - 2025-06-02
 
 ### Changed

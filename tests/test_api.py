@@ -170,7 +170,7 @@ async def test_api_retrieve_discharge_doc_no_results(monkeypatch):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("error", ["GeneralError", "JSONError", "LengthError"])
-@pytest.mark.parametrize("days", [2, 8])
+@pytest.mark.parametrize("days", [0, 1, 2, 8])
 async def test_api_retrieve_discharge_doc_older_letter(monkeypatch, error, days):
     """Test retrieving older discharge docs as newer has an error."""
     mock_data = [
@@ -213,15 +213,19 @@ async def test_api_retrieve_discharge_doc_older_letter(monkeypatch, error, days)
     assert isinstance(output, str)
     assert "Older But Successful Discharge Letter" in output
     assert "No discharge letter due to error" not in output
-    if error == "LengthError":
+    if error == "LengthError" and days > 0:
         assert (
             "Dit komt doordat het patientendossier te lang is geworden voor het AI "
             "model." in output
         )
-    if days == 2:
+    if days == 0:
+        assert "NB" not in output
+    elif days == 1:
+        assert "NB Let erop dat deze AI-brief gisteren is gegenereerd." in output
+    elif days == 2:
         assert (
-            "NB Let erop dat deze AI-brief niet afgelopen nacht is gegenereerd, maar"
-            f" {days} dagen geleden." in output
+            "NB Let erop dat deze AI-brief niet vandaag of gisteren is gegenereerd, "
+            f"maar {days} dagen geleden." in output
         )
     elif days == 8:
         assert (

@@ -164,10 +164,15 @@ def process_retrieved_discharge_letters(
                 f"gegenereerd, namelijk {nr_days_old} dagen geleden.\n"
             )
         else:
-            message_parts.append(
-                "NB Let erop dat deze AI-brief niet afgelopen nacht is "
-                f"gegenereerd, maar {nr_days_old} dagen geleden.\n"
-            )
+            if nr_days_old == 1:
+                message_parts.append(
+                    "NB Let erop dat deze AI-brief gisteren is gegenereerd.\n"
+                )
+            else:
+                message_parts.append(
+                    "NB Let erop dat deze AI-brief niet vandaag of gisteren is "
+                    f"gegenereerd, maar {nr_days_old} dagen geleden.\n"
+                )
         if result_df.iloc[0]["success_ind"] == "LengthError":
             message_parts.append(
                 "Dit komt doordat het patientendossier te lang is geworden voor het "
