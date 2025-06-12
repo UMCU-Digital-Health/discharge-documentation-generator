@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.6] - 2025-06-12
+
+### Changed
+- Changed the landingpage of the external dashboard UI to not select a patient by default
+- Added a reminder to update NiFi when deploying
+- 
 ## [2.4.5] - 2025-06-06
 
 ### Changed

@@ -563,7 +563,11 @@ def get_external_dashboard_layout() -> html.Div:
                 dbc.Col(
                     [
                         dbc.Label("Selecteer een patiënt", class_name="my-2"),
-                        dcc.Dropdown(id="patient-select", searchable=True),
+                        dcc.Dropdown(
+                            id="patient-select",
+                            searchable=True,
+                            placeholder="Vul hier het patiëntnummer in...",
+                        ),
                     ],
                     width={"size": 6, "offset": 3},
                 ),

@@ -14,6 +14,12 @@ if [[ $ANSWER == 'n' || $ANSWER == "N" ]]; then
     return
 fi
 
+read -p "Here is a reminder to check whether you need to update the NiFi flow. Continue? (y/n)" ANSWER
+if [[ $ANSWER == 'n' || $ANSWER == "N" ]]; then
+    echo "Please update the NiFi flow"
+    return
+fi
+
 
 APPLICATION=${APPLICATION:-N}
 if [[ $APPLICATION == 'eval' || $APPLICATION == "1" ]]; then

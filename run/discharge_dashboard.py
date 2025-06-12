@@ -80,13 +80,12 @@ def load_patient_selection_dropdown(_) -> tuple[Sequence | None, str | None, lis
             )
         )
         result = session.execute(query).scalars().all()
-        first_patient = result[0] if result else None
 
     if not result:
         logger.warning("No patients found when loading the patient selection dropdown.")
 
     logger.info(f"Loaded dropdown with {len(result)} patients.")
-    return result, first_patient, [f"Ingelogd als: {user}"]
+    return result, None, [f"Ingelogd als: {user}"]
 
 
 @app.callback(
@@ -95,7 +94,7 @@ def load_patient_selection_dropdown(_) -> tuple[Sequence | None, str | None, lis
     Output("days-td", "children"),
     Input("patient-select", "value"),
 )
-def load_discharge_doc(patient_admission: str) -> tuple[str, str, str]:
+def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
     """
     Load the discharge document and related information for the selected patient
     admission.
@@ -113,6 +112,13 @@ def load_discharge_doc(patient_admission: str) -> tuple[str, str, str]:
         - The status of the document retrieval ("OK" or "Fout").
         - The number of days since the document was generated.
     """
+    if not patient_admission:
+        logger.warning("No patient admission selected.")
+        return (
+            "Selecteer een patiënt om de AI-concept ontslagbrief te bekijken.",
+            "OK",
+            "",
+        )
 
     with SESSIONMAKER() as session:
         query = (
@@ -188,4 +194,4 @@ def copy_to_clipboard(n_clicks: int, content: str | None) -> str:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    app.run(debug=False, port=8050)
