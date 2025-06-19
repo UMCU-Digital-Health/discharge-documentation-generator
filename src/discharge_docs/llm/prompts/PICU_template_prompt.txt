@@ -1,0 +1,38 @@
+De categorieën zijn: 
+- Respiratie: Benoem vormen van ondersteuning en dagen waarop de ondersteuning gemeld is. Benoem of er coffeine is gestart. Benoem of er surfactant is gegeven. 
+- Circulatie: Benoem of er lage bloeddruk, of pulmonale hypertensie (PPHN), persisterende ductus arteriosus, of aangeboren hartafwijkingen waren. Benoem ook of voor een van deze redenen ondersteuning heeft plaatsgevonden.  
+- Neurologie: Benoem een samenvatting van de cerebrale echo's.
+- Infectie: Benoem of er verdenking is geweest op infectie, op basis waarvan en of behandeld met antibiotica, zo ja welke. Benoem ook de dagen waarop deze antibiotica gemeld is.
+- VB/Nierfunctie: Benoen de vochtbalans (VB) niet in getallen, maar enkel de omschreven bijzonderheden. 
+- Milieu interieure: Benoem of er hyperbilirubinemie, fototherapie, hypoglycemie, bloedtransfusie, elektrolytestoornis was.
+- Gastro-intestinaal: Benoem of er sondevoeding plaats heeft gevonden. 
+- Psych/SOC: Beschrijf wat er met de ouders besproken is, of maatschapelijk werk betrokken was en of er zorgen zijn om de patiënt naar huis te sturen. 
+- Extr/huid: Benoem alles omtrend de huid en ledematen. 
+- Ontslag: Benoem alle bijzonderheden rondom ontslag. Denk hierbij aan Baby@Home, ontslag naar een ander ziekenhuis, of poliklinische afspraken. 
+- Overig
+ 
+Benoem voor elke categorie de volgende zaken:
+- Wanneer er een complicatie plaatsvond
+- Wat deze complicatie was
+- Hoe deze complicatie behandeld is
+- Hoe lang de patient er nog last van heeft gehad
+- De huidige status van de complicatie
+ 
+Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie. 
+Lees eerst de complete status voordat je een samenvatting maakt. Dit is uiterst belangrijk. Gebruik geen individuele items uit de verschillende teksten. Wees beschrijvend en maak in elke categorie een samenvatting van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de samenvatting.
+
+
+
+# format
+Het format wordt dan:
+{"Respiratie": "Tekstuele samenvatting van Respiratie zoals hierboven omschreven",
+"Circulatie": "Tekstuele samenvatting van Circulatie zoals hierboven omschreven",
+"Neurologie": "Tekstuele samenvatting van Neurologie zoals hierboven omschreven",
+"Infectie": "Tekstuele samenvatting van Infectie zoals hierboven omschreven",
+"VB/Nierfunctie": "Tekstuele samenvatting van VB/Nierfunctie zoals hierboven omschreven",
+"Milieu interieure": "Tekstuele samenvatting van Milieu interieure zoals hierboven omschreven",
+"Gastro-intestinaal": "Tekstuele samenvatting van Gastro-intestinaal zoals hierboven omschreven",
+"Psych/SOC": "Tekstuele samenvatting van Psych/SOC zoals hierboven omschreven",
+"Extr/huid": "Tekstuele samenvatting van Extr/huid zoals hierboven omschreven",
+"Ontslag": "Tekstuele samenvatting van Ontslag zoals hierboven omschreven",
+"Overig": "Tekstuele samenvatting van Overig zoals hierboven omschreven"}.

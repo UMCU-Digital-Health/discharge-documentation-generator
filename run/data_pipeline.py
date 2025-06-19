@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine.url import URL
 from striprtf.striprtf import rtf_to_text
 
+from discharge_docs.config import setup_root_logger
 from discharge_docs.dashboard.helper import load_enc_ids
 from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.processing.bulk_generation import bulk_generate
@@ -22,12 +23,7 @@ from discharge_docs.processing.processing import (
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
-# Suppress DEBUG logs from OpenAI SDK, httpcore, and httpx
-logging.getLogger("openai").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # config
 DATA_SOURCE_HIX = False
@@ -44,9 +40,9 @@ PROCESSING = True  # set only to False when processing has already been done
 # and enc_ids.toml is filled with the desired encounter ids
 COMBINE_WITH_PREVIOUS_DATA = False
 
-BULK_GENERATE_LETTERS = False
+BULK_GENERATE_LETTERS = True
 MOVE_OLD_BULK_TO_BACKUP = False
-DEPARTMENTS = ["DEMO"]  # ["IC", "NICU", "CAR", "DEMO"]
+DEPARTMENTS = ["DEMO"]  # ["IC", "NICU", "CAR", "PICU", "DEMO"]
 
 
 def run_export(
@@ -244,7 +240,14 @@ def run_bulk_generation(
 
 
 if __name__ == "__main__":
-    query_data_foler = Path(__file__).parents[1] / "data" / "sql"
+    # Suppress DEBUG logs from OpenAI SDK, httpcore, and httpx
+    logging.getLogger("openai").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+
+    setup_root_logger()
+
+    query_data_folder = Path(__file__).parents[1] / "data" / "sql"
     raw_data_folder = Path(
         "/mapr/administratielast/administratielast_datamanager/ontslagdocumentatie/export"
     )
@@ -252,7 +255,7 @@ if __name__ == "__main__":
 
     if EXPORT_DATAPLATFORM:
         run_export(
-            DATA_SOURCE_HIX, DATA_SOURCE_METAVISION, query_data_foler, raw_data_folder
+            DATA_SOURCE_HIX, DATA_SOURCE_METAVISION, query_data_folder, raw_data_folder
         )
 
     if PROCESSING:

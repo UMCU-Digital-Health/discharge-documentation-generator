@@ -28,7 +28,9 @@ WHERE
     AND enc.[serviceProvider_Organization_value] IN ('W', 'U')
     AND enc.[location_Location_value_original] IN (
         'Neonatologie',
-        'Intensive Care Centrum'
+        'Intensive Care Centrum',
+        'Intensive Care Kinderen',
+        'High Care Kinderen'
     )
     AND obs.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionVrijeTekstMeting'
     AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag');

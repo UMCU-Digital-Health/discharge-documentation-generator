@@ -63,7 +63,7 @@ def load_all_templates_prompts_into_dict(
         A dictionary containing the template prompts for each department.
     """
     if departments is None:
-        departments = ["NICU", "IC", "CAR"]
+        departments = ["NICU", "IC", "CAR", "PICU"]
     output_dict = {x: load_template_prompt(x) for x in departments}
     output_dict["DEMO"] = load_template_prompt("NICU")
     return output_dict

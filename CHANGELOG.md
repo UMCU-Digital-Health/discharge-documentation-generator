@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2025-06-18
+
+### Changed
+- Added PICU to the departments in the batch processing pipeline
+- Reran the pipeline and updated the data in the evaluation dashboard
+
+### Added
+- Added an initial prompt for the PICU department, which is currently a copy of NICU
 ## [2.4.8] - 2025-06-19
 
 ### Changed

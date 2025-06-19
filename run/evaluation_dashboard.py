@@ -101,7 +101,7 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
     user, authorization_group = get_authorization(
         flask.request,
         authorization_dict,
-        development_authorizations=["NICU", "IC", "CAR", "PSY", "DEMO"],
+        development_authorizations=["NICU", "IC", "CAR", "PICU", "DEMO"],
     )
 
     authorized_patients, first_patient = get_authorized_patients(

@@ -113,6 +113,8 @@ def process_data(
             "Intensive Care Centrum": "IC",
             "Neonatologie": "NICU",
             "CAR": "CAR",
+            "High Care Kinderen": "PICU",
+            "Intensive Care Kinderen": "PICU",
         }
     )
 
@@ -224,6 +226,8 @@ def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
         )
     elif department == "CAR":
         df = df[df["description"].isin(cardio_general.keys())].replace(cardio_general)
+    elif department == "PICU":
+        return df  # TODO: Implement PICU-specific processing logic here in the future
     else:
         raise ValueError(f"Department {department} not recognized")
     return df
