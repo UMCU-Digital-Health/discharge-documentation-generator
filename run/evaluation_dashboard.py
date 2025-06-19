@@ -104,11 +104,10 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         development_authorizations=["NICU", "IC", "CAR", "PSY", "DEMO"],
     )
 
-    authorized_patients, fist_patient = get_authorized_patients(
+    authorized_patients, first_patient = get_authorized_patients(
         authorization_group, values_list
     )
-
-    return authorized_patients, fist_patient, [f"Ingelogd als: {user}"]
+    return authorized_patients, first_patient, [f"Ingelogd als: {user}"]
 
 
 @app.callback(

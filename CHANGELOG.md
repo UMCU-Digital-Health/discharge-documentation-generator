@@ -7,12 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.7] - 2025-06-17
+
+### Changed
+- changed the logic in data_pipeline to run only the demo data patient
+- fixed a typo in dashboard/helper.py
+
+### Added
+- added the ENV environment variable in .env example as it is used in the evaluation dashboard for authentication 
+
 ## [2.4.6] - 2025-06-12
 
 ### Changed
 - Changed the landingpage of the external dashboard UI to not select a patient by default
 - Added a reminder to update NiFi when deploying
-- 
+  
 ## [2.4.5] - 2025-06-06
 
 ### Changed

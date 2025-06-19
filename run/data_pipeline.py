@@ -30,22 +30,23 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # config
-DATA_SOURCE_HIX = True
+DATA_SOURCE_HIX = False
 DATA_SOURCE_METAVISION = False
+DATA_SOURCE_DEMO = True
 
-EXPORT_DATAPLATFORM = True  # only set to False when data export has already been done
+EXPORT_DATAPLATFORM = False  # only set to False when data export has already been done
 START_DATE = "2025-02-01"
 END_DATE = "2025-02-03"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWD = os.getenv("DB_PASSWD")
 
-PROCESSING = False  # set only to False when processing has already been done
+PROCESSING = True  # set only to False when processing has already been done
+# and enc_ids.toml is filled with the desired encounter ids
 COMBINE_WITH_PREVIOUS_DATA = False
-ADD_DEMO_PATIENT = True
 
 BULK_GENERATE_LETTERS = False
 MOVE_OLD_BULK_TO_BACKUP = False
-DEPARTMENTS = ["CAR"]  # ["IC", "NICU", "CAR", "DEMO"]
+DEPARTMENTS = ["DEMO"]  # ["IC", "NICU", "CAR", "DEMO"]
 
 
 def run_export(
@@ -119,6 +120,7 @@ def run_export(
 def run_processing(
     data_source_hix: bool,
     data_source_metavision: bool,
+    data_source_demo: bool,
     raw_data_folder: Path,
     processed_data_folder: Path,
     combine_with_previous_data: bool,
@@ -128,7 +130,7 @@ def run_processing(
     to indicate whether to process data from HiX and Metavision respectively. If the
     combine_with_previous_data is set to True, the new data is combined with the
     previously processed data"""
-    if not data_source_hix and not data_source_metavision:
+    if not data_source_hix and not data_source_metavision and not data_source_demo:
         logger.warning("No data sources selected for processing.")
         return
 
@@ -163,21 +165,25 @@ def run_processing(
             "There is an enc_id overlapping in both HiX and Metavision data."
         )
 
-    data = (
-        pd.concat(data_frames, axis=0)
-        .reset_index(drop=True)
-        .pipe(apply_deduce, "content")
-        .drop(columns="patient_id")
-        .pipe(process_data, remove_encs_no_docs=True)
-    )
+    if data_frames:
+        data = (
+            pd.concat(data_frames, axis=0)
+            .reset_index(drop=True)
+            .pipe(apply_deduce, "content")
+            .drop(columns="patient_id")
+            .pipe(process_data, remove_encs_no_docs=True)
+        )
+    else:
+        # Initialize empty dataframe with expected structure if no main data sources
+        data = pd.DataFrame()
 
-    if ADD_DEMO_PATIENT:
+    if data_source_demo:
         demo_patient = pd.read_csv(
             Path(__file__).parents[1] / "data" / "examples" / "DEMO_patient_1.csv",
             sep=";",
             parse_dates=["admissionDate", "dischargeDate", "date"],
         )
-        if demo_patient["enc_id"].isin(data["enc_id"]).any():
+        if not data.empty and demo_patient["enc_id"].isin(data["enc_id"]).any():
             logger.warning("Demo patient enc_id already in data.")
         data = pd.concat([demo_patient, data], axis=0).reset_index(drop=True)
 
@@ -253,6 +259,7 @@ if __name__ == "__main__":
         run_processing(
             DATA_SOURCE_HIX,
             DATA_SOURCE_METAVISION,
+            DATA_SOURCE_DEMO,
             raw_data_folder,
             processed_data_folder,
             COMBINE_WITH_PREVIOUS_DATA,
