@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.8] - 2025-06-19
+
+### Changed
+- Updated the admin dashboard to also show results from the car pilot and make it possible to select department in the monitoring page
+
 ## [2.4.7] - 2025-06-17
 
 ### Changed
