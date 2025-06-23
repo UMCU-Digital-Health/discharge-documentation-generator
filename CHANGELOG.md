@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2025-06-23
+
+### Changed
+- Updated the config, so the evaluation dashboard can use a separate model deployment from prod/acc/bulk
+- Updated the config to use a pydantic model for authentication config parsing
+- Moved from the tomli package to the tomllib package, since tomllib is now part of the Python standard library
+- Fixed typo in evaluation dashboard
+
+### Fixed
+- Fixed a bug in the evaluation dashboard where going to a different patient would also trigger a new generation of the discharge letter
+
 ## [2.5.0] - 2025-06-18
 
 ### Changed

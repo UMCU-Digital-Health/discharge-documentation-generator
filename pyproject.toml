@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.5.0"
+version = "2.5.1"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
@@ -26,7 +26,6 @@ dependencies = [
     "pandas~=2.1",
     "SQLAlchemy~=2.0",
     "tiktoken~=0.5",
-    "tomli~=2.0",
     "pyarrow>=14.0",
     "dash>=3.0",
     "fastapi>=0.111.0",
@@ -36,6 +35,7 @@ dependencies = [
     "rich>=13.9.4",
     "altair>=5.5.0",
     "streamlit>=1.44.0",
+    "email-validator>=2.2.0",
 ]
 
 [dependency-groups]

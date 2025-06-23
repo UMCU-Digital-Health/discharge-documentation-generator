@@ -194,4 +194,4 @@ def copy_to_clipboard(n_clicks: int, content: str | None) -> str:
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=8050)
+    app.run(debug=True, port=8050)

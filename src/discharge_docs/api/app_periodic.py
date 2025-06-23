@@ -1,10 +1,8 @@
 import json
 import logging
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
-import tomli
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
@@ -20,7 +18,12 @@ from discharge_docs.api.api_helper import (
     remove_outdated_discharge_docs,
 )
 from discharge_docs.api.pydantic_models import PatientFile
-from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE, setup_root_logger
+from discharge_docs.config import (
+    DEPLOYMENT_NAME_ENV,
+    TEMPERATURE,
+    get_current_version,
+    setup_root_logger,
+)
 from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
     Base,
@@ -53,9 +56,7 @@ setup_root_logger()
 logger = logging.getLogger(__name__)
 load_dotenv()
 
-with open(Path(__file__).parents[3] / "pyproject.toml", "rb") as f:
-    config = tomli.load(f)
-API_VERSION = config["project"]["version"]
+API_VERSION = get_current_version()
 
 engine = get_engine()
 Base.metadata.create_all(engine)

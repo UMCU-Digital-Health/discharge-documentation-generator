@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from MockAzureOpenAIEnv import MockAzureOpenAI
 
-from discharge_docs.config import DEPLOYMENT_NAME_ACC, TEMPERATURE
+from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
 from discharge_docs.llm.prompt import (
     load_all_templates_prompts_into_dict,
     load_prompts,
@@ -54,7 +54,7 @@ def test_load_template_prompt():
 def test_prompt_builder():
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
-        deployment_name=DEPLOYMENT_NAME_ACC,
+        deployment_name=DEPLOYMENT_NAME_ENV,
         client=MockAzureOpenAI(),
     )
 

@@ -6,13 +6,17 @@ import dash_bootstrap_components as dbc
 import flask
 import numpy as np
 import pandas as pd
-import tomli
 from dash import ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
 
-from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
+from discharge_docs.config import (
+    DEPLOYMENT_NAME_ENV,
+    TEMPERATURE,
+    load_auth_config,
+    setup_root_logger,
+)
 from discharge_docs.dashboard.helper import (
     get_authorization,
     get_authorized_patients,
@@ -37,7 +41,7 @@ from discharge_docs.processing.processing import (
 )
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+setup_root_logger()
 
 load_dotenv()
 
@@ -46,8 +50,7 @@ client = initialise_azure_connection()
 logger.info(f"Running with deployment name: {DEPLOYMENT_NAME_ENV}")
 
 # Authorization config
-with open(Path(__file__).parent / "config" / "auth.toml", "rb") as f:
-    authorization_dict = tomli.load(f)
+authorization_config = load_auth_config()
 
 # load data
 data_folder = Path(__file__).parents[1] / "data" / "processed"
@@ -63,7 +66,7 @@ stored_bulk_gpt_old = pd.read_parquet(
 enc_ids_dict = load_enc_ids()
 values_list = get_patients_values(data, enc_ids_dict)
 
-logger.info("data loaded")
+logger.info("Data loaded...")
 
 # load prompts
 user_prompt, system_prompt = load_prompts()
@@ -100,7 +103,7 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
 
     user, authorization_group = get_authorization(
         flask.request,
-        authorization_dict,
+        authorization_config,
         development_authorizations=["NICU", "IC", "CAR", "PICU", "DEMO"],
     )
 
@@ -111,13 +114,12 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
 
 
 @app.callback(
-    [Output("date_dropdown", "options"), Output("date_dropdown", "value")],
-    [
-        Input("patient_admission_dropdown", "value"),
-        Input("previous_date_button", "n_clicks"),
-        Input("next_date_button", "n_clicks"),
-    ],
-    [State("date_dropdown", "value")],
+    Output("date_dropdown", "options"),
+    Output("date_dropdown", "value"),
+    Input("patient_admission_dropdown", "value"),
+    Input("previous_date_button", "n_clicks"),
+    Input("next_date_button", "n_clicks"),
+    State("date_dropdown", "value"),
 )
 def update_date_dropdown(
     selected_patient_admission: str,
@@ -176,7 +178,7 @@ def update_date_dropdown(
 
 @app.callback(
     Output("description_dropdown", "options"),
-    [Input("patient_admission_dropdown", "value")],
+    Input("patient_admission_dropdown", "value"),
 )
 def update_description_dropdown(selected_patient_admission: str) -> np.ndarray:
     """
@@ -203,11 +205,9 @@ def update_description_dropdown(selected_patient_admission: str) -> np.ndarray:
 
 @app.callback(
     Output("description_dropdown", "value"),
-    [
-        Input("select_all_button", "n_clicks"),
-        Input("deselect_all_button", "n_clicks"),
-    ],
-    [State("description_dropdown", "options")],
+    Input("select_all_button", "n_clicks"),
+    Input("deselect_all_button", "n_clicks"),
+    State("description_dropdown", "options"),
 )
 def handle_select_button_clicks(
     select_all_clicks: int, deselect_all_clicks: int, options: list[str]
@@ -242,14 +242,12 @@ def handle_select_button_clicks(
 
 @app.callback(
     Output("output_value", "children"),
-    [
-        Input("patient_admission_dropdown", "value"),
-        Input("date_dropdown", "value"),
-        Input("date_checklist", "value"),
-        Input("description_dropdown", "value"),
-        Input("sorting_dropdown", "value"),
-        Input("search_bar", "value"),
-    ],
+    Input("patient_admission_dropdown", "value"),
+    Input("date_dropdown", "value"),
+    Input("date_checklist", "value"),
+    Input("description_dropdown", "value"),
+    Input("sorting_dropdown", "value"),
+    Input("search_bar", "value"),
 )
 def display_patient_file(
     selected_patient_admission: str,
@@ -323,9 +321,7 @@ def display_patient_file(
 
 @app.callback(
     Output("output_original_discharge_documentation", "children"),
-    [
-        Input("patient_admission_dropdown", "value"),
-    ],
+    Input("patient_admission_dropdown", "value"),
 )
 def display_discharge_documentation(selected_patient_admission: str) -> str:
     """
@@ -352,9 +348,7 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
 @app.callback(
     Output("output_stored_generated_discharge_documentation_old", "children"),
     Output("output_stored_generated_discharge_documentation_new", "children"),
-    [
-        Input("patient_admission_dropdown", "value"),
-    ],
+    Input("patient_admission_dropdown", "value"),
 )
 def display_stored_discharge_documentation(
     selected_patient_admission: str,
@@ -395,7 +389,7 @@ def display_stored_discharge_documentation(
 @app.callback(
     Output("template_prompt_space", "children"),
     Output("template_prompt_field", "value"),
-    [Input("patient_admission_dropdown", "value")],
+    Input("patient_admission_dropdown", "value"),
 )
 def update_template_prompt(selected_patient_admission: str) -> tuple[list[str], str]:
     if selected_patient_admission is None:
@@ -434,6 +428,10 @@ def display_generated_discharge_doc(
     if selected_patient_admission is None or n_clicks is None:
         return [""]
 
+    # If this is triggered by selecting another patient, just return empty
+    if ctx.triggered_id == "patient_admission_dropdown":
+        return [""]
+
     patient_data = get_data_from_patient_admission(selected_patient_admission, data)
 
     prompt_builder = PromptBuilder(
@@ -441,6 +439,7 @@ def display_generated_discharge_doc(
     )
     user_prompt, system_prompt = load_prompts()
     patient_file_string, _ = get_patient_file(patient_data)
+    logger.info("Generating discharge documentation...")
     discharge_letter = prompt_builder.generate_discharge_doc(
         patient_file=patient_file_string,
         system_prompt=system_prompt,

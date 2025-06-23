@@ -2,10 +2,8 @@ import json
 import logging
 import os
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
-import tomli
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security.api_key import APIKeyHeader
@@ -18,7 +16,12 @@ from discharge_docs.api.pydantic_models import (
     HixOutput,
     LLMOutput,
 )
-from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE, setup_root_logger
+from discharge_docs.config import (
+    DEPLOYMENT_NAME_ENV,
+    TEMPERATURE,
+    get_current_version,
+    setup_root_logger,
+)
 from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
     Base,
@@ -50,9 +53,7 @@ setup_root_logger()
 
 load_dotenv()
 
-with open(Path(__file__).parents[3] / "pyproject.toml", "rb") as f:
-    config = tomli.load(f)
-API_VERSION = config["project"]["version"]
+API_VERSION = get_current_version()
 
 engine = get_engine()
 Base.metadata.create_all(engine)

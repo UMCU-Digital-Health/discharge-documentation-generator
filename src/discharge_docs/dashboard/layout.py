@@ -366,7 +366,7 @@ def get_GPT_card() -> dbc.Card:
                                     style={"height": "250px"},
                                 ),
                                 dbc.Button(
-                                    "Update en genereer onstlagbrief",
+                                    "Update en genereer ontslagbrief",
                                     id="update_discharge_button",
                                     color="primary",
                                     class_name="mt-2 me-2",

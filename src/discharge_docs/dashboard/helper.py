@@ -2,13 +2,15 @@ import json
 import logging
 import os
 import re
+import tomllib
 from pathlib import Path
 from typing import Union
 
 import pandas as pd
-import tomli
 from dash import html
 from flask import Request
+
+from discharge_docs.config import AuthConfig
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +107,7 @@ def load_enc_ids() -> dict:
         Path(__file__).parent / "enc_ids.toml",
         "rb",
     ) as f:
-        data = tomli.load(f)
+        data = tomllib.load(f)
         return {key: value["ids"] for key, value in data.items()}
 
 
@@ -135,7 +137,7 @@ def get_user(req: Request) -> str:
 
 
 def get_authorization(
-    req: Request, authorization_dict: dict, development_authorizations: list
+    req: Request, authorization_config: AuthConfig, development_authorizations: list
 ) -> tuple[str, list[str]]:
     """
     Get the RStudio Connect credentials from the request headers.
@@ -146,9 +148,9 @@ def get_authorization(
     ----------
     req : Request
         The request object.
-    authorization_dict : Dict
-        A dictionary containing the user's email and their authorization groups.
-        see auth_example.toml for an example.
+    authorization_config : AuthConfig
+        The configuration object containing user authorization information.
+        See auth_example.toml for an example.
     development_authorizations : List
         A list of authorization groups for development mode. Development mode is
         activated if ENC is set to "development".
@@ -165,9 +167,9 @@ def get_authorization(
         return "Development user", development_authorizations
     else:
         user = get_user(req)
-        for value in authorization_dict["users"].values():
-            if value["email"] == user:
-                return user, value["groups"]
+        for value in authorization_config.users.values():
+            if value.email == user:
+                return user, value.groups
 
         logger.warning(f"No authorization groups found for user {user}")
         return "", []

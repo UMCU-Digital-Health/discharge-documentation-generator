@@ -146,7 +146,7 @@
     "src/discharge_docs/llm/connection.py": {
       "checksum": "62d431f055119cbbcdfb98845990f61d"
     },
-    "src/discharge_docs/llm/deployment_config.toml": {
+    "run/config/deployment_config.toml": {
       "checksum": "060c6f184d106e402a579edae656e12e"
     },
     "src/discharge_docs/llm/helper.py": {
