@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.2] - 2025-06-25
+
+### Changed
+- Added useful information to the root endpoint of the API
+- Updated dependencies
+
+### Fixed
+- Fixed a bug in the query that only retrieved admissions older than 45 hours (because it cast the datetime to a date) instead of 24 hours
+
 ## [2.5.1] - 2025-06-23
 
 ### Changed

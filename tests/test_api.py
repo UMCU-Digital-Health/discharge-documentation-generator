@@ -64,7 +64,14 @@ class FakeDB(Session):
 async def test_root():
     """Test the root endpoint in the API."""
     response = await app_periodic.root()
-    assert response == {"message": "Hello World"}
+    assert isinstance(response, dict)
+    assert response.keys() == {
+        "message",
+        "current_time",
+        "llm_deployment",
+        "llm_temperature",
+        "version",
+    }
 
 
 # Test the process_and_generate_discharge_docs endpoint
@@ -315,7 +322,14 @@ async def test_remove_all_discharge_docs(monkeypatch):
 async def test_root_on_demand():
     """Test the root endpoint in the API."""
     response = await app_on_demand.root()
-    assert response == {"message": "Hello World"}
+    assert isinstance(response, dict)
+    assert response.keys() == {
+        "message",
+        "current_time",
+        "llm_deployment",
+        "llm_temperature",
+        "version",
+    }
 
 
 # Test process hix data

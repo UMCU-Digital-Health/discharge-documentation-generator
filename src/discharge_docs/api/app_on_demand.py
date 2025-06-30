@@ -246,4 +246,11 @@ async def generate_hix_discharge_docs(
 @app.get("/")
 @app.post("/")
 async def root():
-    return {"message": "Hello World"}
+    """Root endpoint for the Discharge Docs on-demand API."""
+    return {
+        "message": "Discharge Docs on-demand API",
+        "version": API_VERSION,
+        "current_time": datetime.now().isoformat(),
+        "llm_deployment": DEPLOYMENT_NAME_ENV,
+        "llm_temperature": TEMPERATURE,
+    }
