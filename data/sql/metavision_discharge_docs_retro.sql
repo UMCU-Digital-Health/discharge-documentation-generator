@@ -17,8 +17,8 @@ WHERE
     1=1
     AND enc.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionOpname'
     AND enc.status = 'finished'
-    AND enc.period_end >= '2024-10-15'
-    AND enc.period_end < '2024-12-10'
+    AND enc.period_end >= '2025-04-01'
+    AND enc.period_end < '2025-07-02'
     AND enc.[serviceProvider_Organization_value] IN ('W', 'U')
     AND enc.[location_Location_value_original] IN (
         'Neonatologie',

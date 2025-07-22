@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.5.2"
+version = "2.5.3"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
+    { name = "Welmoed Tjepkema", email= "w.w.a.tjepkema@umcutrecht.nl"}
 ]
 description = "Tool that uses LLM's to automatically generate discharge documentation. Part of the 'AI for administration load' project."
 readme = "README.md"
@@ -71,6 +72,9 @@ extend-immutable-calls = [
     "fastapi.params.Depends",
     "Security",
 ]
+
+[tool.uv]
+default-groups = ["dev", "lint"]
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
