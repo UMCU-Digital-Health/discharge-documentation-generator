@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2025-07-28
+
+### Changed
+- Updated production model to GPT-4o (2024-11-20)
+
 ## [2.5.3] - 2025-07-22
 ### Changed
 - Updated baseline_time_measurements and pilot_analysis notebooks to include PMS analysis.
