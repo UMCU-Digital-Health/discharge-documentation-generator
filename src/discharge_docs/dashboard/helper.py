@@ -327,3 +327,29 @@ def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dic
     discharge_document = json.loads(discharge_document)
 
     return discharge_document
+
+
+def remove_conclusion(doc: str | None) -> str | None:
+    """Remove the 'Conclusie' section from the discharge letter JSON.
+
+    Parameters
+    ----------
+    doc : str | None
+        The discharge letter JSON as a string.
+
+    Returns
+    -------
+    str | None
+        The discharge letter JSON without the 'Conclusie' section,
+        or None if input is None.
+    """
+    if doc is None:
+        return None
+    try:
+        doc_json = json.loads(doc)
+        if "Conclusie" in doc_json.keys():
+            del doc_json["Conclusie"]
+        return json.dumps(doc_json)
+    except ValueError:
+        logger.error("Failed to parse discharge letter JSON.")
+        return doc

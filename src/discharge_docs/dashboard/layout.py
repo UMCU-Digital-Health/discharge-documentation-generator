@@ -577,13 +577,23 @@ def get_external_dashboard_layout() -> html.Div:
                     dbc.Table(
                         [
                             html.Thead(
-                                [html.Td("Status"), html.Td("Aantal dagen oud")]
+                                [
+                                    html.Td("Status"),
+                                    html.Td("Aantal dagen oud"),
+                                    html.Td("Opnamedatum"),
+                                ]
                             ),
-                            html.Tr([html.Td(id="success-td"), html.Td(id="days-td")]),
+                            html.Tr(
+                                [
+                                    html.Td(id="success-td"),
+                                    html.Td(id="days-td"),
+                                    html.Td(id="admission-date-td"),
+                                ]
+                            ),
                         ],
                         bordered=True,
                     ),
-                    width={"size": 2, "offset": 5},
+                    width={"size": 3, "offset": 4},
                     class_name="mt-2",
                 ),
             ),

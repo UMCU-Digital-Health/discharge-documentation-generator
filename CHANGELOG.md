@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2025-07-29
+
+### Added
+- Removed conclusion section from the discharge letter in the cardiology department dashboard
+- Added admission date to the table in the cardiology department dashboard
+- Added a filter to the sql query of the patient selection dropdown in the cardiology department dashboard to only show patients that were admitted in the last 7 days (and thus have a generated discharge letter)
+
+
 ## [2.6.0] - 2025-07-28
 
 ### Changed

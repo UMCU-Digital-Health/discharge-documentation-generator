@@ -2,7 +2,7 @@
 This dashboard is only used when integration in EHR is not possible."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Sequence
 
 import dash_bootstrap_components as dbc
@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 
 from discharge_docs.api.api_helper import process_retrieved_discharge_letters
 from discharge_docs.config import setup_root_logger
-from discharge_docs.dashboard.helper import get_user
+from discharge_docs.dashboard.helper import get_user, remove_conclusion
 from discharge_docs.dashboard.layout import get_external_dashboard_layout
 from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
@@ -69,14 +69,15 @@ def load_patient_selection_dropdown(_) -> tuple[Sequence | None, str | None, lis
 
     with SESSIONMAKER() as session:
         query = (
-            select(
-                Encounter.patient_id.distinct(),
-            )
+            select(Encounter.patient_id.distinct())
             .join(GeneratedDoc)
+            .join(RequestGenerate)
+            .join(Request)
             .where(
                 GeneratedDoc.success_ind == "Success",
                 GeneratedDoc.removed_timestamp.is_(None),
                 Encounter.department == "CAR",
+                Request.timestamp >= datetime.now() - timedelta(weeks=1),
             )
         )
         result = session.execute(query).scalars().all()
@@ -92,9 +93,10 @@ def load_patient_selection_dropdown(_) -> tuple[Sequence | None, str | None, lis
     Output("doc-card", "children"),
     Output("success-td", "children"),
     Output("days-td", "children"),
+    Output("admission-date-td", "children"),
     Input("patient-select", "value"),
 )
-def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
+def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str, str]:
     """
     Load the discharge document and related information for the selected patient
     admission.
@@ -118,6 +120,7 @@ def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
             "Selecteer een patiënt om de AI-concept ontslagbrief te bekijken.",
             "OK",
             "",
+            "",
         )
 
     with SESSIONMAKER() as session:
@@ -128,6 +131,7 @@ def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
                 GeneratedDoc.success_ind,
                 Encounter.enc_id,
                 Encounter.patient_id,
+                Encounter.admissionDate,
                 Request.timestamp,
             )
             .join(Encounter, GeneratedDoc.encounter_id == Encounter.id)
@@ -143,9 +147,16 @@ def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
         result_df = pd.DataFrame(result.fetchall(), columns=list(result.keys()))
         logger.info(f"Retrieved {len(result_df)} discharge letters")
 
+    if not result_df.empty:
+        result_df["discharge_letter"] = result_df["discharge_letter"].apply(
+            remove_conclusion
+        )
+
     message, success_ind, doc_id, nr_days_old = process_retrieved_discharge_letters(
         result_df
-    )
+    )  # TODO remove this once Conclusion section is removed from prompt (after pilot)
+
+    admission_date = result_df["admissionDate"].iloc[0] if not result_df.empty else ""
 
     if doc_id is not None:
         with SESSIONMAKER() as session:
@@ -161,7 +172,12 @@ def load_discharge_doc(patient_admission: str | None) -> tuple[str, str, str]:
                 f"{dashboard_logging.user_email}"
             )
 
-    return message, "OK" if success_ind else "Fout", str(nr_days_old)
+    return (
+        message,
+        "OK" if success_ind else "Fout",
+        str(nr_days_old),
+        str(admission_date),
+    )
 
 
 @app.callback(
