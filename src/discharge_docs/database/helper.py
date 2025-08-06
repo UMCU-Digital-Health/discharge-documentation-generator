@@ -224,7 +224,10 @@ def get_request_generate_df(
 
 
 def get_dashboard_logging_df(
-    min_date: date, max_date: date, session_object: sessionmaker
+    min_date: date,
+    max_date: date,
+    session_object: sessionmaker,
+    developer_emails: list[str] | None = None,
 ) -> pd.DataFrame:
     """Retrieves the dashboard logging table for the monitoring admin page
 
@@ -234,12 +237,18 @@ def get_dashboard_logging_df(
         Minimum date for the request table
     max_date : date
         Maximum date for the request table
+    session_object : sessionmaker
+        Session object for the database connection
+    developer_emails : list[str] | None, optional
+        List of developer emails to exclude from the logging, by default None
 
     Returns
     -------
     pd.DataFrame
         Dataframe containing the dashboard logging table
     """
+    if developer_emails is None:
+        developer_emails = []
     with session_object() as session:
         dashboard_logging = session.execute(
             select(
@@ -252,6 +261,7 @@ def get_dashboard_logging_df(
             .join(Encounter, GeneratedDoc.encounter_id == Encounter.id)
             .where(DashboardLogging.timestamp.cast(Date) >= min_date)
             .where(DashboardLogging.timestamp.cast(Date) <= max_date)
+            .where(DashboardLogging.user_email.notin_(developer_emails))
         )
 
         dashboard_logging_df = pd.DataFrame(

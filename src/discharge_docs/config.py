@@ -33,6 +33,7 @@ class LLMConfig(BaseModel):
 class AuthUser(BaseModel):
     email: EmailStr
     groups: list[str]
+    developer: bool = False
 
 
 class AuthConfig(BaseModel):

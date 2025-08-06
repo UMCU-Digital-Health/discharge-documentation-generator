@@ -1,5 +1,5 @@
 outs:
-- md5: 977eb7260ed5d7f24b4a8df6451ac21c
-  size: 2288
+- md5: 83fba607e589b728af83bd3d1e10fb18
+  size: 2363
   hash: md5
   path: auth.toml

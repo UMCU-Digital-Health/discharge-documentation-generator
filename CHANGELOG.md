@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.1] - 2025-08-05
+
+### Changed
+- Updated the admin dashboard to remove developer users from the dashboard logging table
+
+### Fixed
+- Fixed a bug in the admin dashboard where the percentage retrieved could be higher than 100% due to retrieving a document that was generated before the selected date range
+
 ## [2.7.0] - 2025-07-29
 
 ### Added

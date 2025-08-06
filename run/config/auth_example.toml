@@ -3,6 +3,7 @@
 [users.name]
 email="name@umcutrecht.nl"
 groups=["NICU", "IC", "CAR", "PSY"]
+developer=true  # user is not counted in cardiology usage statistics in the admin dashboard
 
 [users.name2]
 email="name2@umcutrecht.nl"

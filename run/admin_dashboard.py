@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 import altair as alt
@@ -6,6 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 
+from discharge_docs.config import load_auth_config, setup_root_logger
 from discharge_docs.database.connection import get_engine
 from discharge_docs.database.helper import (
     get_dashboard_logging_df,
@@ -16,6 +18,9 @@ from discharge_docs.database.helper import (
 )
 
 load_dotenv(override=True)
+
+logger = logging.getLogger(__name__)
+setup_root_logger()
 
 
 def create_department_selection(department_list: list[str]) -> str:
@@ -56,10 +61,27 @@ def kpi_page():
     generated_doc_merged = get_generated_doc_df(
         date_input[0], date_input[1], SESSIONMAKER
     )
+
+    if generated_doc_merged.empty:
+        st.warning(
+            "Geen gegenereerde documenten gevonden voor de geselecteerde periode."
+        )
+        logger.warning("No generated docs found for the selected period.")
+        return
+
     feedback_merged = get_feedback_merged_df(date_input[0], date_input[1], SESSIONMAKER)
     request_retrieve_merged = get_request_retrieve_df(
         date_input[0], date_input[1], SESSIONMAKER
     )
+    # retrieve list of developer e-mails from the config
+    user_config = load_auth_config()
+    developer_emails = [
+        user.email for user in user_config.users.values() if user.developer
+    ]
+    dashboard_logging = get_dashboard_logging_df(
+        date_input[0], date_input[1], SESSIONMAKER, developer_emails=developer_emails
+    )
+
     department_selection = create_department_selection(
         generated_doc_merged["department"].unique().tolist()
     )
@@ -100,11 +122,14 @@ def kpi_page():
         feedback_merged["request_feedback_id"].count(),
     )
 
-    perc_retrieved = (
-        request_retrieve_merged["enc_id"].nunique()
-        / generated_doc_merged["enc_id"].nunique()
-        * 100
-    )
+    retrieved_enc_ids = set(request_retrieve_merged["enc_id"])
+    generated_enc_ids = set(generated_doc_merged["enc_id"])
+    if department_selection in ["Alle afdelingen", "CAR"]:
+        retrieved_enc_ids = retrieved_enc_ids | set(dashboard_logging["enc_id"])
+
+    # Remove enc_ids from retrieve requests that were not generated in the same period
+    retrieved_enc_ids = retrieved_enc_ids & generated_enc_ids
+    perc_retrieved = len(retrieved_enc_ids) / len(generated_enc_ids) * 100
     metric_cols[0].metric("% opnames AI-brief opgehaald", f"{perc_retrieved:.2f}%")
 
     perc_enc_lengtherror = (
@@ -226,6 +251,12 @@ def monitoring_page():
         st.info("Selecteer een tijdsperiode")
         return
 
+    # retrieve list of developer e-mails from the config
+    user_config = load_auth_config()
+    developer_emails = [
+        user.email for user in user_config.users.values() if user.developer
+    ]
+
     request_retrieve = get_request_retrieve_df(
         date_input[0], date_input[1], SESSIONMAKER
     ).drop_duplicates()
@@ -233,8 +264,13 @@ def monitoring_page():
         date_input[0], date_input[1], SESSIONMAKER
     ).drop_duplicates()
     dashboard_logging = get_dashboard_logging_df(
-        date_input[0], date_input[1], SESSIONMAKER
+        date_input[0], date_input[1], SESSIONMAKER, developer_emails=developer_emails
     )
+
+    if request_generate.empty:
+        st.warning("Geen gegenereerde requests gevonden voor de geselecteerde periode.")
+        logger.warning("No generated requests found for the selected period.")
+        return
 
     # combine the request retrieve with dashboard logging, since dashboard does not
     # use the request table
