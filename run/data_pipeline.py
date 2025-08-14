@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 # config
 DATA_SOURCE_HIX = False
-DATA_SOURCE_METAVISION = False
-DATA_SOURCE_DEMO = True
+DATA_SOURCE_METAVISION = True
+DATA_SOURCE_DEMO = False
 
 EXPORT_DATAPLATFORM = False  # only set to False when data export has already been done
 START_DATE = "2025-02-01"
@@ -36,13 +36,13 @@ END_DATE = "2025-02-03"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWD = os.getenv("DB_PASSWD")
 
-PROCESSING = True  # set only to False when processing has already been done
+PROCESSING = False  # set only to False when processing has already been done
 # and enc_ids.toml is filled with the desired encounter ids
 COMBINE_WITH_PREVIOUS_DATA = False
 
 BULK_GENERATE_LETTERS = True
-MOVE_OLD_BULK_TO_BACKUP = False
-DEPARTMENTS = ["DEMO"]  # ["IC", "NICU", "CAR", "PICU", "DEMO"]
+MOVE_OLD_BULK_TO_BACKUP = True
+DEPARTMENTS = ["IC"]  # ["IC", "NICU", "CAR", "PICU", "DEMO"]
 
 
 def run_export(
@@ -233,7 +233,7 @@ def run_bulk_generation(
         save_folder=processed_data_folder,
         enc_ids_dict=enc_ids_dict,
         client=client,
-        skip_old_enc_ids=True,
+        skip_old_enc_ids=False,
         old_bulk_letters=old_bulk_letters,
     )
     logger.info("Bulk generation of letters complete")

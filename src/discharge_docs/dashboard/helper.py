@@ -11,6 +11,12 @@ from dash import html
 from flask import Request
 
 from discharge_docs.config import AuthConfig
+from discharge_docs.llm.prompt_builder import (
+    ContextLengthError,
+    GeneralError,
+    JSONError,
+)
+from discharge_docs.processing.processing import get_patient_file
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +100,7 @@ def replace_newlines(elements: str | list) -> list:
     return new_elements
 
 
-def load_enc_ids() -> dict:
+def load_enc_ids() -> dict[str, list[int]]:
     """Load the encounter IDs for the evaluation dashboard from the TOML file.
 
     Returns
@@ -205,7 +211,7 @@ def get_authorized_patients(
 
 
 def get_data_from_patient_admission(
-    patient_admission: str, data: pd.DataFrame
+    patient_admission: str | int, data: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Get data from patient admission.
@@ -213,7 +219,8 @@ def get_data_from_patient_admission(
     Parameters
     ----------
     patient_admission : str
-        The identifier of the patient admission.
+        The identifier of the patient admission. It can be a string or an integer, but
+        it will be converted to an integer.
     data : pd.DataFrame
         The dataframe containing information on patient admissions.
 
@@ -327,6 +334,168 @@ def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dic
     discharge_document = json.loads(discharge_document)
 
     return discharge_document
+
+
+def get_department_name(selected_patient_admission: int, enc_ids_dict: dict) -> str:
+    """Return the department name based on the encounter ID.
+
+    Parameters
+    ----------
+    selected_patient_admission : int
+        The encounter ID of the selected patient admission.
+    enc_ids_dict : dict
+        A dictionary mapping department names to lists of encounter IDs.
+
+    Returns
+    -------
+    str
+        The name of the department associated with the selected patient admission.
+    """
+    for dep, enc_ids in enc_ids_dict.items():
+        if selected_patient_admission in enc_ids:
+            return dep
+    raise ValueError("Department not found for given patient admission.")
+
+
+def backup_old_department_docs(
+    department_name: str,
+    old_stored_bulk_path: Path,
+    stored_bulk_path: Path,
+    stored_bulk: pd.DataFrame | None = None,
+    stored_bulk_old: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """
+    Update the 'bulk_generated_docs_gpt_old.parquet' file with current docs of the
+    selected department. Docs of other departments remain unchanged.
+
+    Parameters
+    ----------
+    department_name : str
+        The name of the department for which the documents are being stored.
+    old_stored_bulk_path : Path
+        The path to the old stored bulk documents file.
+    stored_bulk_path : Path
+        The path to the current stored bulk documents file.
+    stored_bulk : pd.DataFrame, optional
+        The current stored bulk documents DataFrame.
+    stored_bulk_old : pd.DataFrame, optional
+        The old stored bulk documents DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        The stored bulk DataFrame read from the current stored bulk path.
+    """
+    if stored_bulk_old is None or stored_bulk is None:
+        stored_bulk_old = pd.read_parquet(old_stored_bulk_path)
+        stored_bulk = pd.read_parquet(stored_bulk_path)
+
+    # Filter out current department in old backup
+    other_depts_old = stored_bulk_old[stored_bulk_old["department"] != department_name]
+    selected_dep_docs = stored_bulk[stored_bulk["department"] == department_name]
+    combined = pd.concat([other_depts_old, selected_dep_docs], ignore_index=True)
+    combined.to_parquet(old_stored_bulk_path)
+    logger.info(
+        f"Old bulk docs updated with current {department_name} data to "
+        f"{old_stored_bulk_path.name}"
+    )
+
+    return stored_bulk
+
+
+def generate_bulk_docs_for_department(
+    department_name: str,
+    enc_ids: list[int],
+    data: pd.DataFrame,
+    template_prompt: str,
+    prompt_builder,
+    system_prompt: str,
+    user_prompt: str,
+) -> pd.DataFrame:
+    """
+    Generate discharge letters for all encounters in a department.
+
+    Parameters
+    ----------
+    department_name : str
+        The name of the department for which discharge letters are generated.
+    enc_ids : list[int]
+        A list of encounter IDs for which discharge letters are to be generated.
+    data : pd.DataFrame
+        The DataFrame containing patient admission data.
+    template_prompt : str
+        The template prompt to be used for generating discharge letters.
+    prompt_builder : PromptBuilder
+        An instance of the PromptBuilder class used to generate discharge documents.
+    system_prompt : str
+        The system prompt to be used in the document generation.
+    user_prompt : str
+        The user prompt to be used in the document generation.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the generated discharge letters for the specified
+        department and encounters.
+    """
+    docs = []
+
+    for enc_id in enc_ids:
+        logger.info(f"Generating discharge letter for encounter ID: {enc_id}")
+        patient_data = get_data_from_patient_admission(enc_id, data)
+        patient_file_string, _ = get_patient_file(patient_data)
+
+        try:
+            discharge_letter = prompt_builder.generate_discharge_doc(
+                patient_file=patient_file_string,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                template_prompt=template_prompt,
+            )
+            content = json.dumps(discharge_letter)
+        except (ContextLengthError, JSONError, GeneralError) as e:
+            content = json.dumps(
+                {"Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": e.dutch_message}
+            )
+
+        docs.append(
+            {"enc_id": enc_id, "department": department_name, "generated_doc": content}
+        )
+
+    return pd.DataFrame(docs)
+
+
+def update_stored_bulk_docs(
+    stored_bulk_path: Path,
+    department_name: str,
+    new_docs: pd.DataFrame,
+    stored_bulk: pd.DataFrame,
+) -> None:
+    """
+    Update the 'bulk_generated_docs_gpt.parquet' file with new generated docs of the
+    selected department. Docs of other departments remain unchanged.
+
+    Parameters
+    ----------
+    stored_bulk_path : Path
+        The path to the stored bulk documents file.
+    department_name : str
+        The name of the department for which the documents are being updated.
+    new_docs : pd.DataFrame
+        A DataFrame containing the newly generated discharge documents.
+    stored_bulk : pd.DataFrame
+        The current stored bulk documents DataFrame.
+
+    Returns
+    -------
+    None
+        This function does not return anything. It updates the stored bulk documents.
+    """
+    other_depts = stored_bulk[stored_bulk["department"] != department_name]
+    updated = pd.concat([other_depts, new_docs], ignore_index=True)
+    updated.to_parquet(stored_bulk_path)
+
+    logger.info("Updated stored bulk discharge documents.")
 
 
 def remove_conclusion(doc: str | None) -> str | None:

@@ -96,8 +96,8 @@ class PromptBuilder:
     def get_token_length(
         self,
         patient_file: str,
-        system_prompt: str,
-        user_prompt: str,
+        system_prompt: str | None,
+        user_prompt: str | None,
         template_prompt: str,
     ) -> int:
         """Get the token length of the input for the GPT model.
@@ -118,6 +118,10 @@ class PromptBuilder:
         int
             The number of tokens in the prompt
         """
+        if system_prompt is None:
+            system_prompt = ""
+        if user_prompt is None:
+            user_prompt = ""
         total_prompt = patient_file + template_prompt + user_prompt + system_prompt
         encoding = tiktoken.get_encoding(self.token_encoding)
         token_length = len(encoding.encode(total_prompt))
@@ -126,8 +130,8 @@ class PromptBuilder:
     def generate_discharge_doc(
         self,
         patient_file: str,
-        system_prompt: str,
-        user_prompt: str,
+        system_prompt: str | None,
+        user_prompt: str | None,
         template_prompt: str,
     ) -> dict:
         """
@@ -158,15 +162,22 @@ class PromptBuilder:
         GeneralError
             If there is a general error generating the discharge documentation.
         """
-        messages = [
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": user_prompt,
-            },
+        messages = []
+        if system_prompt is not None:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                }
+            )
+        if user_prompt is not None:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                }
+            )
+        messages += [
             {
                 "role": "user",
                 "content": template_prompt,

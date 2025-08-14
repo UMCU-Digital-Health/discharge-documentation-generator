@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.2] - 2025-07-30
+
+### Added
+- Added a button in the evaluation dashboard which enables an user to generate a batch of discharge letters.
+- Addded a switch to disable the system and user prompt in the evaluation dashboard, so that the user can test the prompts without the system and user prompt.
+
+### Changed
+- Updated the show prompt dialog to use markdown
+
 ## [2.7.1] - 2025-08-05
 
 ### Changed

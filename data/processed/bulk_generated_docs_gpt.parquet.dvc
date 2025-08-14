@@ -1,5 +1,5 @@
 outs:
-- md5: 8b1b0cdb60bbe0be14ba653e7d324541
-  size: 135147
+- md5: f04a35248f8d538e7a19885e741c772a
+  size: 29736
   hash: md5
   path: bulk_generated_docs_gpt.parquet

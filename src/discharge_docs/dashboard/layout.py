@@ -365,11 +365,23 @@ def get_GPT_card() -> dbc.Card:
                                     value="",
                                     style={"height": "250px"},
                                 ),
+                                dbc.Switch(
+                                    id="use_system_prompt",
+                                    label="Gebruik standaard system prompt",
+                                    value=True,
+                                ),
                                 dbc.Button(
                                     "Update en genereer ontslagbrief",
                                     id="update_discharge_button",
                                     color="primary",
                                     class_name="mt-2 me-2",
+                                ),
+                                dbc.Button(
+                                    "Genereer batch ontslagbrieven",
+                                    id="bulk_generate_button",
+                                    color="warning",
+                                    class_name="mt-2 me-2",
+                                    outline=True,
                                 ),
                                 dbc.Button(
                                     "Laat prompt zien",
@@ -379,9 +391,23 @@ def get_GPT_card() -> dbc.Card:
                                     outline=True,
                                 ),
                                 dbc.Label(
-                                    "Het kan zijn dat de gegenereerde ontslagbrief soms"
-                                    " niet goed laadt. Probeer het dan opnieuw door "
-                                    "nog een keer op de knop te drukken."
+                                    (
+                                        "Het kan zijn dat de gegenereerde ontslagbrief "
+                                        "soms niet goed laadt. Probeer het dan opnieuw "
+                                        "door nog een keer op de knop te drukken. "
+                                        "Druk niet te vaak op de Genereer batch  "
+                                        "ontslagbrieven knop, de kosten kunnen snel "
+                                        "oplopen. Let op: het genereren van een batch "
+                                        "brieven kan 5 minuten duren, sluit de "
+                                        "applicatie in de tussentijd niet af."
+                                    )
+                                ),
+                                dcc.Loading(
+                                    id="bulk_loading_spinner",
+                                    type="default",
+                                    children=html.Div(
+                                        id="bulk_generation_status", className="mt-2"
+                                    ),
                                 ),
                             ]
                         ),
@@ -440,22 +466,24 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
 
     show_prompts_card = dbc.Offcanvas(
         [
-            html.Div(
+            dbc.Card(
                 [
-                    html.H5("System prompt"),
-                    html.P(system_prompt),
-                ]
+                    dbc.CardHeader("System prompt"),
+                    dbc.CardBody(dcc.Markdown(system_prompt)),
+                ],
+                class_name="mb-2",
             ),
-            html.Div(
+            dbc.Card(
                 [
-                    html.H5("User prompt"),
-                    html.P(user_prompt),
-                ]
+                    dbc.CardHeader("User prompt"),
+                    dbc.CardBody(dcc.Markdown(user_prompt)),
+                ],
+                class_name="mb-2",
             ),
-            html.Div(
+            dbc.Card(
                 [
-                    html.H5("Afdeling prompt"),
-                    html.P("Laden...", id="template_prompt_space"),
+                    dbc.CardHeader("Afdeling prompt"),
+                    dbc.CardBody(dcc.Markdown("Laden...", id="template_prompt_space")),
                 ]
             ),
         ],
