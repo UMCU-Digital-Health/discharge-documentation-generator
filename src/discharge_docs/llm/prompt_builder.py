@@ -85,8 +85,7 @@ class PromptBuilder:
         context_length_by_deployment = {
             "aiva-gpt": 16_384,
             "aiva-gpt4": 128_000,  # This is now 4o and has 128k context length
-            "aiva-gpt4-new": 128_000,
-            "aiva-gpt4.1": 1_000_000,
+            "aiva-gpt-4o-mini": 128_000,
         }
         if deployment_name in context_length_by_deployment:
             return context_length_by_deployment[deployment_name]

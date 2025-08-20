@@ -1,5 +1,5 @@
 temperature = 0.2
-deployment_name_acc = "aiva-gpt"
+deployment_name_acc = "aiva-gpt-4o-mini"
 deployment_name_prod = "aiva-gpt4"
 deployment_name_bulk = "aiva-gpt4"
 deployment_name_eval = "aiva-gpt4"

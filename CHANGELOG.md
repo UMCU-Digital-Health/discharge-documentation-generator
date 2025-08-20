@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.3] - 2025-08-19
+
+### Changed
+- Updated package dependencies
+- Changed LLM deployment for acc env to gpt4o-mini instead of gpt-3.5-turbo, since the latter will soon be deprecated
+
 ## [2.7.2] - 2025-07-30
 
 ### Added
