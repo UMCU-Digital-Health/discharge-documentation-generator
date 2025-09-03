@@ -2,7 +2,9 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 
 
-def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
+def get_navbar(
+    view_user: bool, header_title: str, add_dev_toggle: bool = False
+) -> dbc.NavbarSimple:
     """Create and return a Bootstrap navbar.
 
     Parameters
@@ -11,6 +13,8 @@ def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
         Whether to display the logged in user information.
     header_title : str
         The title to display in the navbar.
+    add_dev_toggle : bool, optional
+        Whether to add a development mode toggle to the navbar.
 
     Returns
     -------
@@ -21,6 +25,16 @@ def get_navbar(view_user: bool, header_title: str) -> dbc.NavbarSimple:
         children=[
             dbc.NavItem(html.Div(id="logged_in_user", className="text-white me-5"))
             if view_user
+            else "",
+            dbc.DropdownMenu(
+                [
+                    dbc.DropdownMenuItem(
+                        dbc.Switch("dev_mode", label="Dev mode", value=False),
+                        toggle=False,
+                    )
+                ]
+            )
+            if add_dev_toggle
             else "",
         ],
         brand=[
@@ -400,7 +414,8 @@ def get_GPT_card() -> dbc.Card:
                                         "oplopen. Let op: het genereren van een batch "
                                         "brieven kan 5 minuten duren, sluit de "
                                         "applicatie in de tussentijd niet af."
-                                    )
+                                    ),
+                                    id="bulk_generate_label",
                                 ),
                                 dcc.Loading(
                                     id="bulk_loading_spinner",
@@ -419,10 +434,17 @@ def get_GPT_card() -> dbc.Card:
                         dbc.CardBody(
                             [
                                 dbc.Spinner(
-                                    html.Div(
-                                        [""],
-                                        id="output_GPT_discharge_documentation",
-                                    ),
+                                    [
+                                        html.Div(
+                                            [""],
+                                            id="output_GPT_discharge_documentation",
+                                        ),
+                                        html.Div(
+                                            [""],
+                                            id="output_gen_time",
+                                            style={"fontStyle": "italic"},
+                                        ),
+                                    ]
                                 )
                             ]
                         ),
@@ -436,7 +458,9 @@ def get_GPT_card() -> dbc.Card:
 
 
 def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> html.Div:
-    navbar = get_navbar(view_user=True, header_title="Ontslagbrief evaluatie")
+    navbar = get_navbar(
+        view_user=True, header_title="Ontslagbrief evaluatie", add_dev_toggle=True
+    )
 
     patient_selection_div = get_patient_selection_div()
 
