@@ -86,7 +86,7 @@ app = dash.Dash(
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
-app.layout = get_layout_evaluation_dashboard(user_prompt, system_prompt)
+app.layout = get_layout_evaluation_dashboard(system_prompt, user_prompt)
 
 
 @app.callback(

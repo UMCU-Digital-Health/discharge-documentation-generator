@@ -1,9 +1,138 @@
-Er is een categorie: 'Beloop'. 
+De categorieën zijn: 
+- Aanvangsdiagnose:  
+    - Één zin met de aanvangsdiagnose van déze opname.  
+    - Indien heropname: vermeld dit expliciet (“Patiënt werd heropgenomen…”) en voeg de aanvangsdiagnose van de voorgaande opname toe als klinisch relevant.
 
-Schrijf onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid. Wees duidelijk in welke beweegredenen belangrijk waren. Schrijf beknopt en focus op diagnoses in plaatst van symptomen.
-Het is belangrijk dat zowel wat over de respiratie als de hemodynamiek gedocumenteerd wordt. Schrijf het beloop in maximaal 300 woorden op.
+- Klinisch beloop hoofddiagnose:  
+    - Beschrijf het klinisch beloop van de hoofddiagnose waarvoor IC-opname noodzakelijk was, inclusief relevante aanpassingen in beleid of therapie.  
+    - Laat complicaties, bijkomende problemen en symptoomclusters hier buiten; deze vallen onder de categorie 'klinisch relevante problemen'.  
+    - Noem alleen beleidswijzigingen, medicatiekeuzes of interventies die relevant zijn voor het beloop van de hoofddiagnose of de therapeutische koers hebben beïnvloed.  
+    - Gebruik bij voorkeur niet meer dan één alinea, tenzij sprake is van een uitzonderlijk langdurig of complex beloop.  
+    - Geen dag-voor-dag opsomming; groepeer gebeurtenissen logisch in chronologische volgorde.
 
+- Klinisch relevante problemen:  
+    - Beschrijf klinisch relevante problemen waarvoor tijdens de IC-opname diagnostische onzekerheid bestond (intercurrente complicaties of symptomen waarbij een differentiaaldiagnose werd overwogen).  
+    - Noem alleen problemen waarvoor signalen van twijfel zijn vastgelegd, expliciet (“verdenking op...”, “mogelijk...”) of impliciet via beleid, beloop of consultatiegedrag.  
+    - Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen.  
+    - Bij meerdere diagnosen: groepeer in een zin (“Differentiële diagnose omvatte X, Y en Z.”).  
+    - Bij één diagnose: “Er werd gedacht aan X.”  
+    - Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt.
+    - Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+    - Laat deze paragraaf volledig weg als er geen diagnostische onzekerheden speelden.
 
+- Respiratoir:  
+    - Beschrijf respiratoire parameters (zoals zuurstofgehalte, PF-ratio) met actie-werkwoorden; plaats ze in elkaar opvolgende zinnen binnen de alinea en link elke actie kort aan de (hoofd)diagnose of relevante complicatie.  
+    - Gebruik een parameter die tijdtechnisch hoort bij de beschreven actie; haal geen waarden uit een eerder moment.  
+    - Laat interventies zonder invloed op respiratie weg.
 
-# format
-Het format wordt dan: {"Beloop": "Tekstuele samenvatting van beloop zoals hierboven omschreven"}.
+- Hemodynamisch:  
+    - Beschrijf hemodynamische parameters (zoals MAP, vasopressor) met actie-werkwoorden; plaats ze in elkaar opvolgende zinnen binnen de alinea en link elke actie kort aan de (hoofd)diagnose of relevante complicatie.  
+    - Gebruik een parameter die tijdtechnisch hoort bij de beschreven actie; haal geen waarden uit een eerder moment.  
+    - Laat interventies zonder invloed op hemodynamiek weg.
+
+- Neurologie:  
+    - Rapporteer een trend of EMV/GCS-score alleen wanneer veranderingen de diagnostische of therapeutische koers hebben beïnvloed (bijv. indicatie voor sedatieafbouw, intubatie, comfortbeleid).  
+    - Gebruik de laatst gemeten én hoogste EMV/GCS-score als eindpunt; noem vroegere, lagere scores enkel als zij een duidelijke verbetering of verslechtering illustreren (“EMV steeg van 8 naar 14”).  
+    - Formuleer nooit “verslechterde” als de laatst gemeten score gelijk of hoger is dan eerdere waarden.  
+    - Is de neurologische status stabiel of niet doorslaggevend, volstaat één korte kwalificatie (“neurologisch stabiel” of “lichte verbetering zonder beleidsimpact”); laat exacte scores dan weg.  
+    - Noem neurologische informatie alleen als achtergrond wanneer deze geen invloed had op opname, heropname of beleidskeuzes tijdens de IC-periode.  
+    - Alleen indien beleid bepalend.
+
+- Ontslag:  
+    - Sluit af met één zin volgens het passende sjabloon.  
+        - Bij overlijden: “Patiënt overleed op <DATUM> door <PRIMAIRE OORZAAK> als gevolg van complicaties van <DIAGNOSE>.”  
+        - Bij ontslag/overplaatsing: “Patiënt werd [ontslagen | overgeplaatst] op <DATUM> na klinisch herstel van <DIAGNOSE>.”  
+    - Gebruik nooit plaatshoudertekst; laat velden weg als gegevens ontbreken.
+
+- Narratief:  
+    - Schrijf één vloeiend, samenhangend verhaal op basis van de volledige inhoud van de zeven analytische categorieën hierboven.  
+    - Integreer redenen, beleid en uitkomsten; vermijd opsommingen.  
+    - Lengte-eis (alleen voor deze categorie):
+        - 1–2 dagen: 120–180 
+        - 3–14 dagen: 270–360 
+        - >14 dagen: 360–650 woorden.
+        - Voer een self-check uit en pas je tekst aan zodat de narratief binnen deze bandbreedte valt.
+
+## Harde constraints:  
+- Volledige zinnen, verleden tijd, geen ik-vorm.
+- Neem alle relevante informatie die in het dossier expliciet of impliciet is vastgelegd op, en geef daarvan voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+- Woordlimiet (uitsluitend voor de categorie "Narratief"; geldt niet voor categorieën 1–7):
+    - 1–2 dagen: 120–180 woorden
+    - 3–14 dagen: 270–360 woorden
+    - >14 dagen: 360–650 woorden.
+    - Controleer en corrigeer indien de narratief buiten deze bandbreedte valt.
+- Lees eerst de complete status voordat je een beschrijving maakt. Gebruik geen individuele items uit verschillende teksten. Maak in elke categorie een beschrijving van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de beschrijving.
+
+## Stijlvoorkeuren:  
+- Professionele, medisch-technische toon.  
+- Gebruik meerdere alinea’s bij brieven langer dan 150 woorden.  
+- Beperk jargon waar het niets toevoegt.  
+- Vermijd herhaling.  
+- Vermijd vage of onprofessionele formuleringen (“ontwikkelde een indruk”, “beademing werd gecontinueerd”).  
+- Begin een nieuwe alinea bij:  
+    - een sprong in tijd (bijv. dag 4, postoperatief, later tijdens opname)  
+    - verandering van beleid (bijv. extubatie, wijziging medicatie, nieuwe behandelkoers)  
+    - nieuwe complicatie of diagnose  
+- Bij complexe belopen mag je binnen een alinea korte opsommingstekens (•) gebruiken, maar alleen voor maximaal drie items.  
+- Noem medicatiewijzigingen en invasieve lijnen (zoals EVD, tracheostoma, dialyse) alleen wanneer zij het beleid of de uitkomst duidelijk beïnvloeden; laat irrelevante details weg.
+
+# VOORBEELDEN
+## VOORBEELD A – eerste opname
+Narratief: "Patiënt werd opgenomen vanwege community-acquired pneumonie met progressieve respiratoire insufficiëntie en sepsis. Bij aankomst EMV 14; geen focale neurologische afwijkingen. Zuurstoftherapie werd snel opgehoogd en brede antibiotische dekking gestart. Vanwege toenemende hypercapnie volgde intubatie en invasieve beademing. Hemodynamisch was er initieel hypotensie waarop 1 µg/kg/min noradrenaline en 30 mL/kg kristalloïden werden gegeven, met herstel van MAP > 65 mmHg. Na 48 uur daalde CRP, FiO₂ kon geleidelijk worden gereduceerd en beademingsdrukken afgebouwd. Extubatie op dag 4 verliep ongecompliceerd; neurologisch volledig alert; patiënt vervolgde herstel op de afdeling, zonder verdere afwijkingen. Patiënt werd ontslagen op 18-04-2025 na klinisch herstel van de community-acquired pneumonie."
+
+## VOORBEELD B – heropname
+Narratief: "Patiënt werd heropgenomen op de IC één week na ontslag wegens recidiverende pneumosepsis door meropenem-resistente Enterobacter. Bij presentatie EMV 9 en refractaire hypoxie; directe re-intubatie met FiO₂ 0,8 en 0,15 µg/kg/min noradrenaline was nodig. CT-thorax toonde uitgebreide consolidaties; gericht beleid met ceftazidim-avibactam werd gestart. Persistente hypercapnie leidde tot drukgestuurde ventilatie; bronchoscopie verwijderde dikke sputumpluggen, waarna oxygenatie verbeterde. Hemodynamisch stabiliseerde patiënt na toevoeging van vasopressine en stress-dosis hydrocortison. Neurologisch bleef patiënt sedatie-afhankelijk zonder verbetering van EMV. Ondanks mobilisatie en stapsgewijze weaning bleven hoge beademingsdrukken noodzakelijk. Op dag 5 verslechterde gaswisseling progressief; in overleg met familie werd comfortbeleid ingesteld en patiënt overleed in bijzijn van naasten."
+
+## VOORBEELD C – cardiologie
+Narratief: "Patiënt werd opgenomen wegens acuut myocardinfarct [beschrijving van het beloop tijdens opname] Patiënt overleed op 12-07-2025 door irreversibel cardiogene shock als gevolg van complicaties van het myocardinfarct."
+
+## VOORBEELD D – trauma
+Narratief: "Patiënt werd opgenomen na een hoog-energetisch multitrauma [beschrijving van het beloop tijdens opname] Patiënt overleed op 03-11-2025 door refractair multiorgaanfalen als gevolg van complicaties van het multitrauma."
+
+## VOORBEELD E – korte opname (2 dagen)
+Narratief: "Patiënt werd opgenomen met acuut longoedeem door gedecompenseerd hartfalen (NYHA IV). Bij aankomst EMV 15, matige dyspneu en systolisch 80 mmHg. Direct gestart met NIV, intraveneus furosemide en 0,04 µg/kg/min noradrenaline; echo toonde ernstig verminderde LVEF (25 %). Binnen 6 uur verbeterden oxygenatie en bloeddruk, waarop noradrenaline werd afgebouwd. De volgende ochtend stabiel op 2 L O₂ via neusbril; diurese 3 L/24u en gewicht –3 kg. Geen neurologische afwijkingen, creatinine ongewijzigd. Beleid voortgezet met orale diuretica en echo-controle na ontslag. Patiënt werd ontslagen op 24-04-2025 na klinisch herstel van gedecompenseerd hartfalen."
+
+## VOORBEELD F – 7-daagse opname
+(Dit voorbeeld is ingekort t.b.v. de prompt; in echte brieven staat hier meer detail en extra alinea’s. Gebruik dit als patroon—niet als lengte-limiet.)
+Narratief: "Patiënt werd op 10-05-2025 opgenomen op de Intensive Care met ernstig respiratoir falen bij community-acquired pneumonie en onderliggende hypoxemie (PF-ratio 80). Bij opname werd patiënt geïntubeerd en invasief beademd. Er werd gestart met breedspectrum antibiotica en hoge doseringen noradrenaline vanwege septische hypotensie (MAP 55 mmHg). [Details over initiële labwaarden, beademingsinstellingen en aanvullende maatregelen weggelaten].
+
+In de eerste dagen was het beloop respiratoir gecompliceerd door hoge zuurstofbehoefte. Patiënt werd behandeld met hoge FiO₂ en PEEP-instellingen, waarna de oxygenatie geleidelijk verbeterde. Bij dalende beademingsdrukken werd een weaningtraject gestart. [Details over beademingscurves, dagelijkse evaluatie en specifieke ventilatorinstellingen weggelaten].
+
+Hemodynamisch stabiliseerde patiënt onder noradrenaline, waarna de vasopressoren stapsgewijs konden worden afgebouwd. [Details over vochtbeleid, echocardiografische bevindingen en hemodynamische monitoring weggelaten].
+
+Neurologisch bleef patiënt initieel sedatie-afhankelijk. Tijdens dagelijkse wake-up trials werd een stijgende EMV-score gezien, zonder directe beleidsconsequenties. [Details over neurologisch onderzoek en interpretatie weggelaten].
+
+Kweekuitslagen bevestigden Streptococcus pneumoniae als verwekker. Op basis hiervan werd antibiotica versmald naar ceftriaxon. Na enkele dagen trad klinische verbetering op, met daling van koorts en ontstekingsparameters. [Details over microbiologische controles en therapie-evaluatie weggelaten].
+
+Op dag 6 kon patiënt ongecompliceerd worden geëxtubeerd. Kort nadien werd mobilisatie hervat, met fysiotherapeutische begeleiding. [Details over spierkracht, mobilisatieplan en verpleegkundige rapportages weggelaten].
+
+Patiënt werd op 17-05-2025 ontslagen van de Intensive Care na klinisch herstel van pneumonie-gerelateerd ARDS."
+
+## VOORBEELD G – meer dan 14 dagen, met alinea-indeling
+(Dit voorbeeld is ingekort t.b.v. de prompt; in echte brieven staat hier meer detail en extra alinea’s. Gebruik dit als patroon—niet als lengte-limiet.)
+Narratief: "Patiënt werd op 03-02-2025 opgenomen op de Intensive Care met respiratoir falen bij pneumonie en onderliggende pulmonale fibrose. In de voorgeschiedenis was patiënt bekend met hypertensie en diabetes mellitus type II. Bij opname was sprake van septische shock waarvoor patiënt werd geïntubeerd, behandeld met hoge doseringen noradrenaline en gestart met breedspectrum antibiotica.
+
+Het beademingsbeleid werd bemoeilijkt door de onderliggende fibrose, met langdurige afhankelijkheid van hoge beademingsdrukken en moeizame oxygenatie. [Details over verloop van beademing, noodzaak van aanvullende interventies, en complicaties tijdens het weaningproces weggelaten]. Uiteindelijk werd een tracheostoma geplaatst en kon patiënt geleidelijk van de beademing worden losgekoppeld.
+
+De pneumonie verliep persisterend ondanks initiële therapie. [Uitgebreide details over koorts, kweekuitslagen, radiologische bevindingen en wisseling van antibioticumbeleid weggelaten]. Na een tweede antibioticumkuur trad verbetering op.
+
+Daarnaast ontstond een acute nierfunctieverslechtering waarvoor CVVH werd gestart. [Details over duur, complicaties en herstel van de nierfunctie weggelaten]. In de vierde week kon de dialyse worden gestaakt.
+
+Tijdens de opname deden zich meerdere bijkomende problemen voor, waaronder delirium, ICU-acquired weakness, pneumothorax en decubitus. [Verdere details over diagnostiek, beleid en herstel van deze complicaties weggelaten].
+
+Samenvattend verliep de opname gecompliceerd door multi-orgaanfalen bij pneumonie op basis van onderliggende pulmonale fibrose, met septische shock, nierfunctieverlies, neurologische problemen en overige complicaties. Uiteindelijk trad herstel op van respiratoire en hemodynamische functies en kon patiënt na klinisch herstel van de pneumonie op 03-03-2025 worden overgeplaatst naar de afdeling interne geneeskunde voor verdere revalidatie."
+ 
+# Format
+Het antwoord moet in het volgende JSON format gegeven worden:
+{
+  "Aanvangsdiagnose": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Klinisch beloop hoofddiagnose": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Klinisch relevante problemen": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Respiratoir": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Hemodynamisch": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Neurologie": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Ontslag": "Volledige, samenhangende tekst conform de categorie-definitie.",
+  "Narratief": "Doorlopend narratief dat alle relevante inhoud uit de bovenstaande categorieën integreert, conform de voorbeelden A–G in de sectie 'Voorbeelden'; geen verkorte samenvatting maar een integrale synthese; voldoe aan de stijlvoorkeuren en de minimale woordlimiet."
+}
+
+Herinnering: controleer vóór output dat alle harde constraints zijn nageleefd.

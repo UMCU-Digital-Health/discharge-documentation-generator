@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2025-09-03
+
+### Fixed
+- System prompt and user prompt were switched in the side panel
+
+### Changed
+- Updated IC prompt with latest result from prompt engineering session
+- Replaced ... by a explanation in few shot examples so LLM understands information is missing
+
 ## [2.7.5] - 2025-09-03
 
 ### Added 
