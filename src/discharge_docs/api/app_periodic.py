@@ -24,9 +24,7 @@ from discharge_docs.config import (
     get_current_version,
     setup_root_logger,
 )
-from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
-    Base,
     Encounter,
     FeedbackDetails,
     GeneratedDoc,
@@ -58,9 +56,6 @@ load_dotenv()
 
 API_VERSION = get_current_version()
 
-engine = get_engine()
-Base.metadata.create_all(engine)
-
 header_scheme = APIKeyHeader(name="X-API-KEY")
 
 app = FastAPI()
@@ -71,7 +66,7 @@ logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
 
 
 def get_session():
-    with Session(engine, autoflush=False) as session:
+    with Session(app.state.engine, autoflush=False) as session:
         yield session
 
 

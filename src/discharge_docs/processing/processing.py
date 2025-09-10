@@ -4,6 +4,9 @@ from typing import Optional, Tuple
 
 import pandas as pd
 import tomli_w
+from striprtf.striprtf import rtf_to_text
+
+from discharge_docs.api.pydantic_models import HixInput
 
 
 def replace_text(input_text):
@@ -47,6 +50,22 @@ def combine_patient_and_docs_data_hix(
         drop=True
     )
     return patient_file
+
+
+def pre_process_hix_data(data: HixInput) -> pd.DataFrame:
+    validated_data = data.model_dump()
+    data_df = pd.DataFrame.from_records(validated_data["ALLPARTS"]).rename(
+        columns={
+            "TEXT": "content",
+            "NAAM": "description",
+            "DATE": "date",
+            "SPECIALISM": "department",
+        },
+    )
+    data_df["content"] = data_df["content"].apply(rtf_to_text)
+    processed_data = data_df[["date", "department", "description", "content"]].copy()
+    processed_data.loc[:, "enc_id"] = "TEMP_ENC_ID"
+    return processed_data
 
 
 def process_data(

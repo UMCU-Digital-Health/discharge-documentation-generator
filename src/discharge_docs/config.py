@@ -23,11 +23,11 @@ class LLMConfig(BaseModel):
     """
 
     temperature: float
-    deployment_name_acc: str
-    deployment_name_prod: str
-    deployment_name_bulk: str
-    deployment_name_eval: str
-    deployment_name_env: str
+    DEPLOYMENT_NAME_ACC: str
+    DEPLOYMENT_NAME_PROD: str
+    DEPLOYMENT_NAME_BULK: str
+    DEPLOYMENT_NAME_EVAL: str
+    DEPLOYMENT_NAME_ENV: str
 
 
 class AuthUser(BaseModel):
@@ -53,16 +53,16 @@ def load_config(config_path: Path = CONFIG_PATH) -> LLMConfig:
     LLMConfig
         An instance of LLMConfig containing the configuration parameters.
     """
-    env_name = os.getenv("ENVIRONMENT", "acc").lower()
-    if env_name not in ["acc", "prod", "bulk", "eval"]:
+    env_name = os.getenv("LLM_ENVIRONMENT", "ACC").upper()
+    if env_name not in ["ACC", "PROD", "BULK", "EVAL"]:
         raise ValueError(
             f"Invalid environment name: {env_name}. "
-            "Must be one of 'acc', 'prod', 'bulk', or 'eval'."
+            "Must be one of 'ACC', 'PROD', 'BULK', or 'EVAL'."
         )
     with open(config_path, "rb") as f:
         deployment_config_dict = tomllib.load(f)
-    deployment_name_env = deployment_config_dict[f"deployment_name_{env_name}"]
-    return LLMConfig(**deployment_config_dict, deployment_name_env=deployment_name_env)
+    deployment_name_env = deployment_config_dict[f"DEPLOYMENT_NAME_{env_name}"]
+    return LLMConfig(**deployment_config_dict, DEPLOYMENT_NAME_ENV=deployment_name_env)
 
 
 def load_auth_config(config_path: Path = AUTH_CONFIG_PATH) -> AuthConfig:
@@ -127,5 +127,5 @@ def setup_root_logger() -> None:
 config = load_config(CONFIG_PATH)
 
 TEMPERATURE = config.temperature
-DEPLOYMENT_NAME_BULK = config.deployment_name_bulk
-DEPLOYMENT_NAME_ENV = config.deployment_name_env
+DEPLOYMENT_NAME_BULK = config.DEPLOYMENT_NAME_BULK
+DEPLOYMENT_NAME_ENV = config.DEPLOYMENT_NAME_ENV

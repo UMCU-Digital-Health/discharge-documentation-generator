@@ -1,16 +1,13 @@
 import json
 import logging
-import os
 from datetime import datetime
 
-import pandas as pd
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.orm import Session
-from striprtf.striprtf import rtf_to_text
 
-from discharge_docs.api.api_helper import ApiEndpoint
+from discharge_docs.api.api_helper import ApiEndpoint, check_authorisation
 from discharge_docs.api.pydantic_models import (
     HixInput,
     HixOutput,
@@ -22,9 +19,7 @@ from discharge_docs.config import (
     get_current_version,
     setup_root_logger,
 )
-from discharge_docs.database.connection import get_engine
 from discharge_docs.database.models import (
-    Base,
     Encounter,
     GeneratedDoc,
     Request,
@@ -45,6 +40,7 @@ from discharge_docs.llm.prompt_builder import (
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
     get_patient_file,
+    pre_process_hix_data,
     process_data,
 )
 
@@ -54,9 +50,6 @@ setup_root_logger()
 load_dotenv()
 
 API_VERSION = get_current_version()
-
-engine = get_engine()
-Base.metadata.create_all(engine)
 
 header_scheme = APIKeyHeader(name="API-KEY")
 
@@ -69,7 +62,7 @@ logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
 
 
 def get_session():
-    with Session(engine, autoflush=False) as session:
+    with Session(app.state.engine, autoflush=False) as session:
         yield session
 
 
@@ -87,7 +80,7 @@ async def process_hix_data(
 
     Parameters
     ----------
-    data : HixPatientFile
+    data : HixInput
         The HiX data to process.
     db : Session, optional
         The database session, by default Depends(get_db)
@@ -100,10 +93,7 @@ async def process_hix_data(
         The processed data, which can be send to the generate-hix-discharge-docs
         endpoint.
     """
-    if key != os.environ["X_API_KEY_HIX"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_HIX")
 
     start_time = datetime.now()
     request_db = Request(
@@ -115,23 +105,9 @@ async def process_hix_data(
     db.add(request_db)
     db.commit()
 
-    validated_data = data.model_dump()
-    data_df = pd.DataFrame.from_records(validated_data["ALLPARTS"]).rename(
-        columns={
-            "TEXT": "content",
-            "NAAM": "description",
-            "DATE": "date",
-            "SPECIALISM": "department",
-        },
-    )
-    data_df["content"] = data_df["content"].apply(rtf_to_text)
-    processed_data = apply_deduce(data_df, "content")
-    processed_data = processed_data[
-        ["date", "department", "description", "content"]
-    ].copy()
-    processed_data.loc[:, "enc_id"] = "TEMP_ENC_ID"
-
-    processed_data = process_data(processed_data)
+    pre_processed_data = pre_process_hix_data(data)
+    processed_data = process_data(pre_processed_data)
+    processed_data = apply_deduce(processed_data, "content")
 
     patient_file_string, patient_df = get_patient_file(processed_data)
     department = patient_df["department"].values[0]
@@ -141,6 +117,7 @@ async def process_hix_data(
     request_db.runtime = runtime
     request_db.response_code = 200
     db.commit()
+    logger.info("Finished processing HiX data")
 
     return HixOutput(department=department, value=patient_file_string)
 
@@ -167,10 +144,7 @@ async def generate_hix_discharge_docs(
     LLMOutput
         The generated discharge documentation.
     """
-    if key != os.environ["X_API_KEY_HIX"]:
-        raise HTTPException(
-            status_code=403, detail="You are not authorized to access this endpoint"
-        )
+    check_authorisation(key, "X_API_KEY_HIX")
 
     start_time = datetime.now()
     request_db = Request(
@@ -239,6 +213,7 @@ async def generate_hix_discharge_docs(
     request_db.runtime = runtime
     request_db.response_code = 200
     db.commit()
+    logger.info("Finished generating discharge letter")
 
     return LLMOutput(message=discharge_letter)
 

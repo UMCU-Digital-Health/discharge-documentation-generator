@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import re
 import tomllib
 from pathlib import Path
@@ -117,7 +116,7 @@ def load_enc_ids() -> dict[str, list[int]]:
         return {key: value["ids"] for key, value in data.items()}
 
 
-def get_user(req: Request) -> str:
+def get_user(req: Request) -> str | None:
     """
     Get the user email from RStudio credentials.
     TODO: Use the groups from the RStudio Connect credentials instead of the lookup
@@ -129,13 +128,13 @@ def get_user(req: Request) -> str:
 
     Returns
     -------
-    str
+    str|None
         the user's email
     """
     credential_header = req.headers.get("RStudio-Connect-Credentials")
     if not credential_header:
         logger.warning("No credentials found in request headers")
-        return "No user"
+        return None
 
     credential_header = json.loads(credential_header)
     user = credential_header.get("user").lower()
@@ -144,7 +143,7 @@ def get_user(req: Request) -> str:
 
 def get_authorization(
     req: Request, authorization_config: AuthConfig, development_authorizations: list
-) -> tuple[str, list[str]]:
+) -> tuple[str | None, list[str]]:
     """
     Get the RStudio Connect credentials from the request headers.
     Credentials are of the form: {user: "email", groups: ["group1", "group2"]}
@@ -163,22 +162,21 @@ def get_authorization(
 
     Returns
     -------
-    Tuple[str, List[str]]
-        A tuple containing the user's email
+    Tuple[str|None, List[str]]
+        A tuple containing the user's email or None if not found,
         and a list of authorization groups for the user.
     """
-    if os.getenv("ENV", "") == "development":
+    user = get_user(req)
+    if user is None:
         logger.warning("Running in development mode, overriding authorization group.")
-        # Never add this in production!
         return "Development user", development_authorizations
-    else:
-        user = get_user(req)
-        for value in authorization_config.users.values():
-            if value.email == user:
-                return user, value.groups
 
-        logger.warning(f"No authorization groups found for user {user}")
-        return "", []
+    for value in authorization_config.users.values():
+        if value.email == user:
+            return user, value.groups
+
+    logger.warning(f"No authorization groups found for user {user}")
+    return None, []
 
 
 def get_authorized_patients(

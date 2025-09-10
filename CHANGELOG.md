@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2025-09-10
+
+### Changed
+- Changed the database connection code to make use of the umcu-ai-utils package
+- streamlined the environment variables by changing the name to LLM_ENVIRONMENT and making ENV redundant. 
+- small updates to api_on_demand as refactors were made to app_periodic but not to app_on_demand. 
+
 ## [2.8.0] - 2025-09-03
 
 ### Fixed
