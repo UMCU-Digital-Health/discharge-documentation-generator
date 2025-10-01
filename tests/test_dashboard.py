@@ -4,11 +4,12 @@ import pytest
 from dash import html
 from pandas.testing import assert_frame_equal
 
+from discharge_docs.config import load_department_config
 from discharge_docs.dashboard.helper import (
     get_authorized_patients,
     get_data_from_patient_admission,
+    get_department_prompt,
     get_patients_values,
-    get_template_prompt,
     highlight,
     load_stored_discharge_letters,
     replace_newlines,
@@ -17,12 +18,11 @@ from discharge_docs.dashboard.layout import (
     get_demo_layout,
     get_discharge_doc_card,
     get_GPT_card,
-    get_layout_evaluation_dashboard,
+    get_layout_development_dashboard,
     get_navbar,
     get_patient_data_card,
     get_patient_selection_div,
 )
-from discharge_docs.llm.helper import format_generated_doc
 
 
 def test_layout_functions():
@@ -35,7 +35,7 @@ def test_layout_functions():
     assert isinstance(get_discharge_doc_card("placeholder", "1", "markdown"), dbc.Card)
     assert isinstance(get_GPT_card(), dbc.Card)
     assert isinstance(
-        get_layout_evaluation_dashboard("system prompt", "user prompt"), html.Div
+        get_layout_development_dashboard("system prompt", "user prompt"), html.Div
     )
     assert isinstance(get_demo_layout(), html.Div)
 
@@ -95,30 +95,34 @@ def test_get_data_from_patient_admissions():
     assert_frame_equal(patient_row, admission_df[admission_df["enc_id"] == 1])
 
 
-def test_get_template_prompt():
-    """Tests the get_template_prompt function"""
+def test_get_department_prompt():
+    """Tests the get_department_prompt function"""
     enc_ids_dict = {
-        "test": [1, 2, 3],
-        "test2": [4, 5, 6],
+        "IC": [1, 2, 3],
+        "NICU": [4, 5, 6],
     }
-    template_prompt_dict = {
-        "test": "template 1",
-        "test2": "template 2",
-    }
-    template_prompt, department = get_template_prompt(
-        "1", template_prompt_dict, enc_ids_dict
-    )
-    assert template_prompt == "template 1"
-    assert department == "test"
 
-    template_prompt, department = get_template_prompt(
-        "4", template_prompt_dict, enc_ids_dict
+    department_config = load_department_config()
+
+    department_prompt, department = get_department_prompt(
+        "1", enc_ids_dict, department_config
     )
-    assert template_prompt == "template 2"
-    assert department == "test2"
+    # Check that department is correct and prompt matches config
+    assert department == "IC"
+    assert (
+        department_prompt == department_config.department[department].department_prompt
+    )
+
+    department_prompt, department = get_department_prompt(
+        "4", enc_ids_dict, department_config
+    )
+    assert department == "NICU"
+    assert (
+        department_prompt == department_config.department[department].department_prompt
+    )
 
     with pytest.raises(ValueError):
-        get_template_prompt("7", template_prompt_dict, enc_ids_dict)
+        get_department_prompt("7", enc_ids_dict, department_config)
 
 
 def test_get_patients_values():
@@ -150,28 +154,13 @@ def test_load_stored_discharge_letters():
                 '{"beloop": "letter 2"}',
                 '{"beloop": "letter 3"}',
             ],
+            "generation_time": ["2025-01-01", "2025-01-02", "2025-01-03"],
         }
     )
     discharge_letter = load_stored_discharge_letters(df, "1")
-    assert discharge_letter == {"beloop": "letter 1"}
+    assert discharge_letter.generated_doc == {"beloop": "letter 1"}
     discharge_letter = load_stored_discharge_letters(df, "5")
-    assert discharge_letter == {
+    assert discharge_letter.generated_doc == {
         "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": "Er is geen opgeslagen"
         " documentatie voor deze patiënt."
     }
-
-
-def test_format_generated_doc():
-    """Tests the format_generated_doc function"""
-    generated_doc = {
-        "test": "dit is een test string",
-    }
-
-    formatted_doc = format_generated_doc(generated_doc, "plain")
-    assert formatted_doc == "test\ndit is een test string\n\n"
-
-    formatted_doc = format_generated_doc(generated_doc, "markdown")
-    assert isinstance(formatted_doc[0], html.Div)
-
-    with pytest.raises(ValueError):
-        format_generated_doc(generated_doc, "wrong type")

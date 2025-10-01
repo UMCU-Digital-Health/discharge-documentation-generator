@@ -96,8 +96,8 @@ class PromptBuilder:
         self,
         patient_file: str,
         system_prompt: str | None,
-        user_prompt: str | None,
-        template_prompt: str,
+        general_prompt: str | None,
+        department_prompt: str,
     ) -> int:
         """Get the token length of the input for the GPT model.
 
@@ -107,10 +107,10 @@ class PromptBuilder:
             the patient file as a string
         system_prompt : str
             the system prompt for the GPT model
-        user_prompt : str
-            the user prompt for the GPT model
-        template_prompt : str
-            the template prompt for the GPT model
+        general_prompt : str
+            the general user prompt for the GPT model
+        department_prompt : str
+            the department prompt for the GPT model
 
         Returns
         -------
@@ -119,9 +119,9 @@ class PromptBuilder:
         """
         if system_prompt is None:
             system_prompt = ""
-        if user_prompt is None:
-            user_prompt = ""
-        total_prompt = patient_file + template_prompt + user_prompt + system_prompt
+        if general_prompt is None:
+            general_prompt = ""
+        total_prompt = patient_file + department_prompt + general_prompt + system_prompt
         encoding = tiktoken.get_encoding(self.token_encoding)
         token_length = len(encoding.encode(total_prompt))
         return token_length
@@ -129,9 +129,9 @@ class PromptBuilder:
     def generate_discharge_doc(
         self,
         patient_file: str,
+        department_prompt: str,
         system_prompt: str | None,
-        user_prompt: str | None,
-        template_prompt: str,
+        general_prompt: str | None,
     ) -> dict:
         """
         Generate discharge documentation using GPT model.
@@ -142,10 +142,10 @@ class PromptBuilder:
             The path to the patient file.
         system_prompt : str
             The system prompt for the GPT model.
-        user_prompt : str
+        general_prompt : str
             The user prompt for the GPT model.
-        template_prompt : str
-            The template prompt for the GPT model.
+        department_prompt : str
+            The department prompt for the GPT model.
 
         Returns
         -------
@@ -169,17 +169,17 @@ class PromptBuilder:
                     "content": system_prompt,
                 }
             )
-        if user_prompt is not None:
+        if general_prompt is not None:
             messages.append(
                 {
                     "role": "user",
-                    "content": user_prompt,
+                    "content": general_prompt,
                 }
             )
         messages += [
             {
                 "role": "user",
-                "content": template_prompt,
+                "content": department_prompt,
             },
             {"role": "user", "content": patient_file},
         ]
@@ -187,8 +187,8 @@ class PromptBuilder:
         token_length = self.get_token_length(
             patient_file=patient_file,
             system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            template_prompt=template_prompt,
+            general_prompt=general_prompt,
+            department_prompt=department_prompt,
         )
         if token_length > self.max_context_length:
             logger.error(f"Token length {token_length} exceeds maximum context length")
@@ -213,3 +213,46 @@ class PromptBuilder:
             logger.error(f"Error converting to JSON: {e}")
             raise JSONError() from e
         return reply
+
+    def post_processing(self, reply: str, post_processing_prompt: str) -> dict:
+        """Post-process the generated discharge documentation.
+
+        Parameters
+        ----------
+        reply : str
+            The generated discharge documentation formatted as a string.
+
+        Returns
+        -------
+        dict
+            The post-processed discharge documentation.
+        """
+        messages = [
+            {
+                "role": "user",
+                "content": post_processing_prompt,
+            },
+            {
+                "role": "user",
+                "content": reply,
+            },
+        ]
+        try:
+            response = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,  # type: ignore
+                temperature=self.temperature,
+                response_format={"type": "json_object"},
+            )
+            if response.choices[0].message.content is None:
+                raise Exception("Empty response from GPT model")
+        except Exception as e:
+            logger.error(f"Error generating discharge documentation: {e}")
+            raise GeneralError() from e
+
+        try:
+            processed_reply = json.loads(response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"Error converting to JSON: {e}")
+            raise JSONError() from e
+        return processed_reply

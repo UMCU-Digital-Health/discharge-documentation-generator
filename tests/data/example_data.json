@@ -4,7 +4,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "1",
         "content": "Reden voor opname: postoperatieve ademhalingsproblemen.",
         "description": "Anamnese"
@@ -14,7 +14,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "1",
         "content": "Respiratie: De pati\u00ebnt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.\nCardiologie: Vitale parameters zijn stabiel.\nNeurologie: De pati\u00ebnt is verward, vermoedelijk door de anesthesie.\nInfectie: -",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -24,7 +24,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "02",
         "content": "Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.\nCardiologie: Stabiele vitale parameters.\nNeurologie: Verwardheid blijft aanhouden, vermoeden op delier.\nInfectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -34,7 +34,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "03",
         "content": "Respiratie: beademing-ondersteuning wordt voortgezet.\nCardiologie: Stabiele vitale parameters.\nNeurologie: delier.\nInfectie: minimale verdere stijging in temp, antibiotica worden voortgezet.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -44,7 +44,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "04",
         "content": "Respiratie: Enige verbetering in de ademhaling, pati\u00ebnt blijft afhankelijk van beademing.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier nemen toe.\nInfectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -54,7 +54,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "05",
         "content": "Respiratie: beademing-ondersteuning.\nCardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.\nNeurologie: Verwardheid en delier.\nInfectie: constant, antibioticakuur.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -64,7 +64,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "06",
         "content": "Respiratie: beademing-ondersteuning.\nCardiologie: - (Geen significante verandering)\nNeurologie: Delier verbetert geleidelijk.\nInfectie: -  constant, antibioticakuur.\n",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -74,7 +74,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "07",
         "content": "Respiratie: De pati\u00ebnt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.\nCardiologie: Vitale parameters stabiliseren met behulp van medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -84,7 +84,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "08",
         "content": "Respiratie: - (Geen significante verandering)\nCardiologie: - (Geen significante verandering)\nNeurologie: geen delier meer\nInfectie:  constant, antibioticakuur.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -94,7 +94,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "09",
         "content": "Respiratie: zuurstof, patient zwak  \nCardiologie: - (Geen significante verandering)\nNeurologie: stabiel en helder\nInfectie:  constant, antibioticakuur.",
         "description": "Dagstatus - Tractus 12 Conclusie"
@@ -104,7 +104,7 @@
         "pseudo_id": "test_pseudo_id",
         "patient_id": "0123456789",
         "admissionDate": "1",
-        "department": "Neonatologie",
+        "department": "NICU",
         "date": "10",
         "content": "Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof\nCardiologie: Vitale parameters zijn nu stabiel zonder medicatie.\nNeurologie: -\nInfectie:  constant, antibioticakuur.",
         "description": "Dagstatus - Tractus 12 Conclusie"

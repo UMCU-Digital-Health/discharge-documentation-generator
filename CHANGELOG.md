@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2025-09-22
+
+### Added
+- Added in functionality to have generation be done in two steps: one with categories and one with the "narratief" (a summary). This is adapted into the development dashboard (to be editable) as well as the bulk generation pipeline.
+- Added a department configuration to easily set the configuration per department to prepare for scaling up. 
+- Generation time of a discharge letter is now visible in the development dashboard
+
+### Changed
+- Changed the query for metavision as changes were made in the dataplatform
+- Removed patients from the development dashboard that had a context length too large for the model. 
+- Changed the name of the evaluation dashboard to the development dashboard
+- Changed the names of the prompt to have less confusion: user_prompt to general_prompt and template_prompt to department_prompt
+- Added a dataclass for the discharge letter output, with the format function included
+- Moved the config models to a separate file for better organization
+- Updated many docstrings
+- Renamed and moved the department prompts to llm/prompts/department_prompts/ for better organization
+- Small bugfix in calculating length of stay of patient admission
+- Way of sampling encounter ids option added to ensure equal distribution of long and short admissions per department
+- Updated the connection from internal database connection to umcu-ai-utils package for admin dashboard
+- removed the discharge letter dashboard as the cardiology pilot is finished and this dashboard is no longer used
+
 ## [2.8.1] - 2025-09-10
 
 ### Changed

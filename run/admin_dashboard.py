@@ -6,9 +6,9 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
+from umcu_ai_utils.database_connection import get_engine
 
 from discharge_docs.config import load_auth_config, setup_root_logger
-from discharge_docs.database.connection import get_engine
 from discharge_docs.database.helper import (
     get_dashboard_logging_df,
     get_feedback_merged_df,
@@ -16,6 +16,7 @@ from discharge_docs.database.helper import (
     get_request_generate_df,
     get_request_retrieve_df,
 )
+from discharge_docs.database.models import Request
 
 load_dotenv(override=True)
 
@@ -393,7 +394,8 @@ if __name__ == "__main__":
             (default_start_date, default_end_date),
         )
 
-    SESSIONMAKER = sessionmaker(bind=get_engine(env=env))
+    engine = get_engine(schema_name=Request.__table__.schema)
+    SESSIONMAKER = sessionmaker(bind=engine)
 
     nav = st.navigation(
         [st.Page(kpi_page, title="KPIs"), st.Page(monitoring_page, title="Monitoring")]

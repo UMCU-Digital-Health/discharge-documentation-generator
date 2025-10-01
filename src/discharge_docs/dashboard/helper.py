@@ -10,10 +10,13 @@ from dash import html
 from flask import Request
 
 from discharge_docs.config import AuthConfig
+from discharge_docs.config_models import DepartmentConfig
+from discharge_docs.llm.helper import DischargeLetter, generate_single_doc
 from discharge_docs.llm.prompt_builder import (
     ContextLengthError,
     GeneralError,
     JSONError,
+    PromptBuilder,
 )
 from discharge_docs.processing.processing import get_patient_file
 
@@ -118,18 +121,17 @@ def load_enc_ids() -> dict[str, list[int]]:
 
 def get_user(req: Request) -> str | None:
     """
-    Get the user email from RStudio credentials.
-    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+    Get the user email from RStudio credentials in the request headers.
 
     Parameters
     ----------
     req : Request
-        The request object.
+        The request object containing headers.
 
     Returns
     -------
-    str|None
-        the user's email
+    str | None
+        The user's email address if found, otherwise None.
     """
     credential_header = req.headers.get("RStudio-Connect-Credentials")
     if not credential_header:
@@ -145,26 +147,26 @@ def get_authorization(
     req: Request, authorization_config: AuthConfig, development_authorizations: list
 ) -> tuple[str | None, list[str]]:
     """
-    Get the RStudio Connect credentials from the request headers.
-    Credentials are of the form: {user: "email", groups: ["group1", "group2"]}
-    TODO: Use the groups from the RStudio Connect credentials instead of the lookup
+    Get the user's email and authorization groups from the request headers and config.
+
+    Credentials are expected in the form: {user: "email", groups: ["group1", ...]}
+    If no credentials are found, development mode is used.
 
     Parameters
     ----------
     req : Request
-        The request object.
+        The request object containing headers.
     authorization_config : AuthConfig
         The configuration object containing user authorization information.
-        See auth_example.toml for an example.
-    development_authorizations : List
-        A list of authorization groups for development mode. Development mode is
-        activated if ENC is set to "development".
+    development_authorizations : list
+        A list of authorization groups for development mode.
 
     Returns
     -------
-    Tuple[str|None, List[str]]
-        A tuple containing the user's email or None if not found,
-        and a list of authorization groups for the user.
+    tuple[str | None, list[str]]
+        A tuple containing:
+        - The user's email (or 'Development user'/None)
+        - A list of authorization groups
     """
     user = get_user(req)
     if user is None:
@@ -182,19 +184,22 @@ def get_authorization(
 def get_authorized_patients(
     authorization_group: list, patients: dict
 ) -> tuple[list, str | None]:
-    """Get authorized patients based on authorization group.
+    """
+    Get authorized patients based on the user's authorization group.
 
     Parameters
     ----------
     authorization_group : list
-        The list of authorization groups.
+        The list of authorization groups for the user.
     patients : dict
-        A dictionary containing patient data.
+        A dictionary containing patient data per department.
 
     Returns
     -------
-    tuple[list, dict]
-        A tuple containing the authorized patients and a dictionary of patient data.
+    tuple[list, str | None]
+        A tuple containing:
+        - The list of authorized patients for the user
+        - The value of the first patient (or None if no patients)
     """
     authorized_patients = [
         item
@@ -212,20 +217,19 @@ def get_data_from_patient_admission(
     patient_admission: str | int, data: pd.DataFrame
 ) -> pd.DataFrame:
     """
-    Get data from patient admission.
+    Get the data for a specific patient admission from the DataFrame.
 
     Parameters
     ----------
-    patient_admission : str
-        The identifier of the patient admission. It can be a string or an integer, but
-        it will be converted to an integer.
+    patient_admission : str | int
+        The identifier of the patient admission (converted to int).
     data : pd.DataFrame
-        The dataframe containing information on patient admissions.
+        The DataFrame containing patient admissions.
 
     Returns
     -------
     pd.DataFrame
-        The data associated with the patient admission.
+        The subset of data associated with the patient admission.
     """
     if int(patient_admission) not in data["enc_id"].unique():
         logger.warning(f"Patient admission {patient_admission} not found in data")
@@ -233,51 +237,52 @@ def get_data_from_patient_admission(
     return data[data["enc_id"] == int(patient_admission)]
 
 
-def get_template_prompt(
-    patient_admission: str, template_prompt_dict: dict, enc_ids_dict: dict
+def get_department_prompt(
+    patient_admission: str, enc_ids_dict: dict, department_config: DepartmentConfig
 ) -> tuple[str, str]:
     """
-    Get the template prompt for a patient admission and the department.
+    Get the department prompt and department for a patient admission.
 
     Parameters
     ----------
     patient_admission : str
         The identifier of the patient admission.
-    template_prompt_dict : dict
-        A dictionary containing template prompts for patient admissions.
     enc_ids_dict : dict
-        A dictionary containing enc_ids for different departments.
+        A dictionary mapping departments to lists of encounter IDs.
+    department_config : DepartmentConfig
+        The department configuration object.
 
     Returns
     -------
-    str
-        The template prompt for the patient admission.
-    str
-        The department for the patient admission.
+    tuple[str, str]
+        A tuple containing:
+        - The department prompt for the patient admission
+        - The department name for the patient admission
     """
     for department, encounters in enc_ids_dict.items():
         if int(patient_admission) in encounters:
-            return template_prompt_dict[department], department
+            return department_config.department[
+                department
+            ].department_prompt, department
     raise ValueError("Patient admission not found in enc_ids_dict")
 
 
 def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
     """
-    Get patients' data and values list from a dictionary of dataframes and a dictionary
-    of enc_ids.
+    Get a dictionary of patient values for dropdowns, grouped by department.
 
     Parameters
     ----------
     data : pd.DataFrame
-        A dictionary containing dataframes for different departments.
+        The DataFrame containing patient data.
     enc_ids_dict : dict
-        A dictionary containing enc_ids for different departments.
+        A dictionary mapping department names to lists of encounter IDs.
 
     Returns
     -------
     dict
-        The values list is a dictionary with department names as keys and a list of
-        patients as values.
+        Dictionary with department names as keys and lists of patient dropdown
+        values as values.
     """
     values_list = {}
 
@@ -303,51 +308,59 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
     return values_list
 
 
-def load_stored_discharge_letters(df: pd.DataFrame, selected_enc_id: str) -> dict:
-    """Load discharge letters for a specific patient.
+def load_stored_discharge_letters(
+    df: pd.DataFrame, selected_enc_id: str
+) -> DischargeLetter:
+    """
+    Load discharge letters for a specific patient encounter from a DataFrame.
 
     Parameters
     ----------
     df : pd.DataFrame
-        The DataFrame containing the discharge letters data.
+        The DataFrame containing discharge letters data.
     selected_enc_id : str
-        The encounter id of the patient.
+        The encounter ID of the patient.
 
     Returns
     -------
-    dict
-        The pre-generated and stored discharge letters for the patient.
+    DischargeLetter
+        The stored discharge letter object for the patient. Returns a default
+        message if not found.
     """
     if int(selected_enc_id) not in df["enc_id"].values:
-        return {
-            "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": (
-                "Er is geen opgeslagen documentatie voor deze patiënt."
-            )
-        }
+        return DischargeLetter(
+            {
+                "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": (
+                    "Er is geen opgeslagen documentatie voor deze patiënt."
+                )
+            },
+            None,
+            False,
+            None,
+        )
 
-    discharge_document = df.loc[
-        df["enc_id"] == int(selected_enc_id), "generated_doc"
-    ].values[0]
+    stored_patient = df.loc[df["enc_id"] == int(selected_enc_id)].iloc[0]
+    generation_time = stored_patient["generation_time"]
+    discharge_document = json.loads(stored_patient["generated_doc"])
 
-    discharge_document = json.loads(discharge_document)
-
-    return discharge_document
+    return DischargeLetter(discharge_document, generation_time, success_indicator=True)
 
 
-def get_department_name(selected_patient_admission: int, enc_ids_dict: dict) -> str:
-    """Return the department name based on the encounter ID.
+def get_department(selected_patient_admission: int, enc_ids_dict: dict) -> str:
+    """
+    Return the department name for a given patient admission encounter ID.
 
     Parameters
     ----------
     selected_patient_admission : int
         The encounter ID of the selected patient admission.
     enc_ids_dict : dict
-        A dictionary mapping department names to lists of encounter IDs.
+        Dictionary mapping department names to lists of encounter IDs.
 
     Returns
     -------
     str
-        The name of the department associated with the selected patient admission.
+        The department name associated with the selected patient admission.
     """
     for dep, enc_ids in enc_ids_dict.items():
         if selected_patient_admission in enc_ids:
@@ -356,28 +369,28 @@ def get_department_name(selected_patient_admission: int, enc_ids_dict: dict) -> 
 
 
 def backup_old_department_docs(
-    department_name: str,
+    department: str,
     old_stored_bulk_path: Path,
     stored_bulk_path: Path,
     stored_bulk: pd.DataFrame | None = None,
     stored_bulk_old: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """
-    Update the 'bulk_generated_docs_gpt_old.parquet' file with current docs of the
-    selected department. Docs of other departments remain unchanged.
+    Update the old bulk docs file with current docs for the selected department.
+    Docs for other departments remain unchanged.
 
     Parameters
     ----------
-    department_name : str
-        The name of the department for which the documents are being stored.
+    department : str
+        The name of the department to update.
     old_stored_bulk_path : Path
-        The path to the old stored bulk documents file.
+        Path to the old stored bulk docs file.
     stored_bulk_path : Path
-        The path to the current stored bulk documents file.
+        Path to the current stored bulk docs file.
     stored_bulk : pd.DataFrame, optional
-        The current stored bulk documents DataFrame.
+        Current stored bulk docs DataFrame.
     stored_bulk_old : pd.DataFrame, optional
-        The old stored bulk documents DataFrame.
+        Old stored bulk docs DataFrame.
 
     Returns
     -------
@@ -389,12 +402,12 @@ def backup_old_department_docs(
         stored_bulk = pd.read_parquet(stored_bulk_path)
 
     # Filter out current department in old backup
-    other_depts_old = stored_bulk_old[stored_bulk_old["department"] != department_name]
-    selected_dep_docs = stored_bulk[stored_bulk["department"] == department_name]
+    other_depts_old = stored_bulk_old[stored_bulk_old["department"] != department]
+    selected_dep_docs = stored_bulk[stored_bulk["department"] == department]
     combined = pd.concat([other_depts_old, selected_dep_docs], ignore_index=True)
     combined.to_parquet(old_stored_bulk_path)
     logger.info(
-        f"Old bulk docs updated with current {department_name} data to "
+        f"Old bulk docs updated with current {department} data to "
         f"{old_stored_bulk_path.name}"
     )
 
@@ -402,39 +415,45 @@ def backup_old_department_docs(
 
 
 def generate_bulk_docs_for_department(
-    department_name: str,
+    department: str,
     enc_ids: list[int],
     data: pd.DataFrame,
-    template_prompt: str,
-    prompt_builder,
+    prompt_builder: PromptBuilder,
     system_prompt: str,
-    user_prompt: str,
+    general_prompt: str,
+    department_config: DepartmentConfig,
+    department_prompt: str | None = None,
+    post_processing_prompt: str | None = None,
 ) -> pd.DataFrame:
     """
     Generate discharge letters for all encounters in a department.
 
     Parameters
     ----------
-    department_name : str
+    department : str
         The name of the department for which discharge letters are generated.
     enc_ids : list[int]
-        A list of encounter IDs for which discharge letters are to be generated.
+        List of encounter IDs for which discharge letters are generated.
     data : pd.DataFrame
-        The DataFrame containing patient admission data.
-    template_prompt : str
-        The template prompt to be used for generating discharge letters.
+        DataFrame containing patient admission data.
     prompt_builder : PromptBuilder
-        An instance of the PromptBuilder class used to generate discharge documents.
+        Instance of PromptBuilder used to generate discharge documents.
     system_prompt : str
-        The system prompt to be used in the document generation.
-    user_prompt : str
-        The user prompt to be used in the document generation.
+        The system prompt to use in document generation.
+    general_prompt : str
+        The user prompt to use in document generation.
+    department_config : DepartmentConfig
+        The department configuration object.
+    department_prompt : str | None, optional
+        The department-specific prompt to use (if any).
+    post_processing_prompt : str | None, optional
+        The post-processing prompt to refine the generated documents (if any).
 
     Returns
     -------
     pd.DataFrame
-        A DataFrame containing the generated discharge letters for the specified
-        department and encounters.
+        DataFrame containing the generated discharge letters for the department
+        and encounters.
     """
     docs = []
 
@@ -443,53 +462,66 @@ def generate_bulk_docs_for_department(
         patient_data = get_data_from_patient_admission(enc_id, data)
         patient_file_string, _ = get_patient_file(patient_data)
 
+        discharge_letter = generate_single_doc(
+            prompt_builder=prompt_builder,
+            patient_file_string=patient_file_string,
+            system_prompt=system_prompt,
+            general_prompt=general_prompt,
+            department=patient_data["department"].iloc[0],
+            department_config=department_config,
+            length_of_stay=patient_data["length_of_stay"].values[0],
+            department_prompt=department_prompt,
+            post_processing_prompt=post_processing_prompt,
+        )
+
         try:
-            discharge_letter = prompt_builder.generate_discharge_doc(
-                patient_file=patient_file_string,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                template_prompt=template_prompt,
-            )
-            content = json.dumps(discharge_letter)
+            content = json.dumps(discharge_letter.generated_doc)
         except (ContextLengthError, JSONError, GeneralError) as e:
             content = json.dumps(
                 {"Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": e.dutch_message}
             )
 
         docs.append(
-            {"enc_id": enc_id, "department": department_name, "generated_doc": content}
+            {
+                "enc_id": enc_id,
+                "department": department,
+                "generated_doc": content,
+                "generation_time": discharge_letter.generation_time,
+            }
         )
 
-    return pd.DataFrame(docs)
+    docs = pd.DataFrame(docs)
+    return docs
 
 
 def update_stored_bulk_docs(
     stored_bulk_path: Path,
-    department_name: str,
+    department: str,
     new_docs: pd.DataFrame,
     stored_bulk: pd.DataFrame,
 ) -> None:
     """
-    Update the 'bulk_generated_docs_gpt.parquet' file with new generated docs of the
-    selected department. Docs of other departments remain unchanged.
+    Update the stored bulk docs file with new generated docs for the selected
+    department. Docs for other departments remain unchanged.
 
     Parameters
     ----------
     stored_bulk_path : Path
-        The path to the stored bulk documents file.
-    department_name : str
-        The name of the department for which the documents are being updated.
+        Path to the stored bulk documents file.
+    department : str
+        The name of the department to update.
     new_docs : pd.DataFrame
-        A DataFrame containing the newly generated discharge documents.
+        DataFrame containing the newly generated discharge documents.
     stored_bulk : pd.DataFrame
         The current stored bulk documents DataFrame.
 
     Returns
     -------
     None
-        This function does not return anything. It updates the stored bulk documents.
+        This function does not return anything. It updates the stored bulk
+        documents file.
     """
-    other_depts = stored_bulk[stored_bulk["department"] != department_name]
+    other_depts = stored_bulk[stored_bulk["department"] != department]
     updated = pd.concat([other_depts, new_docs], ignore_index=True)
     updated.to_parquet(stored_bulk_path)
 

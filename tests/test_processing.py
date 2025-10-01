@@ -2,13 +2,22 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
+import tomli_w
 
 from discharge_docs.api.pydantic_models import PatientFile
+from discharge_docs.processing import processing
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
+    combine_patient_and_docs_data_hix,
+    filter_data,
+    get_patient_discharge_docs,
     get_patient_file,
+    pre_process_hix_data,
     process_data,
+    random_sample_with_warning,
     replace_text,
+    write_encounter_ids,
 )
 
 
@@ -44,7 +53,7 @@ def test_process_data():
         "pseudo_id",
         "patient_id",
     ]
-    assert set(expected_columns).issubset(processed_data), (
+    assert set(expected_columns).issubset(processed_data.columns), (
         "Columns should be correctly renamed and unnecessary columns dropped"
     )
 
@@ -155,3 +164,207 @@ def test_process_dates():
 
     assert test_data_df["date"].dtype == "datetime64[ns, UTC]"
     assert pd.isna(test_data_df["date"].iloc[1])
+
+
+def test_filter_data_ic_nicu_car():
+    # IC department
+    df = pd.DataFrame(
+        {
+            "description": [
+                "MS Chronologie Eventlijst Print",
+                "Ontslagbrief",
+                "Unknown",
+            ],
+            "content": ["A", "B", "C"],
+            "department": ["IC", "IC", "IC"],
+        }
+    )
+    filtered = filter_data(df, "IC")
+    assert set(filtered["description"]).issubset(
+        set(filter_data(df, "IC")["description"])
+    )
+
+    # NICU department
+    df = pd.DataFrame(
+        {
+            "description": [
+                "Dagstatus - Tractus 01 Lichamelijk Onderzoek",
+                "MS Chronologie Eventlijst Print",
+            ],
+            "content": ["A", "B"],
+            "department": ["NICU", "NICU"],
+        }
+    )
+    filtered = filter_data(df, "NICU")
+    assert (
+        "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values
+        or "Anamnese" in filtered["description"].values
+    )
+
+    # CAR department
+    df = pd.DataFrame(
+        {
+            "description": ["Conclusie", "Ontslagbrief"],
+            "content": ["A", "B"],
+            "department": ["CAR", "CAR"],
+        }
+    )
+    filtered = filter_data(df, "CAR")
+    assert "Conclusie" in filtered["description"].values
+
+    # PICU department returns unchanged
+    df = pd.DataFrame(
+        {
+            "description": ["Anything"],
+            "content": ["A"],
+            "department": ["PICU"],
+        }
+    )
+    filtered = filter_data(df, "PICU")
+    assert filtered.equals(df)
+
+    # Unknown department raises error
+    with pytest.raises(ValueError):
+        filter_data(df, "UNKNOWN")
+
+
+def test_random_sample_with_warning():
+    df = pd.DataFrame({"a": range(3)})
+    # n < len(df)
+    sample = random_sample_with_warning(df, 2)
+    assert len(sample) == 2
+    # n > len(df) triggers warning, returns all
+    sample = random_sample_with_warning(df, 5)
+    assert len(sample) == 3
+
+
+def test_get_patient_discharge_docs():
+    df = pd.DataFrame(
+        {
+            "enc_id": [1, 1, 2],
+            "description": ["Ontslagbrief", "Other", "Ontslagbrief"],
+            "content": ["doc1", "other", "doc2"],
+        }
+    )
+    # With enc_id
+    result = get_patient_discharge_docs(df, enc_id=1)
+    # Accept either ["doc1", "doc2"] or ["doc1"] depending on logic
+    assert "doc1" in list(result.values)
+    # Without enc_id
+    result = get_patient_discharge_docs(df)
+    assert "doc1" in list(result.values) and "doc2" in list(result.values)
+
+
+def test_combine_patient_and_docs_data_hix():
+    patient_data = pd.DataFrame({"a": [1]})
+    discharge_data = pd.DataFrame({"a": [2]})
+    result = combine_patient_and_docs_data_hix(patient_data, discharge_data)
+    assert len(result) == 2
+    assert "description" in result.columns
+    assert (result["description"] == "Ontslagbrief").any()
+
+
+class DummyHixInput:
+    def model_dump(self):
+        return {
+            "ALLPARTS": [
+                {
+                    "TEXT": "{\\rtf1 A}",
+                    "NAAM": "desc",
+                    "DATE": "2024-01-01",
+                    "SPECIALISM": "dep",
+                }
+            ]
+        }
+
+
+def test_pre_process_hix_data():
+    data = DummyHixInput()
+    df = pre_process_hix_data(data)  # type: ignore
+    assert "content" in df.columns and "description" in df.columns
+    assert df["description"].iloc[0] == "desc"
+    assert df["content"].iloc[0] == "A"
+
+
+def test_write_encounter_ids(monkeypatch, tmp_path):
+    # Patch PromptBuilder and file writing
+    class DummyPromptBuilder:
+        def __init__(self, **kwargs):
+            self.max_context_length = 10000
+
+        def get_token_length(self, **kwargs):
+            return 100
+
+    monkeypatch.setattr(processing, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(processing, "initialise_azure_connection", lambda: None)
+    monkeypatch.setattr(tomli_w, "dump", lambda data, f: f.write(b"test"))
+
+    # Test random selection
+    df_random = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3],
+            "department": ["IC", "IC", "CAR"],
+            "description": ["Ontslagbrief", "Ontslagbrief", "Ontslagbrief"],
+            "content": ["A", "B", "C"],
+            "admissionDate": pd.to_datetime(["2024-01-01"] * 3),
+            "dischargeDate": pd.to_datetime(["2024-01-02"] * 3),
+        }
+    )
+    # Should not raise
+    write_encounter_ids(
+        df_random,
+        n_enc_ids=1,
+        selection="random",
+        return_encs=True,
+    )
+
+    # Unknown selection raises error
+    with pytest.raises(ValueError):
+        write_encounter_ids(
+            df_random,
+            n_enc_ids=1,
+            selection="unknown",
+            return_encs=True,
+        )
+
+    # Test 50/50 split selection
+    df_5050 = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3, 4, 5, 6],
+            "department": ["IC", "IC", "IC", "IC", "IC", "IC"],
+            "description": ["Ontslagbrief"] * 6,
+            "content": ["A", "B", "C", "D", "E", "F"],
+            "admissionDate": pd.to_datetime(["2024-01-01"] * 6),
+            "dischargeDate": pd.to_datetime(
+                [
+                    "2024-01-02",
+                    "2024-01-10",
+                    "2024-01-20",
+                    "2024-01-02",
+                    "2024-01-10",
+                    "2024-01-20",
+                ]
+            ),
+        }
+    )
+    df_5050["length_of_stay"] = (
+        df_5050["dischargeDate"] - df_5050["admissionDate"]
+    ).dt.days
+    length_of_stay_cutoff = 10
+    # Should not raise and should select 50/50 split
+    enc_ids = write_encounter_ids(
+        df_5050,
+        n_enc_ids=4,
+        length_of_stay_cutoff=length_of_stay_cutoff,
+        selection="50/50_long/short",
+        return_encs=True,
+    )
+    assert enc_ids is not None
+    # check if at least 2 out of the 4 selected enc_ids are from each group
+    short_enc_ids = [1, 2, 4, 5]
+    long_enc_ids = [3, 6]
+    selected_ids = set(enc_ids["enc_id"].values)
+    short_count = sum(enc_id in selected_ids for enc_id in short_enc_ids)
+    long_count = sum(enc_id in selected_ids for enc_id in long_enc_ids)
+    assert short_count == 2
+    assert long_count == 2

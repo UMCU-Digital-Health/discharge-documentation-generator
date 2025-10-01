@@ -7,7 +7,10 @@ from fastapi import Depends, FastAPI
 from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.orm import Session
 
-from discharge_docs.api.api_helper import ApiEndpoint, check_authorisation
+from discharge_docs.api.api_helper import (
+    ApiEndpoint,
+    check_authorisation,
+)
 from discharge_docs.api.pydantic_models import (
     HixInput,
     HixOutput,
@@ -17,8 +20,10 @@ from discharge_docs.config import (
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     get_current_version,
+    load_department_config,
     setup_root_logger,
 )
+from discharge_docs.dashboard.helper import generate_single_doc
 from discharge_docs.database.models import (
     Encounter,
     GeneratedDoc,
@@ -26,15 +31,10 @@ from discharge_docs.database.models import (
     RequestGenerate,
 )
 from discharge_docs.llm.connection import initialise_azure_connection
-from discharge_docs.llm.helper import format_generated_doc
 from discharge_docs.llm.prompt import (
     load_prompts,
-    load_template_prompt,
 )
 from discharge_docs.llm.prompt_builder import (
-    ContextLengthError,
-    GeneralError,
-    JSONError,
     PromptBuilder,
 )
 from discharge_docs.processing.deduce_text import apply_deduce
@@ -59,6 +59,8 @@ app = FastAPI()
 client = initialise_azure_connection()
 
 logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
+
+department_config = load_department_config()
 
 
 def get_session():
@@ -162,36 +164,38 @@ async def generate_hix_discharge_docs(
     patient_file_string = validated_data["value"]
     department = validated_data["department"]
 
-    template_prompt = load_template_prompt(department)
-
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
         deployment_name=DEPLOYMENT_NAME_ENV,
         client=client,
     )
 
-    user_prompt, system_prompt = load_prompts()
+    general_prompt, system_prompt = load_prompts()
     token_length = prompt_builder.get_token_length(
-        patient_file_string, system_prompt, user_prompt, template_prompt
+        patient_file_string,
+        system_prompt,
+        general_prompt,
+        department_config.department[department].department_prompt,
     )
-    try:
-        discharge_letter = prompt_builder.generate_discharge_doc(
-            patient_file=patient_file_string,
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            template_prompt=template_prompt,
-        )
-        discharge_letter_json = json.dumps(discharge_letter)
-        discharge_letter = format_generated_doc(discharge_letter, format_type="plain")
 
-        discharge_letter = (
-            f"Deze brief is door AI gegenereerd op: "
-            f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter}"
-        )
-        outcome = "Success"
-    except (ContextLengthError, JSONError, GeneralError) as e:
-        outcome = e.type
-        discharge_letter = e.dutch_message
+    discharge_letter = generate_single_doc(
+        prompt_builder=prompt_builder,
+        patient_file_string=patient_file_string,
+        system_prompt=system_prompt,
+        general_prompt=general_prompt,
+        department=department,
+        department_config=department_config,
+        length_of_stay=None,  # TODO check how we want to handle this
+    )
+
+    discharge_letter_plain = discharge_letter.format(
+        format_type="plain", include_generation_time=False
+    )
+
+    returned_letter = (
+        f"Deze brief is door AI gegenereerd op: "
+        f"{start_time:%d-%m-%Y %H:%M}\n\n\n{discharge_letter_plain}"
+    )
 
     encounter_db = Encounter(
         enc_id=None, patient_id=None, department=department, admissionDate=None
@@ -199,9 +203,11 @@ async def generate_hix_discharge_docs(
     db.add(encounter_db)
 
     gendoc_db = GeneratedDoc(
-        discharge_letter=discharge_letter_json,
+        discharge_letter=json.dumps(discharge_letter.generated_doc),
         input_token_length=token_length,
-        success_ind=outcome,
+        success_ind="Success"
+        if discharge_letter.success_indicator
+        else discharge_letter.error_type,  # type: ignore
     )
     request_generate.generated_doc_relation.append(gendoc_db)
     encounter_db.gen_doc_relation.append(gendoc_db)
@@ -215,7 +221,7 @@ async def generate_hix_discharge_docs(
     db.commit()
     logger.info("Finished generating discharge letter")
 
-    return LLMOutput(message=discharge_letter)
+    return LLMOutput(message=returned_letter)
 
 
 @app.get("/")

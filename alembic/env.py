@@ -1,8 +1,8 @@
 from logging.config import fileConfig
 
 from alembic import context
+from umcu_ai_utils.database_connection import get_connection_string, get_engine
 
-from discharge_docs.database.connection import get_connection_string, get_engine
 from discharge_docs.database.models import Base
 
 # this is the Alembic Config object, which provides

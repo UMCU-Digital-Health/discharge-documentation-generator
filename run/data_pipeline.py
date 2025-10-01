@@ -9,12 +9,13 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine.url import URL
 from striprtf.striprtf import rtf_to_text
 
-from discharge_docs.config import setup_root_logger
+from discharge_docs.config import load_department_config, setup_root_logger
 from discharge_docs.dashboard.helper import load_enc_ids
 from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.processing.bulk_generation import bulk_generate
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
+    SelectionMethod,
     combine_patient_and_docs_data_hix,
     process_data,
     write_encounter_ids,
@@ -28,17 +29,23 @@ logger = logging.getLogger(__name__)
 # config
 DATA_SOURCE_HIX = False
 DATA_SOURCE_METAVISION = True
-DATA_SOURCE_DEMO = False
+DATA_SOURCE_DEMO = True
 
-EXPORT_DATAPLATFORM = False  # only set to False when data export has already been done
-START_DATE = "2025-02-01"
-END_DATE = "2025-02-03"
+EXPORT_DATAPLATFORM = True  # only set to False when data export has already been done
+START_DATE = "2025-07-01"
+END_DATE = "2025-09-30"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWD = os.getenv("DB_PASSWD")
 
-PROCESSING = False  # set only to False when processing has already been done
+PROCESSING = True  # set only to False when processing has already been done
 # and enc_ids.toml is filled with the desired encounter ids
 COMBINE_WITH_PREVIOUS_DATA = False
+SELECTION_ENC_IDS = (
+    SelectionMethod.RANDOM
+)  # SelectionMethod.RANDOM or SelectionMethod.BALANCED
+LENGTH_OF_STAY_CUTOFF = (
+    7  # days, only used if SELECTION_ENC_IDS is SelectionMethod.BALANCED
+)
 
 BULK_GENERATE_LETTERS = True
 MOVE_OLD_BULK_TO_BACKUP = True
@@ -120,6 +127,8 @@ def run_processing(
     raw_data_folder: Path,
     processed_data_folder: Path,
     combine_with_previous_data: bool,
+    selection_enc_ids: SelectionMethod,
+    length_of_stay_cutoff: int | None = None,
 ) -> None:
     """This function processes the data from the raw_data_folder and saves it to the
     processed_data_folder. Data_source_hix and data_source_metavision are booleans
@@ -160,7 +169,6 @@ def run_processing(
         logger.warning(
             "There is an enc_id overlapping in both HiX and Metavision data."
         )
-
     if data_frames:
         data = (
             pd.concat(data_frames, axis=0)
@@ -172,7 +180,6 @@ def run_processing(
     else:
         # Initialize empty dataframe with expected structure if no main data sources
         data = pd.DataFrame()
-
     if data_source_demo:
         demo_patient = pd.read_csv(
             Path(__file__).parents[1] / "data" / "examples" / "DEMO_patient_1.csv",
@@ -193,7 +200,12 @@ def run_processing(
             )
         data = pd.concat([data_old, data], axis=0).reset_index(drop=True)
 
-    write_encounter_ids(data, n_enc_ids=25)
+    write_encounter_ids(
+        data,
+        n_enc_ids=25,
+        length_of_stay_cutoff=length_of_stay_cutoff,
+        selection=selection_enc_ids,
+    )
 
     data.to_parquet(Path(processed_data_folder / "evaluation_data.parquet"))
 
@@ -228,6 +240,8 @@ def run_bulk_generation(
         if department in departments
     }
 
+    department_config = load_department_config()
+
     bulk_generate(
         data,
         save_folder=processed_data_folder,
@@ -235,6 +249,7 @@ def run_bulk_generation(
         client=client,
         skip_old_enc_ids=False,
         old_bulk_letters=old_bulk_letters,
+        department_config=department_config,
     )
     logger.info("Bulk generation of letters complete")
 
@@ -266,6 +281,8 @@ if __name__ == "__main__":
             raw_data_folder,
             processed_data_folder,
             COMBINE_WITH_PREVIOUS_DATA,
+            SELECTION_ENC_IDS,
+            LENGTH_OF_STAY_CUTOFF,
         )
 
     if BULK_GENERATE_LETTERS:

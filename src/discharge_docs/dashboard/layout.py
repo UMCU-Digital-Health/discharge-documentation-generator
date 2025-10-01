@@ -375,9 +375,21 @@ def get_GPT_card() -> dbc.Card:
                                  """
                                 ),
                                 dbc.Textarea(
-                                    id="template_prompt_field",
+                                    id="department_prompt_field",
                                     value="",
                                     style={"height": "250px"},
+                                ),
+                                html.Div(
+                                    children=[
+                                        html.H5("Post processing prompt:"),
+                                        dbc.Textarea(
+                                            id="post_processing_prompt_field",
+                                            value="",
+                                            style={"height": "250px"},
+                                        ),
+                                    ],
+                                    id="post_processing_prompt_div",
+                                    style={"display": "none"},
                                 ),
                                 dbc.Switch(
                                     id="use_system_prompt",
@@ -438,12 +450,7 @@ def get_GPT_card() -> dbc.Card:
                                         html.Div(
                                             [""],
                                             id="output_GPT_discharge_documentation",
-                                        ),
-                                        html.Div(
-                                            [""],
-                                            id="output_gen_time",
-                                            style={"fontStyle": "italic"},
-                                        ),
+                                        )
                                     ]
                                 )
                             ]
@@ -457,7 +464,9 @@ def get_GPT_card() -> dbc.Card:
     return GPT_card
 
 
-def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> html.Div:
+def get_layout_development_dashboard(
+    system_prompt: str, general_prompt: str
+) -> html.Div:
     navbar = get_navbar(
         view_user=True, header_title="Ontslagbrief evaluatie", add_dev_toggle=True
     )
@@ -499,15 +508,17 @@ def get_layout_evaluation_dashboard(system_prompt: str, user_prompt: str) -> htm
             ),
             dbc.Card(
                 [
-                    dbc.CardHeader("User prompt"),
-                    dbc.CardBody(dcc.Markdown(user_prompt)),
+                    dbc.CardHeader("Algemene prompt"),
+                    dbc.CardBody(dcc.Markdown(general_prompt)),
                 ],
                 class_name="mb-2",
             ),
             dbc.Card(
                 [
                     dbc.CardHeader("Afdeling prompt"),
-                    dbc.CardBody(dcc.Markdown("Laden...", id="template_prompt_space")),
+                    dbc.CardBody(
+                        dcc.Markdown("Laden...", id="department_prompt_space")
+                    ),
                 ]
             ),
         ],

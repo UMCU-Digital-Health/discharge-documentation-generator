@@ -1,12 +1,21 @@
+import logging
 import re
+from enum import Enum
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, cast
 
 import pandas as pd
 import tomli_w
 from striprtf.striprtf import rtf_to_text
 
 from discharge_docs.api.pydantic_models import HixInput
+from discharge_docs.config import DEPLOYMENT_NAME_BULK, TEMPERATURE
+from discharge_docs.llm.connection import initialise_azure_connection
+from discharge_docs.llm.prompt_builder import (
+    PromptBuilder,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def replace_text(input_text):
@@ -91,6 +100,9 @@ def process_data(
     pd.DataFrame
         The processed patient data DataFrame.
     """
+    if patient_data.empty:
+        logger.warning("No patient data to process.")
+        return patient_data
     df = patient_data.copy()
 
     df["date"] = pd.to_datetime(df["date"].dt.date)
@@ -119,9 +131,16 @@ def process_data(
         ).reset_index(drop=True)
 
     if "dischargeDate" in df.columns:
-        df["length_of_stay"] = pd.to_timedelta(
-            (df["dischargeDate"].dt.date - df["admissionDate"].dt.date)
+        df["length_of_stay"] = (
+            df["dischargeDate"].dt.normalize() - df["admissionDate"].dt.normalize()
         ).dt.days
+    elif "admissionDate" in df.columns:
+        today = pd.Timestamp.now().tz_localize(None).normalize()
+        df["length_of_stay"] = (
+            today - df["admissionDate"].dt.tz_localize(None).dt.normalize()
+        ).dt.days
+    else:
+        df["length_of_stay"] = None
 
     if remove_encs_no_docs:
         encs_with_docs = df.loc[df["description"] == "Ontslagbrief", "enc_id"].unique()
@@ -138,10 +157,11 @@ def process_data(
     )
 
     df = (
-        df.groupby("department")
+        df.groupby("department", group_keys=False)[df.columns]
         .apply(
-            lambda x: filter_data(x, x.name).assign(department=x.name),
-            include_groups=False,
+            lambda g: filter_data(g, cast(str, g.name)).assign(
+                department=cast(str, g.name)
+            )
         )
         .reset_index(drop=True)
     )
@@ -252,13 +272,48 @@ def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
     return df
 
 
-def write_encounter_ids(data: pd.DataFrame, n_enc_ids: int) -> None:
+def random_sample_with_warning(df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """Randomly samples a DataFrame with a warning if the sample size is larger than the
+      DataFrame. Used in the write_encounter_ids function.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to sample from.
+    n : int
+        The number of samples to draw.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the sampled rows.
+    """
+    if len(df) >= n:
+        return df.sample(n=min(len(df), n))
+    else:
+        logger.warning(f"DataFrame has only {len(df)} rows, requested {n}")
+        return df
+
+
+class SelectionMethod(Enum):
+    RANDOM = "random"
+    BALANCED = "50/50_long/short"
+
+
+def write_encounter_ids(
+    data: pd.DataFrame,
+    n_enc_ids: int,
+    selection: SelectionMethod = SelectionMethod.RANDOM,
+    length_of_stay_cutoff: int | None = None,
+    return_encs: bool = False,
+) -> None | pd.DataFrame:
     """
     Writes the encounter IDs from the data to a TOML file.
 
     This function processes the provided DataFrame to extract unique encounter IDs
     for each department, limits the number of encounter IDs per department to the
     specified number, and writes the result to a TOML file.
+    Does not select encounters that have are above the token limit for the LLM.
 
     Parameters
     ----------
@@ -266,24 +321,86 @@ def write_encounter_ids(data: pd.DataFrame, n_enc_ids: int) -> None:
         The DataFrame containing the encounter data.
     n_enc_ids : int
         The number of encounter IDs to keep per department.
+    length_of_stay_cutoff : int, optional
+        The cutoff for length of stay to differentiate between long and short stays.
+    selection : SelectionMethod, optional
+        The method to select encounters, by default SelectionMethod.RANDOM.
+        Options are:
+        - SelectionMethod.RANDOM: Randomly select encounters.
+        - SelectionMethod.BALANCED: Select 50% long stays and 50% short stays.
     """
-    # replace certain values in department
-    enc_ids = data[["enc_id", "department"]].drop_duplicates()
+    # remove encounter with too high token length
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name=DEPLOYMENT_NAME_BULK,
+        client=initialise_azure_connection(),
+    )
+    for enc_id in data["enc_id"].unique():
+        patient_file, _ = get_patient_file(data, enc_id=enc_id)
+        token_length = prompt_builder.get_token_length(
+            patient_file=patient_file,
+            system_prompt="",
+            general_prompt="",
+            department_prompt="",
+        )
+        if token_length > prompt_builder.max_context_length - 5000:
+            data = data[data["enc_id"] != enc_id]
 
-    # keep only first n_enc_ids per department
-    enc_ids = enc_ids.groupby("department").head(n_enc_ids)
+    if selection == "random":
+        enc_ids = data[["enc_id", "department"]].drop_duplicates()
+        # keep only first n_enc_ids per department
+        enc_ids = (
+            enc_ids.groupby("department")[["enc_id", "department"]]
+            .apply(random_sample_with_warning, n=n_enc_ids)
+            .reset_index(drop=True)
+        )
+    elif selection == "50/50_long/short":
+        # select 50% of encounters with long length of stay and 50% with short
+        long_encs = data[data["length_of_stay"] >= length_of_stay_cutoff][
+            ["enc_id", "department"]
+        ].drop_duplicates()
+
+        short_encs = data[data["length_of_stay"] < length_of_stay_cutoff][
+            ["enc_id", "department"]
+        ].drop_duplicates()
+
+        for dept in data["department"].unique():
+            long_count = len(long_encs[long_encs["department"] == dept])
+            short_count = len(short_encs[short_encs["department"] == dept])
+            logger.info(
+                f"Department: {dept} - Long encounters: {long_count}"
+                f", Short encounters: {short_count}"
+            )
+        long_encs_sample = (
+            long_encs.groupby("department")[["enc_id", "department"]]
+            .apply(random_sample_with_warning, n=n_enc_ids // 2)
+            .reset_index(drop=True)
+        )
+        short_encs_sample = (
+            short_encs.groupby("department")[["enc_id", "department"]]
+            .apply(random_sample_with_warning, n=n_enc_ids // 2)
+            .reset_index(drop=True)
+        )
+        enc_ids = pd.concat([long_encs_sample, short_encs_sample], axis=0)
+    else:
+        raise ValueError(f"Selection {selection} not recognized")
+
     # combine and save as TOML where the table is the department and the encs are a list
-    enc_ids = enc_ids.groupby("department")["enc_id"].apply(list).to_dict()
-    toml_data = {dept: {"ids": ids} for dept, ids in enc_ids.items()}
+    enc_ids_dict = enc_ids.groupby("department")["enc_id"].apply(list).to_dict()
+    toml_data = {dept: {"ids": ids} for dept, ids in enc_ids_dict.items()}
 
-    with open(
-        Path(__file__).parents[3]
-        / "src"
-        / "discharge_docs"
-        / "dashboard"
-        / "enc_ids.toml",
-        "wb",
-    ) as f:
+    if return_encs:
+        return enc_ids
+    else:
+        file_path = (
+            Path(__file__).parents[3]
+            / "src"
+            / "discharge_docs"
+            / "dashboard"
+            / "enc_ids.toml"
+        )
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, "wb") as f:
         tomli_w.dump(toml_data, f)
 
 

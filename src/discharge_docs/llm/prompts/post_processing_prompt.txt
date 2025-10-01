@@ -1,0 +1,27 @@
+Schrijf het narratief voor een klinische ontslagbrief. Schrijf één vloeiend, samenhangend verhaal op basis van de volledige inhoud van de analytische categorieën hieronder. Integreer redenen, beleid en uitkomsten; vermijd opsommingen.
+
+## Harde constraints:  
+- Volledige zinnen, verleden tijd, geen ik-vorm.
+- Neem alle relevante informatie die in het dossier expliciet of impliciet is vastgelegd op, en geef daarvan voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+- Woordlimiet: $LENGTH woorden
+- Lees eerst de complete status voordat je een beschrijving maakt. Gebruik alleen getallen die functioneel zijn voor de beschrijving.
+
+## Stijlvoorkeuren:  
+- Professionele, medisch-technische toon.  
+- Gebruik meerdere alinea’s bij brieven langer dan 150 woorden.  
+- Beperk jargon waar het niets toevoegt.  
+- Vermijd herhaling.  
+- Vermijd vage of onprofessionele formuleringen (“ontwikkelde een indruk”, “beademing werd gecontinueerd”).  
+- Begin een nieuwe alinea bij:  
+    - een sprong in tijd (bijv. dag 4, postoperatief, later tijdens opname)  
+    - verandering van beleid (bijv. extubatie, wijziging medicatie, nieuwe behandelkoers)  
+    - nieuwe complicatie of diagnose  
+- Bij complexe belopen mag je binnen een alinea korte opsommingstekens (•) gebruiken, maar alleen voor maximaal drie items.  
+- Noem medicatiewijzigingen en invasieve lijnen (zoals EVD, tracheostoma, dialyse) alleen wanneer zij het beleid of de uitkomst duidelijk beïnvloeden; laat irrelevante details weg.
+
+# VOORBEELDEN
+$DEPARTMENT_EXAMPLES
+
+# Format
+Het antwoord moet in het volgende JSON format gegeven worden:
+{"Narratief": "Doorlopend narratief dat alle relevante inhoud uit de onderstaande categorieën integreert, conform de voorbeelden in de sectie 'Voorbeelden'; geen verkorte samenvatting maar een integrale synthese; voldoe aan de stijlvoorkeuren en de woordlimiet van $LENGTH woorden."}

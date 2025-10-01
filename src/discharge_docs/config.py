@@ -4,40 +4,24 @@ import sys
 import tomllib
 from pathlib import Path
 
-from pydantic import BaseModel, EmailStr
 from rich.logging import RichHandler
+
+from discharge_docs.config_models import (
+    AuthConfig,
+    DepartmentConfig,
+    LLMConfig,
+)
+from discharge_docs.llm.prompt import (
+    load_department_examples,
+    load_department_prompt,
+    load_post_processing_prompt,
+)
 
 CONFIG_PATH = Path(__file__).parents[2] / "run" / "config" / "deployment_config.toml"
 AUTH_CONFIG_PATH = Path(__file__).parents[2] / "run" / "config" / "auth.toml"
-
-
-class LLMConfig(BaseModel):
-    """Configuration for the LLM deployments.
-
-    Environments are:
-    - acc: Acceptance environment for test pipeline
-    - prod: Production environment for production pipeline
-    - bulk: Bulk generation environment for bulk generating letters for evaluation
-    - eval: Evaluation environment for evaluation dashboard
-    - env: Environment variable to determine the current environment
-    """
-
-    temperature: float
-    DEPLOYMENT_NAME_ACC: str
-    DEPLOYMENT_NAME_PROD: str
-    DEPLOYMENT_NAME_BULK: str
-    DEPLOYMENT_NAME_EVAL: str
-    DEPLOYMENT_NAME_ENV: str
-
-
-class AuthUser(BaseModel):
-    email: EmailStr
-    groups: list[str]
-    developer: bool = False
-
-
-class AuthConfig(BaseModel):
-    users: dict[str, AuthUser]
+DEPARTMENT_CONFIG_PATH = (
+    Path(__file__).parent / "llm" / "prompts" / "department_config.toml"
+)
 
 
 def load_config(config_path: Path = CONFIG_PATH) -> LLMConfig:
@@ -122,6 +106,41 @@ def setup_root_logger() -> None:
             )
         )
     root_logger.addHandler(console_handler)
+
+
+def load_department_config(
+    config_path: Path = DEPARTMENT_CONFIG_PATH, fill_prompts: bool = True
+) -> DepartmentConfig:
+    """Load the department configuration from a TOML file.
+
+    Parameters
+    ----------
+    config_path : Path, optional
+        The path to the department configuration file, by default DEPARTMENT_CONFIG_PATH
+    fill_prompts : bool, optional
+        Whether to fill department prompts and examples, by default True
+
+    Returns
+    -------
+    DepartmentConfig
+        An instance of DepartmentConfig containing department settings.
+        Use the instance like:
+        returned = load_department_config()
+        returned.department["IC"].department_prompt
+    """
+    with open(config_path, "rb") as f:
+        data = tomllib.load(f)
+    department_config = DepartmentConfig(**data)
+
+    if fill_prompts:
+        for dept in department_config.department.values():
+            dept.department_prompt = load_department_prompt(dept.id)
+            if dept.department_examples is not None:
+                dept.department_examples = load_department_examples(dept.id)
+
+            if dept.post_processing:
+                dept.post_processing_prompt = load_post_processing_prompt(dept.id)
+    return department_config
 
 
 config = load_config(CONFIG_PATH)

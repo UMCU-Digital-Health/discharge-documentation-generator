@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -6,10 +7,10 @@ import pytest
 from MockAzureOpenAIEnv import MockAzureOpenAI
 
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
+from discharge_docs.llm.helper import DischargeLetter
 from discharge_docs.llm.prompt import (
-    load_all_templates_prompts_into_dict,
+    load_department_prompt,
     load_prompts,
-    load_template_prompt,
 )
 from discharge_docs.llm.prompt_builder import (
     ContextLengthError,
@@ -34,19 +35,19 @@ def test_load_prompts():
 def test_load_template_prompt():
     # Test loading template prompt for existing department NICU
     department = "NICU"
-    template_prompt = load_template_prompt(department)
+    template_prompt = load_department_prompt(department)
     assert isinstance(template_prompt, str)
     assert len(template_prompt) > 0
 
     # Test loading template prompt for existing department IC
     department = "IC"
-    template_prompt = load_template_prompt(department)
+    template_prompt = load_department_prompt(department)
     assert isinstance(template_prompt, str)
     assert len(template_prompt) > 0
 
     # Test loading template prompt for existing department CAR
     department = "CAR"
-    template_prompt = load_template_prompt(department)
+    template_prompt = load_department_prompt(department)
     assert isinstance(template_prompt, str)
     assert len(template_prompt) > 0
 
@@ -80,35 +81,16 @@ def test_prompt_builder():
 
     patient_file_string, patient_df = get_patient_file(test_data, 1234)
     department = patient_df["department"].values[0]
-    template_prompt = load_template_prompt(department)
-    user_prompt, system_prompt = load_prompts()
+    department_prompt = load_department_prompt(department)
+    general_prompt, system_prompt = load_prompts()
 
     discharge_letter = prompt_builder.generate_discharge_doc(
         patient_file=patient_file_string,
+        department_prompt=department_prompt,
         system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        template_prompt=template_prompt,
+        general_prompt=general_prompt,
     )
     assert isinstance(discharge_letter, dict)
-
-
-def test_load_all_templates_prompts_into_dict():
-    departments = ["NICU", "IC", "CAR"]
-    template_prompts_dict = load_all_templates_prompts_into_dict(departments)
-
-    assert isinstance(template_prompts_dict, dict)
-    assert (
-        len(template_prompts_dict) == len(departments) + 1
-    )  # Including "demo" department
-
-    for department in departments:
-        assert department in template_prompts_dict
-        assert isinstance(template_prompts_dict[department], str)
-        assert len(template_prompts_dict[department]) > 0
-
-    assert "DEMO" in template_prompts_dict
-    assert isinstance(template_prompts_dict["DEMO"], str)
-    assert len(template_prompts_dict["DEMO"]) > 0
 
 
 def test_context_length_error():
@@ -122,9 +104,9 @@ def test_context_length_error():
     with pytest.raises(ContextLengthError) as e:
         prompt_builder.generate_discharge_doc(
             patient_file="This is a patient file.",
+            department_prompt="This is a template prompt.",
             system_prompt="This is a system prompt.",
-            user_prompt="This is a user prompt.",
-            template_prompt="This is a template prompt.",
+            general_prompt="This is a user prompt.",
         )
     assert str(e.value) == "Token length exceeds maximum context length"
     assert e.value.type == "LengthError"
@@ -145,9 +127,9 @@ def test_json_error():
     with pytest.raises(JSONError) as e:
         prompt_builder.generate_discharge_doc(
             patient_file="This is a patient file.",
+            department_prompt="This is a template prompt.",
             system_prompt="This is a system prompt.",
-            user_prompt="This is a user prompt.",
-            template_prompt="This is a template prompt.",
+            general_prompt="This is a user prompt.",
         )
     assert str(e.value) == "Error converting response to JSON"
     assert e.value.type == "JSONError"
@@ -167,9 +149,9 @@ def test_general_error():
     with pytest.raises(GeneralError) as e:
         prompt_builder.generate_discharge_doc(
             patient_file="This is a patient file.",
+            department_prompt="This is a template prompt.",
             system_prompt="This is a system prompt.",
-            user_prompt="This is a user prompt.",
-            template_prompt="This is a template prompt.",
+            general_prompt="This is a user prompt.",
         )
     assert str(e.value) == "Error generating discharge docs"
     assert e.value.type == "GeneralError"
@@ -177,3 +159,40 @@ def test_general_error():
         "Er is een fout opgetreden bij het genereren van de ontslagbrief met AI."
         " Schrijf de ontslagbrief op de oude manier."
     )
+
+
+def test_discharge_letter_format():
+    # Minimal generated_doc for testing
+    generated_doc = {
+        "Header1": "Some content [LEEFTIJD-1]-jarige",
+        "Header2": "Beloop\nSome more content",
+    }
+    generation_time = datetime(2025, 10, 1, 12, 0, 0)
+    letter = DischargeLetter(
+        generated_doc=generated_doc,
+        generation_time=generation_time,
+        success_indicator=True,
+        error_type=None,
+    )
+
+    # Test plain format with generation time and manual filtering
+    plain = letter.format(
+        format_type="plain", manual_filtering=True, include_generation_time=True
+    )
+    assert "Generatietijd: 2025-10-01 12:00:00" in plain
+    assert "[LEEFTIJD-1]-jarige" not in plain
+    assert "Beloop" not in plain  # Should be filtered out
+
+    # Test markdown format returns a list of html.Div and check structure/content
+    markdown = letter.format(
+        format_type="markdown", manual_filtering=True, include_generation_time=True
+    )
+
+    assert isinstance(markdown, list)
+    assert len(markdown) == 3  # Generatietijd + 2 headers
+    assert "Generatietijd" in str(markdown[0])
+    headers = [str(div) for div in markdown]
+    assert any("Header1" in h for h in headers)
+    assert any("Header2" in h for h in headers)
+    assert all("[LEEFTIJD-1]-jarige" not in h for h in headers)
+    assert all("Beloop" not in h for h in headers)

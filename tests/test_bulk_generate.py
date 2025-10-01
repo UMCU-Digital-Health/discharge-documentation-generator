@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 from MockAzureOpenAIEnv import MockAzureOpenAI
 
+from discharge_docs.config import load_department_config
 from discharge_docs.processing.bulk_generation import bulk_generate
 
 
@@ -24,9 +25,13 @@ def test_bulk_generate(monkeypatch):
                 "Description 1",
             ],
             "content": ["Content 1", "Content 2", "Content 3", "Content 4"],
+            "department": ["NICU", "NICU", "NICU", "IC"],
+            "length_of_stay": [5, 5, 3, 7],
         }
     )
     # Create a temp folder for saving the generated documents using tempfile
     with TemporaryDirectory() as temp_dir:
         save_folder = Path(temp_dir)
-        bulk_generate(df, save_folder, enc_ids_dict, MockAzureOpenAI())
+        bulk_generate(
+            df, save_folder, enc_ids_dict, MockAzureOpenAI(), load_department_config()
+        )

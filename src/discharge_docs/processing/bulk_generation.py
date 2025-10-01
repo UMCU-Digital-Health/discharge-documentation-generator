@@ -7,18 +7,16 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI
 
 from discharge_docs.config import DEPLOYMENT_NAME_BULK, TEMPERATURE
+from discharge_docs.config_models import DepartmentConfig
 from discharge_docs.dashboard.helper import (
     get_data_from_patient_admission,
-    get_template_prompt,
+    get_department_prompt,
 )
+from discharge_docs.llm.helper import generate_single_doc
 from discharge_docs.llm.prompt import (
-    load_all_templates_prompts_into_dict,
     load_prompts,
 )
 from discharge_docs.llm.prompt_builder import (
-    ContextLengthError,
-    GeneralError,
-    JSONError,
     PromptBuilder,
 )
 from discharge_docs.processing.processing import (
@@ -34,6 +32,7 @@ def bulk_generate(
     save_folder: Path,
     enc_ids_dict: dict,
     client: AzureOpenAI,
+    department_config: DepartmentConfig,
     skip_old_enc_ids: bool = False,
     old_bulk_letters: pd.DataFrame | None = None,
 ) -> None:
@@ -59,8 +58,7 @@ def bulk_generate(
 
     all_enc_ids = [enc_id for enc_ids in enc_ids_dict.values() for enc_id in enc_ids]
 
-    user_prompt, system_prompt = load_prompts()
-    template_prompt_dict = load_all_templates_prompts_into_dict()
+    general_prompt, system_prompt = load_prompts()
 
     if skip_old_enc_ids and old_bulk_letters is not None:
         enc_ids_to_skip = old_bulk_letters["enc_id"].unique()
@@ -79,9 +77,7 @@ def bulk_generate(
 
     logger.info(f"Bulk generating discharge letters for {len(all_enc_ids)} encounters")
     for enc_id in all_enc_ids:
-        template_prompt, department = get_template_prompt(
-            enc_id, template_prompt_dict, enc_ids_dict
-        )
+        _, department = get_department_prompt(enc_id, enc_ids_dict, department_config)
 
         logger.info(f"Generating discharge letter for encounter ID: {enc_id}")
         patient_data = get_data_from_patient_admission(enc_id, data)
@@ -93,37 +89,25 @@ def bulk_generate(
         )
 
         patient_file_string, _ = get_patient_file(patient_data)
-        try:
-            discharge_letter = prompt_builder.generate_discharge_doc(
-                patient_file=patient_file_string,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                template_prompt=template_prompt,
-            )
 
-            new_row = pd.DataFrame(
-                {
-                    "enc_id": [patient_data["enc_id"].values[0]],
-                    "department": [department],
-                    "generated_doc": [json.dumps(discharge_letter)],
-                }
-            )
-        except (ContextLengthError, JSONError, GeneralError) as e:
-            new_row = pd.DataFrame(
-                {
-                    "enc_id": [patient_data["enc_id"].values[0]],
-                    "department": [department],
-                    "generated_doc": [
-                        json.dumps(
-                            {
-                                "Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": (
-                                    e.dutch_message
-                                )
-                            }
-                        )
-                    ],
-                }
-            )
+        discharge_letter = generate_single_doc(
+            prompt_builder=prompt_builder,
+            patient_file_string=patient_file_string,
+            system_prompt=system_prompt,
+            general_prompt=general_prompt,
+            department=patient_data["department"].iloc[0],
+            department_config=department_config,
+            length_of_stay=patient_data["length_of_stay"].values[0],
+        )
+
+        new_row = pd.DataFrame(
+            {
+                "enc_id": [patient_data["enc_id"].values[0]],
+                "department": [department],
+                "generated_doc": [json.dumps(discharge_letter.generated_doc)],
+                "generation_time": [discharge_letter.generation_time],
+            }
+        )
 
         bulk_generated_docs = pd.concat(
             [bulk_generated_docs, new_row], ignore_index=True

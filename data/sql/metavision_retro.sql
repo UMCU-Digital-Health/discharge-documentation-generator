@@ -33,4 +33,4 @@ WHERE
         'High Care Kinderen'
     )
     AND obs.identifier_system = 'https://metadata.umcutrecht.nl/ids/MetavisionVrijeTekstMeting'
-    AND obs.category_display_original IN ('Form Medische Status', 'Form Medische Status Ontslag');
+    AND obs.category_code_original IN (158, 73); -- 158 = Form Medische Ontslag, 73 = Form Medische Status

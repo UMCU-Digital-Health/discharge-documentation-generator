@@ -1,0 +1,43 @@
+[department]
+
+[department.IC]
+id = "IC"
+display_name = "Intensive Care"
+ehr = "Metavision"
+department_prompt = "IC_prompt.txt"
+post_processing = true
+department_examples = "IC_examples.txt"
+
+[department.IC.length_range.short]
+max_days = 2
+length = "120–180"
+
+[department.IC.length_range.medium]
+min_days = 3
+max_days = 14
+length = "270–360"
+
+[department.IC.length_range.long]
+min_days = 15
+length = "360–650"
+
+[department.NICU]
+id = "NICU"
+display_name = "Neonatale Intensive Care"
+ehr = "Metavision"
+department_prompt = "NICU_prompt.txt"
+post_processing = false
+
+[department.PICU]
+id = "PICU"
+display_name = "Pediatric Intensive Care"
+ehr = "Metavision"
+department_prompt = "PICU_prompt.txt"
+post_processing = false
+
+[department.CAR]
+id = "CAR"
+display_name = "Cardiologie"
+ehr = "HiX"
+department_prompt = "CAR_prompt.txt"
+post_processing = false

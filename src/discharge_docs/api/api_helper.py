@@ -9,7 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from discharge_docs.database.models import GeneratedDoc
-from discharge_docs.llm.helper import format_generated_doc, manual_filtering_message
+from discharge_docs.llm.helper import (
+    DischargeLetter,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -147,8 +149,15 @@ def process_retrieved_discharge_letters(
     most_recent_successful = successful_letters.iloc[0]
     patient_id = most_recent_successful["patient_id"]
     timestamp = most_recent_successful["timestamp"]
-    discharge_letter = json.loads(most_recent_successful["discharge_letter"])
-    discharge_letter = format_generated_doc(discharge_letter, "plain")
+
+    discharge_letter_class = DischargeLetter(
+        generated_doc=json.loads(most_recent_successful["discharge_letter"]),
+        success_indicator=True,
+        generation_time=timestamp,
+    )
+    discharge_letter_plain = discharge_letter_class.format(
+        format_type="plain", include_generation_time=False, manual_filtering=True
+    )
     generated_doc_id = int(most_recent_successful["generated_doc_id"])
 
     message_parts = [
@@ -179,8 +188,7 @@ def process_retrieved_discharge_letters(
                 "AI model."
             )
 
-    message_parts.append(f"\n\n{discharge_letter}")
+    message_parts.append(f"\n\n{discharge_letter_plain}")
     message = "".join(message_parts)
-    message = manual_filtering_message(message)
 
     return message, True, generated_doc_id, nr_days_old

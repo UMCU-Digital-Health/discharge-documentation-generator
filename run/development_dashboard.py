@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from pathlib import Path
 
 import dash
@@ -17,29 +16,27 @@ from discharge_docs.config import (
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     load_auth_config,
+    load_department_config,
     setup_root_logger,
 )
 from discharge_docs.dashboard.helper import (
     backup_old_department_docs,
     generate_bulk_docs_for_department,
+    generate_single_doc,
     get_authorization,
     get_authorized_patients,
     get_data_from_patient_admission,
-    get_department_name,
+    get_department,
+    get_department_prompt,
     get_patients_values,
-    get_template_prompt,
     highlight,
     load_enc_ids,
     load_stored_discharge_letters,
     update_stored_bulk_docs,
 )
-from discharge_docs.dashboard.layout import get_layout_evaluation_dashboard
+from discharge_docs.dashboard.layout import get_layout_development_dashboard
 from discharge_docs.llm.connection import initialise_azure_connection
-from discharge_docs.llm.helper import format_generated_doc
-from discharge_docs.llm.prompt import (
-    load_all_templates_prompts_into_dict,
-    load_prompts,
-)
+from discharge_docs.llm.prompt import load_prompts
 from discharge_docs.llm.prompt_builder import PromptBuilder
 from discharge_docs.processing.processing import (
     get_patient_discharge_docs,
@@ -74,9 +71,10 @@ values_list = get_patients_values(data, enc_ids_dict)
 
 logger.info("Data loaded...")
 
-# load prompts
-user_prompt, system_prompt = load_prompts()
-template_prompt_dict = load_all_templates_prompts_into_dict()
+general_prompt, system_prompt = load_prompts()
+
+# load deployment config with department specific prompts
+department_config = load_department_config()
 
 # define the app
 app = dash.Dash(
@@ -86,7 +84,7 @@ app = dash.Dash(
 application = app.server  # Neccessary for debugging in vscode, no further use
 
 # Define the layout of the app
-app.layout = get_layout_evaluation_dashboard(system_prompt, user_prompt)
+app.layout = get_layout_development_dashboard(system_prompt, general_prompt)
 
 
 @app.callback(
@@ -110,7 +108,10 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
     user, authorization_group = get_authorization(
         flask.request,
         authorization_config,
-        development_authorizations=["NICU", "IC", "CAR", "PICU", "DEMO"],
+        development_authorizations=[
+            department_config.department[key].id
+            for key in department_config.department.keys()
+        ],
     )
 
     authorized_patients, first_patient = get_authorized_patients(
@@ -333,15 +334,16 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
     """
     Display the discharge documentation for the selected patient admission.
 
-    Parameters:
+    Parameters
     ----------
-     selected_patient_admission : str
+    selected_patient_admission : str
         The selected patient admission.
 
-    Returns:
+    Returns
     -------
-    list
-        The discharge documentation for the selected patient admission.
+    str
+        The discharge documentation for the selected patient admission as a string.
+        Returns an empty string if no patient is selected.
     """
     if selected_patient_admission is None:
         return ""
@@ -360,19 +362,21 @@ def display_stored_discharge_documentation(
     selected_patient_admission: str,
 ) -> tuple[html.Div | str, html.Div | str]:
     """
-    Display the discharge documentation for the selected patient admission.
+    Display the stored discharge documentation for the selected patient admission from
+    both old and new iterations.
 
-    Parameters:
+    Parameters
     ----------
     selected_patient_admission : str
         The selected patient admission.
 
-    Returns:
+    Returns
     -------
-    tuple[list, list]
-        A tuple containing two lists:
-        - The discharge docs for the selected patient admission from the older model
-        - The discharge docs for the selected patient admission from the newer model
+    tuple[html.Div | str, html.Div | str]
+        A tuple containing:
+        - The discharge documentation from the older model (html.Div or str)
+        - The discharge documentation from the newer model (html.Div or str)
+        Returns empty strings if no patient is selected.
     """
     if selected_patient_admission is None:
         return "", ""
@@ -380,71 +384,102 @@ def display_stored_discharge_documentation(
     stored_bulk_gpt = pd.read_parquet(stored_bulk_path)
     stored_bulk_gpt_old = pd.read_parquet(old_stored_bulk_path)
 
-    output_old = load_stored_discharge_letters(
+    old_letter = load_stored_discharge_letters(
         stored_bulk_gpt_old, selected_patient_admission
     )
-    output = load_stored_discharge_letters(stored_bulk_gpt, selected_patient_admission)
+    new_letter = load_stored_discharge_letters(
+        stored_bulk_gpt, selected_patient_admission
+    )
 
-    formatted_output_old = format_generated_doc(
-        output_old, format_type="markdown", manual_filtering=True
+    formatted_output_old = old_letter.format(
+        format_type="markdown", manual_filtering=True
     )
-    formatted_output = format_generated_doc(
-        output, format_type="markdown", manual_filtering=True
-    )
+    formatted_output = new_letter.format(format_type="markdown", manual_filtering=True)
 
     return html.Div(formatted_output_old), html.Div(formatted_output)
 
 
 @app.callback(
-    Output("template_prompt_space", "children"),
-    Output("template_prompt_field", "value"),
+    Output("department_prompt_space", "children"),
+    Output("department_prompt_field", "value"),
+    Output("post_processing_prompt_field", "value"),
     Input("patient_admission_dropdown", "value"),
 )
-def update_template_prompt(selected_patient_admission: str) -> tuple[list[str], str]:
+def update_department_prompt(
+    selected_patient_admission: str,
+) -> tuple[list[str], str, str]:
+    """
+    Update the department prompt for the selected patient admission.
+
+    Parameters
+    ----------
+    selected_patient_admission : str
+        The selected patient admission.
+
+    Returns
+    -------
+    tuple[list[str], str]
+        A tuple containing:
+        - The department prompt as a list (for display)
+        - The department prompt as a string (for editing)
+        Returns empty values if no patient is selected.
+    """
     if selected_patient_admission is None:
-        return [""], ""
-    template_prompt, _ = get_template_prompt(
-        selected_patient_admission, template_prompt_dict, enc_ids_dict
+        return [""], "", ""
+    department_prompt, _ = get_department_prompt(
+        selected_patient_admission, enc_ids_dict, department_config
     )
-    return [template_prompt], template_prompt
+    department = get_department(int(selected_patient_admission), enc_ids_dict)
+    post_processing_prompt = department_config.department[
+        department
+    ].post_processing_prompt
+    if post_processing_prompt is None:
+        post_processing_prompt = ""
+    return [department_prompt], department_prompt, post_processing_prompt
 
 
 @app.callback(
     Output("output_GPT_discharge_documentation", "children"),
-    Output("output_gen_time", "children"),
     Input("update_discharge_button", "n_clicks"),
     Input("patient_admission_dropdown", "value"),
-    State("template_prompt_field", "value"),
+    State("department_prompt_field", "value"),
     State("use_system_prompt", "value"),
+    State("post_processing_prompt_field", "value"),
 )
 def display_generated_discharge_doc(
     n_clicks: int,
     selected_patient_admission: str,
-    template_prompt: str,
+    department_prompt: str,
     use_system_prompt: bool,
-) -> tuple[html.Div | str, str]:
+    post_processing_prompt: str,
+) -> html.Div | str:
     """
-    Display the discharge documentation generated by GPT
-    for the selected patient admission.
+    Display the discharge documentation generated by GPT for the selected patient
+    admission.
 
-    Parameters:
+    Parameters
     ----------
-     selected_patient_admission : str
+    n_clicks : int
+        Number of clicks on the update button.
+    selected_patient_admission : str
         The selected patient admission.
+    department_prompt : str
+        The department prompt to use for generation.
+    use_system_prompt : bool
+        Whether to use the system prompt.
 
-    Returns:
+    Returns
     -------
-    list | str
-        The discharge documentation for the selected patient admission.
-    str
-        The generation time of the discharge documentation
+    html.Div | str
+        The generated discharge documentation as html.Div or an empty string if not
+        triggered.
     """
     if selected_patient_admission is None or n_clicks is None:
-        return "", ""
+        return ""
 
     # If this is triggered by selecting another patient, just return empty
     if ctx.triggered_id == "patient_admission_dropdown":
-        return "", ""
+        return ""
 
     patient_data = get_data_from_patient_admission(selected_patient_admission, data)
 
@@ -452,25 +487,29 @@ def display_generated_discharge_doc(
         temperature=TEMPERATURE, deployment_name=DEPLOYMENT_NAME_ENV, client=client
     )
     if use_system_prompt:
-        user_prompt, system_prompt = load_prompts()
+        general_prompt, system_prompt = load_prompts()
     else:
-        user_prompt, system_prompt = None, None
+        general_prompt, system_prompt = None, None
     patient_file_string, _ = get_patient_file(patient_data)
     logger.info("Generating discharge documentation...")
-    discharge_letter = prompt_builder.generate_discharge_doc(
-        patient_file=patient_file_string,
+
+    discharge_letter = generate_single_doc(
+        prompt_builder=prompt_builder,
+        patient_file_string=patient_file_string,
         system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        template_prompt=template_prompt,
-    )
-    generated_output = format_generated_doc(
-        discharge_letter, format_type="markdown", manual_filtering=True
+        general_prompt=general_prompt,
+        department=patient_data["department"].iloc[0],
+        department_config=department_config,
+        length_of_stay=patient_data["length_of_stay"].values[0],
+        department_prompt=department_prompt,
+        post_processing_prompt=post_processing_prompt,
     )
 
-    return (
-        html.Div(generated_output),
-        f"Output gegenereerd om: {datetime.now():%Y-%m-%d %H:%M:%S}",
+    generated_output = discharge_letter.format(
+        format_type="markdown", manual_filtering=False
     )
+
+    return html.Div(generated_output)
 
 
 @app.callback(
@@ -502,10 +541,14 @@ def show_prompts(n: int, is_open: bool) -> bool:
     Output("bulk_generation_status", "children"),
     Input("bulk_generate_button", "n_clicks"),
     Input("patient_admission_dropdown", "value"),
-    State("template_prompt_field", "value"),
+    State("department_prompt_field", "value"),
+    State("post_processing_prompt_field", "value"),
 )
 def bulk_generate_letters(
-    n_clicks: int, selected_patient_admission: str, template_prompt: str
+    n_clicks: int,
+    selected_patient_admission: str,
+    department_prompt: str,
+    post_processing_prompt: str,
 ) -> list | str:
     """
     Generate bulk discharge letters for the selected department.
@@ -516,13 +559,16 @@ def bulk_generate_letters(
         The number of clicks on the bulk generate button.
     selected_patient_admission : str
         The selected patient admission.
-    template_prompt : str
-        The template prompt to use for generating the letters.
+    department_prompt : str
+        The department prompt to use for generating the letters.
+    post_processing_prompt : str
+        The post-processing prompt to refine the generated letters.
 
     Returns
     -------
-    str
-        A message indicating the status of the bulk generation.
+    list | str
+        A message or list indicating the status of the bulk generation. Returns a list
+        with an empty string if not triggered, otherwise a status message string.
     """
     if selected_patient_admission is None or n_clicks is None:
         return [""]
@@ -533,18 +579,18 @@ def bulk_generate_letters(
     logger.info(f"Running with deployment name: {DEPLOYMENT_NAME_ENV}")
 
     # Determine department
-    department_name = get_department_name(int(selected_patient_admission), enc_ids_dict)
-    enc_ids_for_department = enc_ids_dict[department_name]
+    department = get_department(int(selected_patient_admission), enc_ids_dict)
+    enc_ids_for_department = enc_ids_dict[department]
     logger.info(
         (
-            f"Generating for department: {department_name} with "
+            f"Generating for department: {department} with "
             f"{len(enc_ids_for_department)} encounters"
         )
     )
 
     # Backup existing docs for this department
     stored_bulk_loaded = backup_old_department_docs(
-        department_name=department_name,
+        department=department,
         old_stored_bulk_path=old_stored_bulk_path,
         stored_bulk_path=stored_bulk_path,
         stored_bulk=stored_bulk_gpt,
@@ -552,7 +598,7 @@ def bulk_generate_letters(
     )
 
     # Load prompts and prepare generator
-    user_prompt, system_prompt = load_prompts()
+    general_prompt, system_prompt = load_prompts()
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
         deployment_name=DEPLOYMENT_NAME_BULK,
@@ -561,19 +607,21 @@ def bulk_generate_letters(
 
     # Generate documents
     bulk_generated_docs = generate_bulk_docs_for_department(
-        department_name=department_name,
+        department=department,
         enc_ids=enc_ids_for_department,
         data=data,
-        template_prompt=template_prompt,
         prompt_builder=prompt_builder,
         system_prompt=system_prompt,
-        user_prompt=user_prompt,
+        general_prompt=general_prompt,
+        department_config=department_config,
+        department_prompt=department_prompt,
+        post_processing_prompt=post_processing_prompt,
     )
 
     # Store updated bulk
     update_stored_bulk_docs(
         stored_bulk_path=stored_bulk_path,
-        department_name=department_name,
+        department=department,
         new_docs=bulk_generated_docs,
         stored_bulk=stored_bulk_loaded,
     )
@@ -589,6 +637,7 @@ def bulk_generate_letters(
     Output("bulk_generate_button", "style"),
     Output("bulk_generate_label", "style"),
     Output("use_system_prompt", "style"),
+    Output("post_processing_prompt_div", "style"),
     Input("dev_mode", "value"),
 )
 def toggle_bulk_generation_controls(dev_mode: bool) -> tuple:
@@ -610,8 +659,18 @@ def toggle_bulk_generation_controls(dev_mode: bool) -> tuple:
         toggle.
     """
     if not dev_mode:
-        return {"display": "none"}, {"display": "none"}, {"display": "none"}
-    return {"display": "inline"}, {"display": "block"}, {"display": "block"}
+        return (
+            {"display": "none"},
+            {"display": "none"},
+            {"display": "none"},
+            {"display": "none"},
+        )
+    return (
+        {"display": "inline"},
+        {"display": "block"},
+        {"display": "block"},
+        {"display": "block"},
+    )
 
 
 if __name__ == "__main__":

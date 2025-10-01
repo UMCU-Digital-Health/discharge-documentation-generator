@@ -22,8 +22,10 @@ from discharge_docs.config import (
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     get_current_version,
+    load_department_config,
     setup_root_logger,
 )
+from discharge_docs.dashboard.helper import generate_single_doc
 from discharge_docs.database.models import (
     Encounter,
     FeedbackDetails,
@@ -36,12 +38,8 @@ from discharge_docs.database.models import (
 from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.llm.prompt import (
     load_prompts,
-    load_template_prompt,
 )
 from discharge_docs.llm.prompt_builder import (
-    ContextLengthError,
-    GeneralError,
-    JSONError,
     PromptBuilder,
 )
 from discharge_docs.processing.deduce_text import apply_deduce
@@ -63,6 +61,8 @@ app = FastAPI()
 client = initialise_azure_connection()
 
 logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
+
+department_config = load_department_config()
 
 
 def get_session():
@@ -129,15 +129,17 @@ async def process_and_generate_discharge_docs(
         deployment_name=DEPLOYMENT_NAME_ENV,
         client=client,
     )
-    user_prompt, system_prompt = load_prompts()
+    general_prompt, system_prompt = load_prompts()
 
     for enc_id in processed_data["enc_id"].unique():
-        patient_file_string, patient_df = get_patient_file(processed_data, enc_id)
-        department = patient_df["department"].values[0]
-        template_prompt = load_template_prompt(department)
+        patient_file_string, patient_data = get_patient_file(processed_data, enc_id)
+        department = patient_data["department"].values[0]
 
         token_length = prompt_builder.get_token_length(
-            patient_file_string, system_prompt, user_prompt, template_prompt
+            patient_file_string,
+            system_prompt,
+            general_prompt,
+            department_config.department[department].department_prompt,
         )
 
         logger.info(
@@ -145,19 +147,15 @@ async def process_and_generate_discharge_docs(
             f"and department {department}..."
         )
 
-        try:
-            discharge_letter = prompt_builder.generate_discharge_doc(
-                patient_file=patient_file_string,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                template_prompt=template_prompt,
-            )
-            discharge_letter = json.dumps(discharge_letter)
-
-            outcome = "Success"
-        except (ContextLengthError, JSONError, GeneralError) as e:
-            outcome = e.type
-            discharge_letter = None
+        discharge_letter = generate_single_doc(
+            prompt_builder=prompt_builder,
+            patient_file_string=patient_file_string,
+            system_prompt=system_prompt,
+            general_prompt=general_prompt,
+            department=department,
+            department_config=department_config,
+            length_of_stay=patient_data["length_of_stay"].values[0],
+        )
 
         encounter_db = db.execute(
             select(Encounter).where(Encounter.enc_id == str(enc_id))
@@ -166,9 +164,9 @@ async def process_and_generate_discharge_docs(
         if not encounter_db:
             encounter_db = Encounter(
                 enc_id=str(enc_id),
-                patient_id=str(patient_df["patient_id"].values[0]),
+                patient_id=str(patient_data["patient_id"].values[0]),
                 department=department,
-                admissionDate=patient_df["admissionDate"]
+                admissionDate=patient_data["admissionDate"]
                 .values[0]
                 .astype("datetime64[s]")
                 .astype(datetime),
@@ -176,9 +174,13 @@ async def process_and_generate_discharge_docs(
             db.add(encounter_db)
 
         gendoc_db = GeneratedDoc(
-            discharge_letter=discharge_letter,
+            discharge_letter=json.dumps(discharge_letter.generated_doc)
+            if discharge_letter.success_indicator
+            else None,
             input_token_length=token_length,
-            success_ind=outcome,
+            success_ind="Success"
+            if discharge_letter.success_indicator
+            else discharge_letter.error_type,  # type: ignore
         )
         requestgenerate.generated_doc_relation.append(gendoc_db)
         encounter_db.gen_doc_relation.append(gendoc_db)
