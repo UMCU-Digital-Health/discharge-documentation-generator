@@ -16,5 +16,7 @@ jobs:
       with:
         filesizelimit: 1MB
         token: ${{ secrets.GITHUB_TOKEN }}
+        exclusionPatterns: |
+          docs/**
     - name: Ensure Clean Jupyter Notebooks
       uses: ResearchSoftwareActions/EnsureCleanNotebooksAction@1.1

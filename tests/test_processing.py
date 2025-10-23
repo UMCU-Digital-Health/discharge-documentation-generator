@@ -9,6 +9,7 @@ from discharge_docs.api.pydantic_models import PatientFile
 from discharge_docs.processing import processing
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
+    SelectionMethod,
     combine_patient_and_docs_data_hix,
     filter_data,
     get_patient_discharge_docs,
@@ -166,7 +167,7 @@ def test_process_dates():
     assert pd.isna(test_data_df["date"].iloc[1])
 
 
-def test_filter_data_ic_nicu_car():
+def test_filter_data():
     # IC department
     df = pd.DataFrame(
         {
@@ -212,16 +213,22 @@ def test_filter_data_ic_nicu_car():
     filtered = filter_data(df, "CAR")
     assert "Conclusie" in filtered["description"].values
 
-    # PICU department returns unchanged
+    # PICU department
     df = pd.DataFrame(
         {
-            "description": ["Anything"],
-            "content": ["A"],
-            "department": ["PICU"],
+            "description": [
+                "Dagstatus - Tractus 01 Lichamelijk Onderzoek",
+                "MS Chronologie Eventlijst Print",
+            ],
+            "content": ["A", "B"],
+            "department": ["PICU", "PICU"],
         }
     )
     filtered = filter_data(df, "PICU")
-    assert filtered.equals(df)
+    assert (
+        "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values
+        or "Anamnese" in filtered["description"].values
+    )
 
     # Unknown department raises error
     with pytest.raises(ValueError):
@@ -286,7 +293,7 @@ def test_pre_process_hix_data():
     assert df["content"].iloc[0] == "A"
 
 
-def test_write_encounter_ids(monkeypatch, tmp_path):
+def test_write_encounter_ids(monkeypatch):
     # Patch PromptBuilder and file writing
     class DummyPromptBuilder:
         def __init__(self, **kwargs):
@@ -314,18 +321,9 @@ def test_write_encounter_ids(monkeypatch, tmp_path):
     write_encounter_ids(
         df_random,
         n_enc_ids=1,
-        selection="random",
+        selection=SelectionMethod.RANDOM,
         return_encs=True,
     )
-
-    # Unknown selection raises error
-    with pytest.raises(ValueError):
-        write_encounter_ids(
-            df_random,
-            n_enc_ids=1,
-            selection="unknown",
-            return_encs=True,
-        )
 
     # Test 50/50 split selection
     df_5050 = pd.DataFrame(
@@ -356,7 +354,7 @@ def test_write_encounter_ids(monkeypatch, tmp_path):
         df_5050,
         n_enc_ids=4,
         length_of_stay_cutoff=length_of_stay_cutoff,
-        selection="50/50_long/short",
+        selection=SelectionMethod.BALANCED,
         return_encs=True,
     )
     assert enc_ids is not None

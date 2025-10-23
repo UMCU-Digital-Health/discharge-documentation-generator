@@ -41,3 +41,10 @@ display_name = "Cardiologie"
 ehr = "HiX"
 department_prompt = "CAR_prompt.txt"
 post_processing = false
+
+[department.ORT]
+id = "ORT"
+display_name = "Orthopedie"
+ehr = "HiX"
+department_prompt = "ORT_prompt.txt"
+post_processing = false

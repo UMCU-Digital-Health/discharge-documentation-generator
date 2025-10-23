@@ -27,19 +27,20 @@ logger = logging.getLogger(__name__)
 
 
 # config
-DATA_SOURCE_HIX = False
-DATA_SOURCE_METAVISION = True
+DATA_SOURCE_HIX = True
+DATA_SOURCE_METAVISION = False
 DATA_SOURCE_DEMO = True
 
-EXPORT_DATAPLATFORM = True  # only set to False when data export has already been done
-START_DATE = "2025-07-01"
-END_DATE = "2025-09-30"
+EXPORT_DATAPLATFORM = False  # only set to False when data export has already been done
+START_DATE = "2025-09-20"
+END_DATE = "2025-10-10"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWD = os.getenv("DB_PASSWD")
 
 PROCESSING = True  # set only to False when processing has already been done
 # and enc_ids.toml is filled with the desired encounter ids
-COMBINE_WITH_PREVIOUS_DATA = False
+COMBINE_WITH_PREVIOUS_DATA = True
+N_ENC_IDS = 100
 SELECTION_ENC_IDS = (
     SelectionMethod.RANDOM
 )  # SelectionMethod.RANDOM or SelectionMethod.BALANCED
@@ -47,8 +48,8 @@ LENGTH_OF_STAY_CUTOFF = (
     7  # days, only used if SELECTION_ENC_IDS is SelectionMethod.BALANCED
 )
 
-BULK_GENERATE_LETTERS = True
-MOVE_OLD_BULK_TO_BACKUP = True
+BULK_GENERATE_LETTERS = False
+MOVE_OLD_BULK_TO_BACKUP = False
 DEPARTMENTS = ["IC"]  # ["IC", "NICU", "CAR", "PICU", "DEMO"]
 
 
@@ -127,6 +128,7 @@ def run_processing(
     raw_data_folder: Path,
     processed_data_folder: Path,
     combine_with_previous_data: bool,
+    n_enc_ids: int,
     selection_enc_ids: SelectionMethod,
     length_of_stay_cutoff: int | None = None,
 ) -> None:
@@ -160,7 +162,6 @@ def run_processing(
             convert_dates=["admissionDate", "dischargeDate", "date"],
         )
         data_frames.append(metavision_data)
-
     if (
         data_source_hix
         and data_source_metavision
@@ -174,7 +175,6 @@ def run_processing(
             pd.concat(data_frames, axis=0)
             .reset_index(drop=True)
             .pipe(apply_deduce, "content")
-            .drop(columns="patient_id")
             .pipe(process_data, remove_encs_no_docs=True)
         )
     else:
@@ -202,7 +202,7 @@ def run_processing(
 
     write_encounter_ids(
         data,
-        n_enc_ids=25,
+        n_enc_ids=n_enc_ids,
         length_of_stay_cutoff=length_of_stay_cutoff,
         selection=selection_enc_ids,
     )
@@ -281,6 +281,7 @@ if __name__ == "__main__":
             raw_data_folder,
             processed_data_folder,
             COMBINE_WITH_PREVIOUS_DATA,
+            N_ENC_IDS,
             SELECTION_ENC_IDS,
             LENGTH_OF_STAY_CUTOFF,
         )

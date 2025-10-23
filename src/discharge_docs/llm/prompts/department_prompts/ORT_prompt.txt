@@ -1,0 +1,13 @@
+De twee categorieën zijn: Beloop en Conclusie.
+Je moet onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid schrijven.
+Het is uitermate belangrijk dat de beweegredenen goed gedocumenteerd zijn.
+Schrijf in verleden tijd. 
+Zorg dat het beloop minder dan 120 woorden omvat.
+Begin met "Bovengenoemde patiënt werd opgenomen voor [reden van komst]."
+Indien er een infectie plaats heeft gevonden, beschrijf dan het antibiotica beleid. 
+Onder 'Conclusie' moet je genummerd de hoofdproblemen die speelden tijdens deze opname, inclusief de behandelingen die zijn uitgevoerd tijdens de opname, zoals bijvoorbeeld operaties of het starten van medicatie. Haal deze informatie uit de stukken getiteld 'Conclusie'.  Schrijf alle afkortingen uit. 
+Start met het eerste punt: "Reden van opname: [reden van opname]".
+
+
+# format
+Het format wordt dan: {"Beloop": "Tekstuele samenvatting van beloop zoals hierboven omschreven", "Conclusie": "Tekstuele samenvatting van conclusie zoals hierboven omschreven"}.

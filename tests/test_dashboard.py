@@ -127,20 +127,51 @@ def test_get_department_prompt():
 
 def test_get_patients_values():
     """Tests the get_patients_values function"""
+    # Test without patient_id column
     enc_ids_dict = {
         "test": [1, 2],
         "test2": [3],
     }
     df = pd.DataFrame(
-        {"enc_id": [1, 2, 3], "length_of_stay": [1, 2, 3]},
+        {
+            "enc_id": [1, 2, 3],
+            "length_of_stay": [1, 2, 3],
+            "patient_id": [float("nan")] * 3,
+        },
     )
     patients_values = get_patients_values(df, enc_ids_dict)
     assert patients_values["test"] == [
-        {"label": "Patiënt 1 (test 1 dagen) [opname 1]", "value": 1},
-        {"label": "Patiënt 2 (test 2 dagen) [opname 2]", "value": 2},
+        {"label": "Patiënt 1 (test 1 dagen) [Opname 1]", "value": 1},
+        {"label": "Patiënt 2 (test 2 dagen) [Opname 2]", "value": 2},
     ]
     assert patients_values["test2"] == [
-        {"label": "Patiënt 1 (test2 3 dagen) [opname 3]", "value": 3},
+        {"label": "Patiënt 1 (test2 3 dagen) [Opname 3]", "value": 3},
+    ]
+
+    # Test with patient_id column
+    df2 = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3],
+            "length_of_stay": [1, 2, 3],
+            "patient_id": [101, 102, 103],
+        }
+    )
+    patients_values2 = get_patients_values(df2, enc_ids_dict)
+    assert patients_values2["test"] == [
+        {
+            "label": "Patiënt 1 (test 1 dagen) [Opname 1] [Patiëntnummer 101]",
+            "value": 1,
+        },
+        {
+            "label": "Patiënt 2 (test 2 dagen) [Opname 2] [Patiëntnummer 102]",
+            "value": 2,
+        },
+    ]
+    assert patients_values2["test2"] == [
+        {
+            "label": "Patiënt 1 (test2 3 dagen) [Opname 3] [Patiëntnummer 103]",
+            "value": 3,
+        },
     ]
 
 

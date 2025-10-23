@@ -27,6 +27,7 @@ class AuthUser(BaseModel):
     email: EmailStr
     groups: list[str]
     developer: bool = False
+    full_access: bool = False
 
 
 class AuthConfig(BaseModel):

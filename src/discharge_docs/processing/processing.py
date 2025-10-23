@@ -266,7 +266,16 @@ def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
     elif department == "CAR":
         df = df[df["description"].isin(cardio_general.keys())].replace(cardio_general)
     elif department == "PICU":
-        return df  # TODO: Implement PICU-specific processing logic here in the future
+        df = (
+            df[
+                df["description"].isin(metavision_general.keys())
+                | df["description"].isin(metavision_tracti.keys())
+            ]
+            .replace(metavision_general)
+            .replace(metavision_tracti)
+        )
+    elif department == "ORT":
+        return df  # TODO: Implement ORT-specific processing logic here in the future
     else:
         raise ValueError(f"Department {department} not recognized")
     return df
@@ -296,8 +305,8 @@ def random_sample_with_warning(df: pd.DataFrame, n: int) -> pd.DataFrame:
 
 
 class SelectionMethod(Enum):
-    RANDOM = "random"
-    BALANCED = "50/50_long/short"
+    RANDOM = "RANDOM"
+    BALANCED = "BALANCED"
 
 
 def write_encounter_ids(
@@ -346,7 +355,7 @@ def write_encounter_ids(
         if token_length > prompt_builder.max_context_length - 5000:
             data = data[data["enc_id"] != enc_id]
 
-    if selection == "random":
+    if selection == SelectionMethod.RANDOM:
         enc_ids = data[["enc_id", "department"]].drop_duplicates()
         # keep only first n_enc_ids per department
         enc_ids = (
@@ -354,7 +363,7 @@ def write_encounter_ids(
             .apply(random_sample_with_warning, n=n_enc_ids)
             .reset_index(drop=True)
         )
-    elif selection == "50/50_long/short":
+    elif selection == SelectionMethod.BALANCED:
         # select 50% of encounters with long length of stay and 50% with short
         long_encs = data[data["length_of_stay"] >= length_of_stay_cutoff][
             ["enc_id", "department"]

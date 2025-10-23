@@ -175,7 +175,11 @@ def get_authorization(
 
     for value in authorization_config.users.values():
         if value.email == user:
-            return user, value.groups
+            if value.full_access:
+                logger.info(f"User {user} has full access.")
+                return user, development_authorizations
+            else:
+                return user, value.groups
 
     logger.warning(f"No authorization groups found for user {user}")
     return None, []
@@ -295,10 +299,18 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
                 length_of_stay = pd.Series(
                     data.loc[data["enc_id"] == enc_id, "length_of_stay"]
                 ).to_numpy()[0]
+                patient_number = pd.Series(
+                    data.loc[data["enc_id"] == enc_id, "patient_id"]
+                ).to_numpy()[0]
+                text_block = (
+                    f"Patiënt {idx} ({department} {length_of_stay} dagen) "
+                    f"[Opname {enc_id}]"
+                )
+                if pd.notna(patient_number):
+                    text_block += f" [Patiëntnummer {int(patient_number)}]"
                 patients_list.append(
                     {
-                        "label": f"Patiënt {idx} ({department} {length_of_stay} dagen)"
-                        f" [opname {enc_id}]",
+                        "label": text_block,
                         "value": enc_id,
                     }
                 )

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2025-10-10
+
+### Added 
+- Added a new department: Orthopedics
+- Added the functionality for seeing patient number if available in the development dashboard patient dropdown
+
+### Changed
+- Updated access for AI for Health team members to full access so when scaling up no additional changes to the auth.toml file are needed for the team members.
+- Updated the development dashboad encounte ids used fo development
+
 ## [2.9.0] - 2025-09-22
 
 ### Added

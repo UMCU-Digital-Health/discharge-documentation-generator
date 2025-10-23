@@ -28,7 +28,7 @@ WHERE
     AND enc1.period_end < :end_date
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
-    AND enc2.specialty_Organization_value IN ('CAR')
+    AND enc2.specialty_Organization_value IN ('ORT', 'CAR')
     AND dr.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixDocument'
     AND dr.type2_code_original IN (
         '1000100089',  -- Ontslagbericht
@@ -36,4 +36,4 @@ WHERE
         'CS00000003'  -- Klinische brief
     )
     AND dr.docStatus = 'final'
-    AND dr.author_Organization_value = 'CAR'
+    AND dr.author_Organization_value IN ('ORT', 'CAR')

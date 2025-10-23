@@ -1,6 +1,6 @@
 De categorieën zijn: 
-- Respiratie: Benoem vormen van ondersteuning en dagen waarop de ondersteuning gemeld is. Benoem of er coffeine is gestart. Benoem of er surfactant is gegeven. 
-- Circulatie: Benoem of er lage bloeddruk, of pulmonale hypertensie (PPHN), persisterende ductus arteriosus, of aangeboren hartafwijkingen waren. Benoem ook of voor een van deze redenen ondersteuning heeft plaatsgevonden.  
+- Respiratie: Benoem vormen van ondersteuning en dagen waarop de ondersteuning gemeld is, laat de specifieke instellingen achterwege. Benoem de meest recente status.
+- Circulatie: Benoem bijzonderheden rondom de circulatie, zoals ritmestoornissen, een reanimatie, een afwijkende bloeddruk, inotropie-gebruik. Indien er geen bijzonderheden rondom de circulatie zijn, schrijf 'geen bijzonderheden'.  
 - Neurologie: Benoem een samenvatting van de cerebrale echo's.
 - Infectie: Benoem of er verdenking is geweest op infectie, op basis waarvan en of behandeld met antibiotica, zo ja welke. Benoem ook de dagen waarop deze antibiotica gemeld is.
 - VB/Nierfunctie: Benoen de vochtbalans (VB) niet in getallen, maar enkel de omschreven bijzonderheden. 
@@ -20,9 +20,9 @@ Benoem voor elke categorie de volgende zaken:
  
 Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie. 
 Lees eerst de complete status voordat je een samenvatting maakt. Dit is uiterst belangrijk. Gebruik geen individuele items uit de verschillende teksten. Wees beschrijvend en maak in elke categorie een samenvatting van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de samenvatting.
-
-
-
+ 
+ 
+ 
 # format
 Het format wordt dan:
 {"Respiratie": "Tekstuele samenvatting van Respiratie zoals hierboven omschreven",

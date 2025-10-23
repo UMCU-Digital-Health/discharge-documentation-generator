@@ -1,4 +1,7 @@
 -- This query retrospectively retrieves the patient files for HiX departments (currenctly only CAR)
+-- Combined query retrospectively retrieving patient files for HiX departments (ORT and CAR)
+-- This preserves the original filters: for ORT only the enc2.specialty_Organization_value check was used,
+-- for CAR both enc2.specialty_Organization_value and cons_regp.SPECIALISM were checked.
 SELECT DISTINCT
     CONVERT(
         VARCHAR(64),
@@ -29,7 +32,11 @@ WHERE
     AND enc1.period_end < :end_date
     AND enc2.identifier_system = 'https://metadata.umcutrecht.nl/ids/HixOpnamePeriode'
     AND enc2.class_code = 'IMP'
-    AND enc2.specialty_Organization_value IN ('CAR')
-    AND cons_regp.SPECIALISM = 'CAR'
+    AND (
+        -- ORT rows
+        enc2.specialty_Organization_value IN ('ORT')
+        -- CAR rows
+        OR (enc2.specialty_Organization_value IN ('CAR') AND cons_regp.SPECIALISM IN ('CAR'))
+    )
     AND cons_regp.[DATE] <= enc1.period_end
-    AND cons_regp.[DATE] >= enc1.period_start    
+    AND cons_regp.[DATE] >= enc1.period_start
