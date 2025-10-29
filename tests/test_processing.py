@@ -6,19 +6,21 @@ import pytest
 import tomli_w
 
 from discharge_docs.api.pydantic_models import PatientFile
-from discharge_docs.processing import processing
+from discharge_docs.dashboard import helper
+from discharge_docs.dashboard.helper import (
+    SelectionMethod,
+    random_sample_with_warning,
+    write_encounter_ids,
+)
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
-    SelectionMethod,
     combine_patient_and_docs_data_hix,
     filter_data,
     get_patient_discharge_docs,
     get_patient_file,
     pre_process_hix_data,
     process_data,
-    random_sample_with_warning,
     replace_text,
-    write_encounter_ids,
 )
 
 
@@ -302,8 +304,8 @@ def test_write_encounter_ids(monkeypatch):
         def get_token_length(self, **kwargs):
             return 100
 
-    monkeypatch.setattr(processing, "PromptBuilder", DummyPromptBuilder)
-    monkeypatch.setattr(processing, "initialise_azure_connection", lambda: None)
+    monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
     monkeypatch.setattr(tomli_w, "dump", lambda data, f: f.write(b"test"))
 
     # Test random selection

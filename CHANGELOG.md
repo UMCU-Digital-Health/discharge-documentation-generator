@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [2.11.0] - 2025-10-10
+
+### Changed
+- Moved the write_encounter_ids function out of processing.py into dashboard/helper.py for better organization and not initialising the config when importing the processing module.
+- removed the link to the submodule of qms docs as this is not currently used. 
+
 ## [2.10.0] - 2025-10-10
 
 ### Added 

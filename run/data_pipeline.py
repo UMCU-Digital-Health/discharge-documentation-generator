@@ -10,15 +10,17 @@ from sqlalchemy.engine.url import URL
 from striprtf.striprtf import rtf_to_text
 
 from discharge_docs.config import load_department_config, setup_root_logger
-from discharge_docs.dashboard.helper import load_enc_ids
+from discharge_docs.dashboard.helper import (
+    SelectionMethod,
+    load_enc_ids,
+    write_encounter_ids,
+)
 from discharge_docs.llm.connection import initialise_azure_connection
 from discharge_docs.processing.bulk_generation import bulk_generate
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
-    SelectionMethod,
     combine_patient_and_docs_data_hix,
     process_data,
-    write_encounter_ids,
 )
 
 load_dotenv()
