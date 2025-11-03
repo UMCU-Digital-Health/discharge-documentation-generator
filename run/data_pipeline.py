@@ -30,29 +30,31 @@ logger = logging.getLogger(__name__)
 
 # config
 DATA_SOURCE_HIX = True
-DATA_SOURCE_METAVISION = False
+DATA_SOURCE_METAVISION = True
 DATA_SOURCE_DEMO = True
 
 EXPORT_DATAPLATFORM = False  # only set to False when data export has already been done
-START_DATE = "2025-09-20"
-END_DATE = "2025-10-10"
+START_DATE = "2025-08-29"
+END_DATE = "2025-10-29"
 DB_USER = os.getenv("DB_USER")
 DB_PASSWD = os.getenv("DB_PASSWD")
 
-PROCESSING = True  # set only to False when processing has already been done
+PROCESSING = False  # set only to False when processing has already been done
 # and enc_ids.toml is filled with the desired encounter ids
-COMBINE_WITH_PREVIOUS_DATA = True
-N_ENC_IDS = 100
+COMBINE_WITH_PREVIOUS_DATA = False
+N_ENC_IDS = 50
 SELECTION_ENC_IDS = (
-    SelectionMethod.RANDOM
+    SelectionMethod.BALANCED
 )  # SelectionMethod.RANDOM or SelectionMethod.BALANCED
 LENGTH_OF_STAY_CUTOFF = (
     7  # days, only used if SELECTION_ENC_IDS is SelectionMethod.BALANCED
 )
-
-BULK_GENERATE_LETTERS = False
-MOVE_OLD_BULK_TO_BACKUP = False
-DEPARTMENTS = ["IC"]  # ["IC", "NICU", "CAR", "PICU", "DEMO"]
+BULK_GENERATE_LETTERS = True
+MOVE_OLD_BULK_TO_BACKUP = True
+DEPARTMENTS = [
+    "PICU",
+    "ORT",
+]  # ["IC", "NICU", "CAR", "PICU", "DEMO", "ORT"]
 
 
 def run_export(
