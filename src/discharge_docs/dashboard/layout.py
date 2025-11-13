@@ -98,6 +98,7 @@ def get_patient_selection_div(add_discharge_selection: bool = False) -> dbc.Row:
                     dbc.Select(
                         id="patient_admission_dropdown",
                     ),
+                    dcc.Store(id="patient_admission_store"),
                 ],
                 class_name="m-2",
                 width=4,
@@ -556,12 +557,12 @@ def get_layout_development_dashboard(
                                     ),
                                     dbc.Tab(
                                         view_docs_old_card,
-                                        label="Opgeslagen GPT brieven (Oude versie)",
+                                        label="Opgeslagen AI brieven (Vorige versie)",
                                         tab_id="view_docs_old_tab",
                                     ),
                                     dbc.Tab(
                                         view_docs_new_card,
-                                        label="Opgeslagen GPT brieven (Nieuwe versie)",
+                                        label="Opgeslagen AI brieven (Nieuwste versie)",
                                         tab_id="view_docs_tab",
                                     ),
                                 ],

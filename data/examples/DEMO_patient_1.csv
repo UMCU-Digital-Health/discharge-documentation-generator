@@ -1,74 +1,74 @@
-pseudo_id;enc_id;admissionDate;dischargeDate;description;content;date;length_of_stay;department
-ABC;999999999;2024-01-01;2024-01-11;Anamnese;Reden voor opname: postoperatieve ademhalingsproblemen.;2024-01-01;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.
+patient_id;pseudo_id;enc_id;admissionDate;dischargeDate;description;content;date;length_of_stay;department
+999999999;ABC;999999999;2024-01-01;2024-01-11;Anamnese;Reden voor opname: postoperatieve ademhalingsproblemen.;2024-01-01;10;DEMO
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt wordt onmiddellijk beademd na de operatie vanwege ernstige ademhalingsproblemen.
 Cardiologie: Vitale parameters zijn stabiel.
 Neurologie: De patiënt is verward, vermoedelijk door de anesthesie.
 Infectie: -";2024-01-01;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Ademhalingsproblemen blijven ernstig, beademing-ondersteuning wordt gestart.
 Cardiologie: Stabiele vitale parameters.
 Neurologie: Verwardheid blijft aanhouden, vermoeden op delier.
 Infectie: Een stijging van de temperatuur duidt op een mogelijke infectie, antibioticakuur van 10 dagen worden gestart.";2024-01-02;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning wordt voortgezet.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning wordt voortgezet.
 Cardiologie: Stabiele vitale parameters.
 Neurologie: delier.
 Infectie: minimale verdere stijging in temp, antibiotica worden voortgezet.";2024-01-03;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Enige verbetering in de ademhaling, patiënt blijft afhankelijk van beademing.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: Enige verbetering in de ademhaling, patiënt blijft afhankelijk van beademing.
 Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
 Neurologie: Verwardheid en delier nemen toe.
 Infectie: De infectie wordt bevestigd en antibioticakuur wordt voortgezet en slaat aan.";2024-01-04;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
 Cardiologie: Cardiovasculaire schommelingen blijven, medicatie wordt aangepast.
 Neurologie: Verwardheid en delier.
 Infectie: constant, antibioticakuur.";2024-01-05;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: beademing-ondersteuning.
 Cardiologie: - (Geen significante verandering)
 Neurologie: Delier verbetert geleidelijk.
 Infectie: -  constant, antibioticakuur.
 ";2024-01-06;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: De patiënt begint van beademing af te komen, maar blijft ondersteuning nodig hebben.
 Cardiologie: Vitale parameters stabiliseren met behulp van medicatie.
 Neurologie: -
 Infectie:  constant, antibioticakuur.";2024-01-07;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: - (Geen significante verandering)
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: - (Geen significante verandering)
 Cardiologie: - (Geen significante verandering)
 Neurologie: geen delier meer
 Infectie:  constant, antibioticakuur.";2024-01-08;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: zuurstof, patient zwak  
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: zuurstof, patient zwak
 Cardiologie: - (Geen significante verandering)
 Neurologie: stabiel en helder
 Infectie:  constant, antibioticakuur.";2024-01-09;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof
+999999999;ABC;999999999;2024-01-01;2024-01-11;Dagstatus;"Respiratie: respiratie verbetert geleidelijk, blijft zwak en afhankelijk van zuurstof
 Cardiologie: Vitale parameters zijn nu stabiel zonder medicatie.
 Neurologie: -
 Infectie:  constant, antibioticakuur.";2024-01-10;10;DEMO
-ABC;999999999;2024-01-01;2024-01-11;Ontslagbrief;"
-Geachte collega, 
+999999999;ABC;999999999;2024-01-01;2024-01-11;Ontslagbrief;"
+Geachte collega,
 
-In deze brief informeer ik u over de gezondheidstoestand van de heer Jan Jansen bij zijn ontslag van de Intensive Care afdeling. 
+In deze brief informeer ik u over de gezondheidstoestand van de heer Jan Jansen bij zijn ontslag van de Intensive Care afdeling.
 
-Opnamedatum: 1 januari 2024 
+Opnamedatum: 1 januari 2024
 
 Reden van opname: postoperatieve ademhalingsproblemen
 
-**Respiratie**  
+**Respiratie**
 De heer Jansen heeft positief gereageerd op het gebruik van een beademingsmachine, resulterend in een stabiele ademhalingsfunctie. De noodzaak voor zuurstofondersteuning is nog actief.
 
-**Circulatie**  
+**Circulatie**
 Hemodynamisch is de heer Jansen eveneens stabiel, met geen verdere behoefte aan vasopressorondersteuning. Zijn vocht- en elektrolytenbalans is goed beheerd, waardoor hij een normaal dieet zonder gastro-intestinale problemen kan tolereren.
 
-**Infectie**  
+**Infectie**
 Wat infectieparameters betreft, inclusief ontstekingsmarkers, blijven deze binnen de normale grenzen. Dit duidt erop dat er momenteel geen actieve infectie aanwezig is die zijn herstel zou kunnen hinderen.
 
-**Neurologie**  
+**Neurologie**
 Neurologisch is de heer Jansen volledig bij bewustzijn en georiënteerd, zonder enige neurologische tekorten. Dit is bemoedigend en wijst op een volledig herstel vanuit neurologisch perspectief.
 
-**Adviezen voor voortgezet herstel**  
+**Adviezen voor voortgezet herstel**
 Voor een optimaal herstel adviseren wij regelmatige follow-ups binnen twee weken na ontslag, met aandacht voor zijn ademhalingsfunctie en fysieke conditie. Beperking van zware fysieke activiteiten tot volledig herstel zijn essentieel, met een geleidelijke hervatting van normale activiteiten afhankelijk van zijn tolerantie. Daarnaast adviseren wij waakzaam te blijven voor tekenen van terugval of complicaties.
 
 Wij waarderen uw zorg voor de heer Jansen en danken u voor de samenwerking. Voor verdere vragen, aarzel niet om contact op te nemen.
 
 Met vriendelijke groet,
 
-[Naam]  
-[Positie/Functionaris]  
+[Naam]
+[Positie/Functionaris]
 [Ziekenhuis/Instelling]";2024-01-10;10;DEMO

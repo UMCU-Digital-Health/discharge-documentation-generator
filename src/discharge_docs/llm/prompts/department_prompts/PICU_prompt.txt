@@ -1,60 +1,58 @@
-De categorieën zijn:  
-
-Respiratie:  
--Benoem de vormen van respiratoire ondersteuning (bijv. invasieve beademing, NIV, optiflow, low flow) die tijdens de opname nodig zijn geweest in chronologische volgorde en voor welke indicatie dit geïndiceerd was. Benoem ook als patiënt meerdere keren geïntubeerd is geweest.  
--Benoem belangrijke respiratoire problemen als die zich hebben voor gedaan tijdens de opname. Geef bij elk probleem de aanleiding, overwegingen (bijvoorbeeld differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
--Beschrijf in de laatste zin van de alinea of er op het einde van de opname nog sprake is van een vorm van respiratoire ondersteuning.  
-
-Circulatie:  
--Benoem belangrijke circulatoire problemen die zich hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.  
--Benoem in ieder geval of er tijdens opname sprake is geweest van bloeddruk ondersteunende medicatie (ook wel inotropie genoemd, voorbeeld zijn adrenaline, noradrenaline, fenylefrine, milrinone, vasopressine en hydrocortison). Beschrijf hiervoor de indicatie, het effect en de periode dat het is gegeven.  
-
-Neurologie:  
--Benoem de belangrijke neurologische problemen die zich hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.  
--Benoem specifiek of er sprake is geweest van neuromonitoring (CFM en/of NIRS) en of hier bijzonderheden op gezien zijn 
--Benoem specifiek of er beeldvorming van de hersenen is gedaan (echo cerebrum, MRI hersenen en/of CT-hersenen) en wat hiervan de uitslag is.    
-
-Infectie:  
--Benoem of zich tijdens de opname infecties hebben voorgedaan of dat er sprake is geweest van een verdenking op infectie. Beschrijf welke verwekkers eventueel zijn gevonden en of tijdens de opname behandeld is met antibiotica, specificeer welke antibiotica dit is geweest en in welke periode dit is gegeven. Koppel een kort beloop van infectieparameters aan de eventuele infecties. 
--Als zich geen infecties hebben voorgedaan tijdens de opname, benoem dit in 1 zin.  
-
-VB/Nierfunctie:  
--Benoem de vochtbalans (VB) niet in getallen, maar enkel de omschreven bijzonderheden. Indien er sprake is geweest van dialyse tijdens deze opname benoem dat hier, en beschrijf gedurende welke periode.  
-
-Milieu interieur:  
--Benoem de problemen die zich op het gebied van de milieu interieur hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
-
-Gastro-intestinaal:  
--Benoem de problemen die zich op het gebied van gastro-intestinaal hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
--Benoem tekstueel op wat voor een manier de patiënt voeding heeft gekregen tijdens deze opname. Benoem bijvoorbeeld of sprake is geweest van voeding via een neusmaagsonde, duodenumsonde of dat patiënt zelf kon eten.  
-
-Psych/sociaal: Benoem of er bijzonderheden zijn geweest op psychosociaal gebied. Denk hierbij aan gesprekken met medische psychologie, maatschappelijk werk, of betrokkenheid van VeiligThuis. 
-
-Overig: bespreek hier nog relevante problemen die niet bij een van de voorgaande categorieën aan bod zijn gekomen.  
-
-Benoem voor elke categorie de volgende zaken: 
-- Wanneer een probleem plaatsvond 
-- Wat dit probleem was 
-- Hoe dit probleem behandeld is 
-- Hoe lang de patiënt er nog last van heeft gehad 
-- De huidige status van de complicatie 
-
-
-Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie.  
-## Harde constraints:   
-- Volledige zinnen, verleden tijd, geen ik-vorm. 
-- Neem alle relevante informatie die in het dossier expliciet of impliciet is vastgelegd op, en geef daarvan voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
-- Lees eerst de complete status voordat je een beschrijving maakt. Gebruik geen individuele items uit verschillende teksten. Maak in elke categorie een beschrijving van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de beschrijving. 
-  
-
-# format 
-Het format wordt dan: 
-{"Respiratie": "Tekstuele samenvatting van Respiratie zoals hierboven omschreven", 
-"Circulatie": "Tekstuele samenvatting van Circulatie zoals hierboven omschreven", 
-"Neurologie": "Tekstuele samenvatting van Neurologie zoals hierboven omschreven", 
-"Infectie": "Tekstuele samenvatting van Infectie zoals hierboven omschreven", 
-"VB/Nierfunctie": "Tekstuele samenvatting van VB/Nierfunctie zoals hierboven omschreven", 
-"Milieu interieure": "Tekstuele samenvatting van Milieu interieure zoals hierboven omschreven", 
-"Gastro-intestinaal": "Tekstuele samenvatting van Gastro-intestinaal zoals hierboven omschreven", 
-"Psych/SOC": "Tekstuele samenvatting van Psych/SOC zoals hierboven omschreven", 
-"Overig": "Tekstuele samenvatting van Overig zoals hierboven omschreven"}. 
+De categorieën zijn: 
+Respiratie: 
+-Benoem de vormen van respiratoire ondersteuning (bijv. invasieve beademing, NIV, optiflow, low flow) die tijdens de opname nodig zijn geweest in chronologische volgorde en voor welke indicatie dit geïndiceerd was. Benoem ook als patiënt meerdere keren geïntubeerd is geweest. 
+-Benoem belangrijke respiratoire problemen als die zich hebben voor gedaan tijdens de opname. Geef bij elk probleem de aanleiding, overwegingen (bijvoorbeeld differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+-Beschrijf in de laatste zin van de alinea of er op het einde van de opname nog sprake is van een vorm van respiratoire ondersteuning. 
+ 
+Circulatie: 
+-Benoem belangrijke circulatoire problemen die zich hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
+-Benoem in ieder geval of er tijdens opname sprake is geweest van bloeddruk ondersteunende medicatie (ook wel inotropie genoemd, voorbeeld zijn adrenaline, noradrenaline, fenylefrine, milrinone, vasopressine en hydrocortison). Beschrijf hiervoor de indicatie, het effect en de periode dat het is gegeven. 
+ 
+Neurologie: 
+-Benoem de belangrijke neurologische problemen die zich hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden. 
+-Benoem specifiek of er sprake is geweest van neuromonitoring (CFM en/of NIRS) en of hier bijzonderheden op gezien zijn
+-Benoem specifiek of er beeldvorming van de hersenen is gedaan (echo cerebrum, MRI hersenen en/of CT-hersenen) en wat hiervan de uitslag is. 
+ 
+Infectie: 
+-Benoem of zich tijdens de opname infecties hebben voorgedaan of dat er sprake is geweest van een verdenking op infectie. Beschrijf welke verwekkers eventueel zijn gevonden en of tijdens de opname behandeld is met antibiotica, specificeer welke antibiotica dit is geweest en in welke periode dit is gegeven. Koppel een kort beloop van infectieparameters aan de eventuele infecties.
+-Als zich geen infecties hebben voorgedaan tijdens de opname, benoem dit in 1 zin. 
+ 
+VB/Nierfunctie: 
+-Benoem de vochtbalans (VB) niet in getallen, maar enkel de omschreven bijzonderheden. Indien er sprake is geweest van dialyse tijdens deze opname benoem dat hier, en beschrijf gedurende welke periode. 
+ 
+Milieu interieur: 
+-Benoem de problemen die zich op het gebied van de milieu interieur hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+ 
+Gastro-intestinaal: 
+-Benoem de problemen die zich op het gebied van gastro-intestinaal hebben voorgedaan. Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen. Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt. Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+-Benoem tekstueel op wat voor een manier de patiënt voeding heeft gekregen tijdens deze opname. Benoem bijvoorbeeld of sprake is geweest van voeding via een neusmaagsonde, duodenumsonde of dat patiënt zelf kon eten. 
+ 
+Psych/sociaal: Benoem of er bijzonderheden zijn geweest op psychosociaal gebied. Denk hierbij aan gesprekken met medische psychologie, maatschappelijk werk, of betrokkenheid van VeiligThuis.
+ 
+Overig: bespreek hier nog relevante problemen die niet bij een van de voorgaande categorieën aan bod zijn gekomen. 
+ 
+Benoem voor elke categorie de volgende zaken:
+- Wanneer een probleem plaatsvond
+- Wat dit probleem was
+- Hoe dit probleem behandeld is
+- Hoe lang de patiënt er nog last van heeft gehad
+- De huidige status van de complicatie
+ 
+Herhaal dit voor alle complicaties of andere bijzonderheden die zich hebben voorgedaan in die categorie. 
+ 
+## Harde constraints:  
+- Volledige zinnen, verleden tijd, geen ik-vorm.
+- Neem alle relevante informatie die in het dossier expliciet of impliciet is vastgelegd op, en geef daarvan voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
+- Lees eerst de complete status voordat je een beschrijving maakt. Gebruik geen individuele items uit verschillende teksten. Maak in elke categorie een beschrijving van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de beschrijving.
+ 
+# format
+Het format wordt dan:
+{"Respiratie": "Tekstuele samenvatting van Respiratie zoals hierboven omschreven",
+"Circulatie": "Tekstuele samenvatting van Circulatie zoals hierboven omschreven",
+"Neurologie": "Tekstuele samenvatting van Neurologie zoals hierboven omschreven",
+"Infectie": "Tekstuele samenvatting van Infectie zoals hierboven omschreven",
+"VB/Nierfunctie": "Tekstuele samenvatting van VB/Nierfunctie zoals hierboven omschreven",
+"Milieu interieure": "Tekstuele samenvatting van Milieu interieure zoals hierboven omschreven",
+"Gastro-intestinaal": "Tekstuele samenvatting van Gastro-intestinaal zoals hierboven omschreven",
+"Psych/SOC": "Tekstuele samenvatting van Psych/SOC zoals hierboven omschreven",
+"Overig": "Tekstuele samenvatting van Overig zoals hierboven omschreven"}.

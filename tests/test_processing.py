@@ -8,7 +8,6 @@ import tomli_w
 from discharge_docs.api.pydantic_models import PatientFile
 from discharge_docs.dashboard import helper
 from discharge_docs.dashboard.helper import (
-    SelectionMethod,
     random_sample_with_warning,
     write_encounter_ids,
 )
@@ -323,8 +322,7 @@ def test_write_encounter_ids(monkeypatch):
     write_encounter_ids(
         df_random,
         n_enc_ids=1,
-        selection=SelectionMethod.RANDOM,
-        return_encs=True,
+        selection="random",
     )
 
     # Test 50/50 split selection
@@ -352,18 +350,16 @@ def test_write_encounter_ids(monkeypatch):
     ).dt.days
     length_of_stay_cutoff = 10
     # Should not raise and should select 50/50 split
-    enc_ids = write_encounter_ids(
+    selected_ids = write_encounter_ids(
         df_5050,
         n_enc_ids=4,
         length_of_stay_cutoff=length_of_stay_cutoff,
-        selection=SelectionMethod.BALANCED,
-        return_encs=True,
+        selection="balanced",
     )
-    assert enc_ids is not None
+    assert selected_ids is not None
     # check if at least 2 out of the 4 selected enc_ids are from each group
     short_enc_ids = [1, 2, 4, 5]
     long_enc_ids = [3, 6]
-    selected_ids = set(enc_ids["enc_id"].values)
     short_count = sum(enc_id in selected_ids for enc_id in short_enc_ids)
     long_count = sum(enc_id in selected_ids for enc_id in long_enc_ids)
     assert short_count == 2

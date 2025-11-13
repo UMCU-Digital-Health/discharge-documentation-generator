@@ -1,12 +1,10 @@
 import dash_bootstrap_components as dbc
 import pandas as pd
-import pytest
 from dash import html
 from pandas.testing import assert_frame_equal
 
 from discharge_docs.config import load_department_config
 from discharge_docs.dashboard.helper import (
-    get_authorized_patients,
     get_data_from_patient_admission,
     get_department_prompt,
     get_patients_values,
@@ -71,21 +69,6 @@ def test_replace_newlines():
     assert isinstance(replaced_text[2], html.P)
 
 
-def test_get_authorized_patients():
-    """Tests if the correct patients are returned"""
-    authorization_group = ["test", "test2"]
-    patients_dict = {
-        "test": [{"value": 1}, {"value": 2}],
-        "test2": [{"value": 3}],
-        "test3": [{"value": 4}],
-    }
-    authorized_patients, first_patient = get_authorized_patients(
-        authorization_group, patients_dict
-    )
-    assert authorized_patients == [{"value": 1}, {"value": 2}, {"value": 3}]
-    assert first_patient == "1"
-
-
 def test_get_data_from_patient_admissions():
     """Tests the get_data_from_patient_admissions function"""
     admission_df = pd.DataFrame(
@@ -97,15 +80,17 @@ def test_get_data_from_patient_admissions():
 
 def test_get_department_prompt():
     """Tests the get_department_prompt function"""
-    enc_ids_dict = {
-        "IC": [1, 2, 3],
-        "NICU": [4, 5, 6],
-    }
-
     department_config = load_department_config()
 
+    development_admissions = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3, 4, 5, 6],
+            "department": ["IC", "IC", "IC", "NICU", "NICU", "NICU"],
+        }
+    )
+
     department_prompt, department = get_department_prompt(
-        "1", enc_ids_dict, department_config
+        "1", development_admissions, department_config
     )
     # Check that department is correct and prompt matches config
     assert department == "IC"
@@ -114,50 +99,26 @@ def test_get_department_prompt():
     )
 
     department_prompt, department = get_department_prompt(
-        "4", enc_ids_dict, department_config
+        "4", development_admissions, department_config
     )
     assert department == "NICU"
     assert (
         department_prompt == department_config.department[department].department_prompt
     )
 
-    with pytest.raises(ValueError):
-        get_department_prompt("7", enc_ids_dict, department_config)
-
 
 def test_get_patients_values():
     """Tests the get_patients_values function"""
-    # Test without patient_id column
-    enc_ids_dict = {
-        "test": [1, 2],
-        "test2": [3],
-    }
     df = pd.DataFrame(
         {
             "enc_id": [1, 2, 3],
             "length_of_stay": [1, 2, 3],
-            "patient_id": [float("nan")] * 3,
-        },
-    )
-    patients_values = get_patients_values(df, enc_ids_dict)
-    assert patients_values["test"] == [
-        {"label": "Patiënt 1 (test 1 dagen) [Opname 1]", "value": 1},
-        {"label": "Patiënt 2 (test 2 dagen) [Opname 2]", "value": 2},
-    ]
-    assert patients_values["test2"] == [
-        {"label": "Patiënt 1 (test2 3 dagen) [Opname 3]", "value": 3},
-    ]
-
-    # Test with patient_id column
-    df2 = pd.DataFrame(
-        {
-            "enc_id": [1, 2, 3],
-            "length_of_stay": [1, 2, 3],
-            "patient_id": [101, 102, 103],
+            "patient_number": [101, 102, 103],
+            "department": ["test", "test", "test2"],
         }
     )
-    patients_values2 = get_patients_values(df2, enc_ids_dict)
-    assert patients_values2["test"] == [
+    patients_values = get_patients_values(df)
+    assert patients_values["test"] == [
         {
             "label": "Patiënt 1 (test 1 dagen) [Opname 1] [Patiëntnummer 101]",
             "value": 1,
@@ -167,7 +128,7 @@ def test_get_patients_values():
             "value": 2,
         },
     ]
-    assert patients_values2["test2"] == [
+    assert patients_values["test2"] == [
         {
             "label": "Patiënt 1 (test2 3 dagen) [Opname 3] [Patiëntnummer 103]",
             "value": 3,

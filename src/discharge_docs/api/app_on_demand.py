@@ -23,7 +23,6 @@ from discharge_docs.config import (
     load_department_config,
     setup_root_logger,
 )
-from discharge_docs.dashboard.helper import generate_single_doc
 from discharge_docs.database.models import (
     Encounter,
     GeneratedDoc,
@@ -31,6 +30,7 @@ from discharge_docs.database.models import (
     RequestGenerate,
 )
 from discharge_docs.llm.connection import initialise_azure_connection
+from discharge_docs.llm.helper import generate_single_doc
 from discharge_docs.llm.prompt import (
     load_prompts,
 )

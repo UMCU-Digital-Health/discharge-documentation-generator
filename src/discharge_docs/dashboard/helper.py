@@ -2,26 +2,30 @@ import json
 import logging
 import re
 import tomllib
-from enum import Enum
 from pathlib import Path
 from typing import Union
 
 import pandas as pd
-import tomli_w
 from dash import html
 from flask import Request
+from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 
-from discharge_docs.config import DEPLOYMENT_NAME_BULK, TEMPERATURE, AuthConfig
+from discharge_docs.config import (
+    DEPLOYMENT_NAME_BULK,
+    TEMPERATURE,
+    AuthConfig,
+)
 from discharge_docs.config_models import DepartmentConfig
+from discharge_docs.database.models import DashEncounter, PatientFile, StoredDoc
 from discharge_docs.llm.connection import initialise_azure_connection
-from discharge_docs.llm.helper import DischargeLetter, generate_single_doc
+from discharge_docs.llm.helper import DischargeLetter
 from discharge_docs.llm.prompt_builder import (
-    ContextLengthError,
-    GeneralError,
-    JSONError,
     PromptBuilder,
 )
-from discharge_docs.processing.processing import get_patient_file
+from discharge_docs.processing.processing import (
+    get_patient_file,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -188,36 +192,70 @@ def get_authorization(
     return None, []
 
 
-def get_authorized_patients(
-    authorization_group: list, patients: dict
-) -> tuple[list, str | None]:
+def query_patient_file(
+    patient_admission_id: str, session_factory: sessionmaker
+) -> pd.DataFrame:
     """
-    Get authorized patients based on the user's authorization group.
+    Query the patient file from the database for a specific patient admission ID.
 
     Parameters
     ----------
-    authorization_group : list
-        The list of authorization groups for the user.
-    patients : dict
-        A dictionary containing patient data per department.
+    patient_admission_id : int
+        The identifier of the patient admission.
+    session : Sessionmaker
+        The database session maker.
 
     Returns
     -------
-    tuple[list, str | None]
-        A tuple containing:
-        - The list of authorized patients for the user
-        - The value of the first patient (or None if no patients)
+    pd.DataFrame
+        The DataFrame containing the patient file data.
     """
-    authorized_patients = [
-        item
-        for key, values in patients.items()
-        if key in authorization_group
-        for item in values
-    ]
 
-    first_patient = authorized_patients[0]["value"] if authorized_patients else None
+    with session_factory() as session:
+        patient_file = session.execute(
+            select(PatientFile.description, PatientFile.content, PatientFile.date)
+            .join(DashEncounter, PatientFile.encounter_id == DashEncounter.id)
+            .where(DashEncounter.enc_id == int(patient_admission_id))
+        )
+        patient_file = pd.DataFrame(
+            patient_file.fetchall(), columns=list(patient_file.keys())
+        )
+    return patient_file
 
-    return authorized_patients, str(first_patient)
+
+def query_stored_doc(
+    patient_admission_id: str, selected_doc_type: str, session_factory: sessionmaker
+) -> pd.DataFrame:
+    """
+    Query the stored document from the database for a specific patient admission ID.
+
+    Parameters
+    ----------
+    patient_admission_id : int
+        The identifier of the patient admission.
+    selected_doc_type : str
+        The type of document to retrieve (AI or Human)
+    session : Sessionmaker
+        The database session maker.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame containing the patient file data.
+    """
+
+    with session_factory() as session:
+        stored_doc = session.execute(
+            select(StoredDoc.discharge_letter, StoredDoc.timestamp)
+            .join(DashEncounter, StoredDoc.encounter_id == DashEncounter.id)
+            .where(DashEncounter.enc_id == int(patient_admission_id))
+            .where(StoredDoc.doc_type == selected_doc_type)
+            .order_by(StoredDoc.timestamp.desc())
+        )
+        stored_doc = pd.DataFrame(
+            stored_doc.fetchall(), columns=list(stored_doc.keys())
+        )
+    return stored_doc
 
 
 def get_data_from_patient_admission(
@@ -245,7 +283,9 @@ def get_data_from_patient_admission(
 
 
 def get_department_prompt(
-    patient_admission: str, enc_ids_dict: dict, department_config: DepartmentConfig
+    patient_admission: str,
+    development_admissions: pd.DataFrame,
+    department_config: DepartmentConfig,
 ) -> tuple[str, str]:
     """
     Get the department prompt and department for a patient admission.
@@ -254,8 +294,8 @@ def get_department_prompt(
     ----------
     patient_admission : str
         The identifier of the patient admission.
-    enc_ids_dict : dict
-        A dictionary mapping departments to lists of encounter IDs.
+    development_admissions : pd.DataFrame
+        The DataFrame containing development admissions data and their departments.
     department_config : DepartmentConfig
         The department configuration object.
 
@@ -266,24 +306,20 @@ def get_department_prompt(
         - The department prompt for the patient admission
         - The department name for the patient admission
     """
-    for department, encounters in enc_ids_dict.items():
-        if int(patient_admission) in encounters:
-            return department_config.department[
-                department
-            ].department_prompt, department
-    raise ValueError("Patient admission not found in enc_ids_dict")
+    department = development_admissions.loc[
+        development_admissions["enc_id"] == int(patient_admission), "department"
+    ].values[0]
+    return department_config.department[department].department_prompt, department
 
 
-def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
+def get_patients_values(data: pd.DataFrame) -> dict[str, list[dict[str, str]]]:
     """
     Get a dictionary of patient values for dropdowns, grouped by department.
 
     Parameters
     ----------
     data : pd.DataFrame
-        The DataFrame containing patient data.
-    enc_ids_dict : dict
-        A dictionary mapping department names to lists of encounter IDs.
+        The DataFrame containing encounter information.
 
     Returns
     -------
@@ -293,30 +329,21 @@ def get_patients_values(data: pd.DataFrame, enc_ids_dict: dict) -> dict:
     """
     values_list = {}
 
-    for department, enc_ids in enc_ids_dict.items():
+    for department in data.department.unique():
         patients_list = []
-        for idx, enc_id in enumerate(enc_ids, start=1):
-            if data is not None:
-                if data[data["enc_id"] == enc_id].empty:
-                    continue
-                length_of_stay = pd.Series(
-                    data.loc[data["enc_id"] == enc_id, "length_of_stay"]
-                ).to_numpy()[0]
-                patient_number = pd.Series(
-                    data.loc[data["enc_id"] == enc_id, "patient_id"]
-                ).to_numpy()[0]
-                text_block = (
-                    f"Patiënt {idx} ({department} {length_of_stay} dagen) "
-                    f"[Opname {enc_id}]"
-                )
-                if pd.notna(patient_number):
-                    text_block += f" [Patiëntnummer {int(patient_number)}]"
-                patients_list.append(
-                    {
-                        "label": text_block,
-                        "value": enc_id,
-                    }
-                )
+        department_data = data[data["department"] == department]
+        for idx, (_, row) in enumerate(department_data.iterrows(), start=1):
+            text_block = (
+                f"Patiënt {idx} ({department} {row['length_of_stay']} dagen) "
+                f"[Opname {row['enc_id']}] [Patiëntnummer {int(row['patient_number'])}]"
+            )
+            patients_list.append(
+                {
+                    "label": text_block,
+                    "value": row["enc_id"],
+                }
+            )
+        print(patients_list)
         if patients_list:
             values_list[department] = patients_list
 
@@ -383,166 +410,6 @@ def get_department(selected_patient_admission: int, enc_ids_dict: dict) -> str:
     raise ValueError("Department not found for given patient admission.")
 
 
-def backup_old_department_docs(
-    department: str,
-    old_stored_bulk_path: Path,
-    stored_bulk_path: Path,
-    stored_bulk: pd.DataFrame | None = None,
-    stored_bulk_old: pd.DataFrame | None = None,
-) -> pd.DataFrame:
-    """
-    Update the old bulk docs file with current docs for the selected department.
-    Docs for other departments remain unchanged.
-
-    Parameters
-    ----------
-    department : str
-        The name of the department to update.
-    old_stored_bulk_path : Path
-        Path to the old stored bulk docs file.
-    stored_bulk_path : Path
-        Path to the current stored bulk docs file.
-    stored_bulk : pd.DataFrame, optional
-        Current stored bulk docs DataFrame.
-    stored_bulk_old : pd.DataFrame, optional
-        Old stored bulk docs DataFrame.
-
-    Returns
-    -------
-    pd.DataFrame
-        The stored bulk DataFrame read from the current stored bulk path.
-    """
-    if stored_bulk_old is None or stored_bulk is None:
-        stored_bulk_old = pd.read_parquet(old_stored_bulk_path)
-        stored_bulk = pd.read_parquet(stored_bulk_path)
-
-    # Filter out current department in old backup
-    other_depts_old = stored_bulk_old[stored_bulk_old["department"] != department]
-    selected_dep_docs = stored_bulk[stored_bulk["department"] == department]
-    combined = pd.concat([other_depts_old, selected_dep_docs], ignore_index=True)
-    combined.to_parquet(old_stored_bulk_path)
-    logger.info(
-        f"Old bulk docs updated with current {department} data to "
-        f"{old_stored_bulk_path.name}"
-    )
-
-    return stored_bulk
-
-
-def generate_bulk_docs_for_department(
-    department: str,
-    enc_ids: list[int],
-    data: pd.DataFrame,
-    prompt_builder: PromptBuilder,
-    system_prompt: str,
-    general_prompt: str,
-    department_config: DepartmentConfig,
-    department_prompt: str | None = None,
-    post_processing_prompt: str | None = None,
-) -> pd.DataFrame:
-    """
-    Generate discharge letters for all encounters in a department.
-
-    Parameters
-    ----------
-    department : str
-        The name of the department for which discharge letters are generated.
-    enc_ids : list[int]
-        List of encounter IDs for which discharge letters are generated.
-    data : pd.DataFrame
-        DataFrame containing patient admission data.
-    prompt_builder : PromptBuilder
-        Instance of PromptBuilder used to generate discharge documents.
-    system_prompt : str
-        The system prompt to use in document generation.
-    general_prompt : str
-        The user prompt to use in document generation.
-    department_config : DepartmentConfig
-        The department configuration object.
-    department_prompt : str | None, optional
-        The department-specific prompt to use (if any).
-    post_processing_prompt : str | None, optional
-        The post-processing prompt to refine the generated documents (if any).
-
-    Returns
-    -------
-    pd.DataFrame
-        DataFrame containing the generated discharge letters for the department
-        and encounters.
-    """
-    docs = []
-
-    for enc_id in enc_ids:
-        logger.info(f"Generating discharge letter for encounter ID: {enc_id}")
-        patient_data = get_data_from_patient_admission(enc_id, data)
-        patient_file_string, _ = get_patient_file(patient_data)
-
-        discharge_letter = generate_single_doc(
-            prompt_builder=prompt_builder,
-            patient_file_string=patient_file_string,
-            system_prompt=system_prompt,
-            general_prompt=general_prompt,
-            department=patient_data["department"].iloc[0],
-            department_config=department_config,
-            length_of_stay=patient_data["length_of_stay"].values[0],
-            department_prompt=department_prompt,
-            post_processing_prompt=post_processing_prompt,
-        )
-
-        try:
-            content = json.dumps(discharge_letter.generated_doc)
-        except (ContextLengthError, JSONError, GeneralError) as e:
-            content = json.dumps(
-                {"Geen Vooraf Gegenereerde Ontslagbrief Beschikbaar": e.dutch_message}
-            )
-
-        docs.append(
-            {
-                "enc_id": enc_id,
-                "department": department,
-                "generated_doc": content,
-                "generation_time": discharge_letter.generation_time,
-            }
-        )
-
-    docs = pd.DataFrame(docs)
-    return docs
-
-
-def update_stored_bulk_docs(
-    stored_bulk_path: Path,
-    department: str,
-    new_docs: pd.DataFrame,
-    stored_bulk: pd.DataFrame,
-) -> None:
-    """
-    Update the stored bulk docs file with new generated docs for the selected
-    department. Docs for other departments remain unchanged.
-
-    Parameters
-    ----------
-    stored_bulk_path : Path
-        Path to the stored bulk documents file.
-    department : str
-        The name of the department to update.
-    new_docs : pd.DataFrame
-        DataFrame containing the newly generated discharge documents.
-    stored_bulk : pd.DataFrame
-        The current stored bulk documents DataFrame.
-
-    Returns
-    -------
-    None
-        This function does not return anything. It updates the stored bulk
-        documents file.
-    """
-    other_depts = stored_bulk[stored_bulk["department"] != department]
-    updated = pd.concat([other_depts, new_docs], ignore_index=True)
-    updated.to_parquet(stored_bulk_path)
-
-    logger.info("Updated stored bulk discharge documents.")
-
-
 def remove_conclusion(doc: str | None) -> str | None:
     """Remove the 'Conclusie' section from the discharge letter JSON.
 
@@ -592,18 +459,12 @@ def random_sample_with_warning(df: pd.DataFrame, n: int) -> pd.DataFrame:
         return df
 
 
-class SelectionMethod(Enum):
-    RANDOM = "RANDOM"
-    BALANCED = "BALANCED"
-
-
 def write_encounter_ids(
     data: pd.DataFrame,
     n_enc_ids: int,
-    selection: SelectionMethod = SelectionMethod.RANDOM,
+    selection: str = "random",
     length_of_stay_cutoff: int | None = None,
-    return_encs: bool = False,
-) -> None | pd.DataFrame:
+) -> list[int]:
     """
     Writes the encounter IDs from the data to a TOML file.
 
@@ -643,7 +504,9 @@ def write_encounter_ids(
         if token_length > prompt_builder.max_context_length - 5000:
             data = data[data["enc_id"] != enc_id]
 
-    if selection == SelectionMethod.RANDOM:
+    if (
+        selection == "random"
+    ):  # TODO remove complexity as now only per department is done
         enc_ids = data[["enc_id", "department"]].drop_duplicates()
         # keep only first n_enc_ids per department
         enc_ids = (
@@ -651,7 +514,7 @@ def write_encounter_ids(
             .apply(random_sample_with_warning, n=n_enc_ids)
             .reset_index(drop=True)
         )
-    elif selection == SelectionMethod.BALANCED:
+    elif selection == "balanced":
         # select 50% of encounters with long length of stay and 50% with short
         long_encs = data[data["length_of_stay"] >= length_of_stay_cutoff][
             ["enc_id", "department"]
@@ -682,20 +545,23 @@ def write_encounter_ids(
     else:
         raise ValueError(f"Selection {selection} not recognized")
 
-    # combine and save as TOML where the table is the department and the encs are a list
-    enc_ids_dict = enc_ids.groupby("department")["enc_id"].apply(list).to_dict()
-    toml_data = {dept: {"ids": ids} for dept, ids in enc_ids_dict.items()}
+    return enc_ids["enc_id"].tolist()
 
-    if return_encs:
-        return enc_ids
-    else:
-        file_path = (
-            Path(__file__).parents[3]
-            / "src"
-            / "discharge_docs"
-            / "dashboard"
-            / "enc_ids.toml"
+
+def get_development_admissions(
+    authorization_group, session_factory: sessionmaker
+) -> pd.DataFrame:
+    with session_factory() as session:
+        development_admissions = session.execute(
+            select(
+                DashEncounter.patient_number,
+                DashEncounter.enc_id,
+                DashEncounter.department,
+                DashEncounter.length_of_stay,
+            ).where(DashEncounter.department.in_(authorization_group))
         )
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_path, "wb") as f:
-        tomli_w.dump(toml_data, f)
+        development_admissions = pd.DataFrame(
+            development_admissions.fetchall(),
+            columns=list(development_admissions.keys()),
+        )
+        return development_admissions

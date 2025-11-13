@@ -50,45 +50,6 @@
     "alembic/script.py.mako": {
       "checksum": "e34d56c25c37dc9c67498c7eb3b600b6"
     },
-    "data/examples/DEMO_patient_1.csv": {
-      "checksum": "4868fdf1aedeab3680a716c92d747b87"
-    },
-    "data/examples/Patient_file_1.txt": {
-      "checksum": "2fa7b6e2441e56fe6d59966b0a2ed281"
-    },
-    "data/examples/example_patient_discharge.txt": {
-      "checksum": "d38c541564b41865eb1b17255a235862"
-    },
-    "data/examples/example_patient_file_gpt_1.txt": {
-      "checksum": "0b3e432117625a33011acaed9f994d8b"
-    },
-    "data/examples/example_patient_file_gpt_2.txt": {
-      "checksum": "ba6be260e6f56fab5523bd8c4774a297"
-    },
-    "data/examples/example_patient_file_gpt_3.txt": {
-      "checksum": "fa2ded497d6b586e334462870c9505d7"
-    },
-    "data/examples/example_payload.json": {
-      "checksum": "4294e3175d62c65a48a47250e4404fad"
-    },
-    "data/processed/bulk_generated_docs_gpt.parquet": {
-      "checksum": "47426a9dee2ad8b26ff19fa64cc856f3"
-    },
-    "data/processed/bulk_generated_docs_gpt.parquet.dvc": {
-      "checksum": "c9a512712cea642de33fa50284cc345d"
-    },
-    "data/processed/bulk_generated_docs_gpt_old.parquet": {
-      "checksum": "75aa59aaf65a5b518aafb2aa05f06fdf"
-    },
-    "data/processed/bulk_generated_docs_gpt_old.parquet.dvc": {
-      "checksum": "9f10c74b84b5f47d54046bc5ac3adcd2"
-    },
-    "data/processed/evaluation_data.parquet": {
-      "checksum": "cd8aeaeeeeb689aabd7146757f0b33b6"
-    },
-    "data/processed/evaluation_data.parquet.dvc": {
-      "checksum": "095b13c4c50caf6a61a8141fc2847023"
-    },
     "data/raw/.gitignore": {
       "checksum": "75e3ac18be43d8d31ed135e6d1976b4f"
     },
@@ -149,17 +110,8 @@
     "src/discharge_docs/config_models.py": {
       "checksum": "6a29dc2aaa9b2f657c5bae4f3c9709a6"
     },
-    "src/discharge_docs/dashboard/.gitignore": {
-      "checksum": "f5735dd5e17029105a1d9a0d9ed7d26a"
-    },
     "src/discharge_docs/dashboard/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
-    },
-    "src/discharge_docs/dashboard/enc_ids.toml": {
-      "checksum": "52d868f87f57b84213535020739a657a"
-    },
-    "src/discharge_docs/dashboard/enc_ids.toml.dvc": {
-      "checksum": "32b210a707d216701682fe2248a38919"
     },
     "src/discharge_docs/dashboard/helper.py": {
       "checksum": "b55ba682198fe71eb19ff689ec1c9b3e"

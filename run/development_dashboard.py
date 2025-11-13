@@ -1,5 +1,5 @@
 import logging
-from pathlib import Path
+import os
 
 import dash
 import dash_bootstrap_components as dbc
@@ -10,9 +10,10 @@ from dash import ctx, html
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
+from umcu_ai_utils.database_connection import get_engine
 
 from discharge_docs.config import (
-    DEPLOYMENT_NAME_BULK,
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     load_auth_config,
@@ -20,26 +21,22 @@ from discharge_docs.config import (
     setup_root_logger,
 )
 from discharge_docs.dashboard.helper import (
-    backup_old_department_docs,
-    generate_bulk_docs_for_department,
-    generate_single_doc,
     get_authorization,
-    get_authorized_patients,
-    get_data_from_patient_admission,
-    get_department,
     get_department_prompt,
+    get_development_admissions,
     get_patients_values,
     highlight,
-    load_enc_ids,
-    load_stored_discharge_letters,
-    update_stored_bulk_docs,
+    query_patient_file,
+    query_stored_doc,
 )
 from discharge_docs.dashboard.layout import get_layout_development_dashboard
+from discharge_docs.database.models import DashEncounter
 from discharge_docs.llm.connection import initialise_azure_connection
+from discharge_docs.llm.helper import generate_single_doc
 from discharge_docs.llm.prompt import load_prompts
 from discharge_docs.llm.prompt_builder import PromptBuilder
+from discharge_docs.processing.bulk_generation import run_bulk_generation
 from discharge_docs.processing.processing import (
-    get_patient_discharge_docs,
     get_patient_file,
 )
 
@@ -55,19 +52,12 @@ logger.info(f"Running with deployment name: {DEPLOYMENT_NAME_ENV}")
 # Authorization config
 authorization_config = load_auth_config()
 
-# load data
-data_folder = Path(__file__).parents[1] / "data" / "processed"
-data = pd.read_parquet(data_folder / "evaluation_data.parquet")
+# create connection to the database
 
-# load stored discharge letters + old version
-stored_bulk_path = Path(data_folder / "bulk_generated_docs_gpt.parquet")
-old_stored_bulk_path = Path(data_folder / "bulk_generated_docs_gpt_old.parquet")
-stored_bulk_gpt = None
-stored_bulk_gpt_old = None
-
-# load used enc_ids
-enc_ids_dict = load_enc_ids()
-values_list = get_patients_values(data, enc_ids_dict)
+engine = get_engine(
+    db_env=os.getenv("DB_ENVIRONMENT"), schema_name=DashEncounter.__table__.schema
+)
+SESSIONMAKER = sessionmaker(bind=engine)
 
 logger.info("Data loaded...")
 
@@ -91,18 +81,26 @@ app.layout = get_layout_development_dashboard(system_prompt, general_prompt)
     Output("patient_admission_dropdown", "options"),
     Output("patient_admission_dropdown", "value"),
     Output("logged_in_user", "children"),
+    Output("patient_admission_store", "data"),
     Input("navbar", "children"),
 )
-def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
+def load_patient_selection_dropdown(_) -> tuple[list, str | None, list, dict]:
     """
-    Load the patient admission dropdown with the available patient admissions when
-    the app is starting. Available patients are based on the user's authorization.
+    Populate the patient admission dropdown and return the logged-in user plus
+    a store of admissions. Triggered when the navbar changes.
 
     Returns
     -------
-    tuple[list, str]
-        The list of options for the patient admission dropdown and the first patient
-        value.
+    tuple[list, str | None, list, dict]
+        - patient_admission_dropdown options: list[dict] with 'label' and 'value'
+        - initial value for patient_admission_dropdown (str or None)
+        - logged_in_user children: list with a single string element
+        - patient_admission_store data: dict representing admissions dataframe
+
+    Raises
+    ------
+    PreventUpdate
+        If the authenticated user has no authorized patients to view.
     """
 
     user, authorization_group = get_authorization(
@@ -114,10 +112,32 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list]:
         ],
     )
 
-    authorized_patients, first_patient = get_authorized_patients(
-        authorization_group, values_list
+    development_admissions = get_development_admissions(
+        authorization_group, SESSIONMAKER
     )
-    return authorized_patients, first_patient, [f"Ingelogd als: {user}"]
+
+    if development_admissions.empty:
+        logger.warning(
+            f"User {user} has no authorized patients to view. "
+            "Check authorization configuration."
+        )
+        raise PreventUpdate
+    patient_values = get_patients_values(development_admissions)
+    print(patient_values)
+    patient_values_list = [
+        item
+        for key, values in patient_values.items()
+        if key in authorization_group
+        for item in values
+    ]
+    first_patient = patient_values_list[0]["value"] if patient_values_list else None
+
+    return (
+        patient_values_list,
+        first_patient,
+        [f"Ingelogd als: {user}"],
+        development_admissions.to_dict(),
+    )
 
 
 @app.callback(
@@ -157,7 +177,9 @@ def update_date_dropdown(
     """
     if selected_patient_admission is None:
         raise PreventUpdate
-    patient_data = get_data_from_patient_admission(selected_patient_admission, data)
+
+    patient_data = query_patient_file(selected_patient_admission, SESSIONMAKER)
+
     date_options = [
         {"label": date.date(), "value": date} for date in patient_data["date"].unique()
     ]
@@ -204,7 +226,7 @@ def update_description_dropdown(selected_patient_admission: str) -> np.ndarray:
     """
     if selected_patient_admission is None:
         raise PreventUpdate
-    patient_data = get_data_from_patient_admission(selected_patient_admission, data)
+    patient_data = query_patient_file(selected_patient_admission, SESSIONMAKER)
     _, patient_file_df = get_patient_file(patient_data)
     description_options = patient_file_df["description"].sort_values().unique()
     return description_options
@@ -290,7 +312,7 @@ def display_patient_file(
         or selected_patient_admission is None
     ):
         return [""]
-    patient_data = get_data_from_patient_admission(selected_patient_admission, data)
+    patient_data = query_patient_file(selected_patient_admission, SESSIONMAKER)
     if selected_all_dates:
         patient_file = patient_data[
             patient_data["description"].isin(selected_description)
@@ -348,9 +370,10 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
     if selected_patient_admission is None:
         return ""
 
-    patient_data = get_data_from_patient_admission(selected_patient_admission, data)
-    discharge_documentation = get_patient_discharge_docs(patient_data)
-    return discharge_documentation.to_numpy()[0]
+    discharge_documentation_df = query_stored_doc(
+        selected_patient_admission, "Human", SESSIONMAKER
+    )
+    return discharge_documentation_df["discharge_letter"].values[0]
 
 
 @app.callback(
@@ -381,22 +404,23 @@ def display_stored_discharge_documentation(
     if selected_patient_admission is None:
         return "", ""
 
-    stored_bulk_gpt = pd.read_parquet(stored_bulk_path)
-    stored_bulk_gpt_old = pd.read_parquet(old_stored_bulk_path)
-
-    old_letter = load_stored_discharge_letters(
-        stored_bulk_gpt_old, selected_patient_admission
-    )
-    new_letter = load_stored_discharge_letters(
-        stored_bulk_gpt, selected_patient_admission
+    discharge_documentation_df = query_stored_doc(
+        selected_patient_admission, "AI", SESSIONMAKER
     )
 
-    formatted_output_old = old_letter.format(
-        format_type="markdown", manual_filtering=True
-    )
-    formatted_output = new_letter.format(format_type="markdown", manual_filtering=True)
+    try:
+        newest_doc = discharge_documentation_df["discharge_letter"].values[0]
+    except IndexError:
+        newest_doc = "Er is geen opgeslagen GPT brief gevonden voor deze opname."
 
-    return html.Div(formatted_output_old), html.Div(formatted_output)
+    try:
+        second_newest_doc = discharge_documentation_df["discharge_letter"].values[1]
+    except IndexError:
+        second_newest_doc = (
+            "Er is geen tweede opgeslagen GPT brief gevonden voor deze opname."
+        )
+
+    return second_newest_doc, newest_doc
 
 
 @app.callback(
@@ -404,9 +428,10 @@ def display_stored_discharge_documentation(
     Output("department_prompt_field", "value"),
     Output("post_processing_prompt_field", "value"),
     Input("patient_admission_dropdown", "value"),
+    State("patient_admission_store", "data"),
 )
 def update_department_prompt(
-    selected_patient_admission: str,
+    selected_patient_admission: str, development_admissions: dict
 ) -> tuple[list[str], str, str]:
     """
     Update the department prompt for the selected patient admission.
@@ -426,10 +451,11 @@ def update_department_prompt(
     """
     if selected_patient_admission is None:
         return [""], "", ""
-    department_prompt, _ = get_department_prompt(
-        selected_patient_admission, enc_ids_dict, department_config
+    department_prompt, department = get_department_prompt(
+        selected_patient_admission,
+        pd.DataFrame(development_admissions),
+        department_config,
     )
-    department = get_department(int(selected_patient_admission), enc_ids_dict)
     post_processing_prompt = department_config.department[
         department
     ].post_processing_prompt
@@ -481,7 +507,7 @@ def display_generated_discharge_doc(
     if ctx.triggered_id == "patient_admission_dropdown":
         return ""
 
-    patient_data = get_data_from_patient_admission(selected_patient_admission, data)
+    patient_data = query_patient_file(selected_patient_admission, SESSIONMAKER)
 
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE, deployment_name=DEPLOYMENT_NAME_ENV, client=client
@@ -543,12 +569,14 @@ def show_prompts(n: int, is_open: bool) -> bool:
     Input("patient_admission_dropdown", "value"),
     State("department_prompt_field", "value"),
     State("post_processing_prompt_field", "value"),
+    State("patient_admission_store", "data"),
 )
 def bulk_generate_letters(
     n_clicks: int,
     selected_patient_admission: str,
     department_prompt: str,
     post_processing_prompt: str,
+    development_admissions: dict,
 ) -> list | str:
     """
     Generate bulk discharge letters for the selected department.
@@ -579,51 +607,19 @@ def bulk_generate_letters(
     logger.info(f"Running with deployment name: {DEPLOYMENT_NAME_ENV}")
 
     # Determine department
-    department = get_department(int(selected_patient_admission), enc_ids_dict)
-    enc_ids_for_department = enc_ids_dict[department]
-    logger.info(
-        (
-            f"Generating for department: {department} with "
-            f"{len(enc_ids_for_department)} encounters"
-        )
+    df_development_admissions = pd.DataFrame(development_admissions)
+    _, department = get_department_prompt(
+        selected_patient_admission,
+        df_development_admissions,
+        department_config,
     )
 
-    # Backup existing docs for this department
-    stored_bulk_loaded = backup_old_department_docs(
-        department=department,
-        old_stored_bulk_path=old_stored_bulk_path,
-        stored_bulk_path=stored_bulk_path,
-        stored_bulk=stored_bulk_gpt,
-        stored_bulk_old=stored_bulk_gpt_old,
-    )
-
-    # Load prompts and prepare generator
-    general_prompt, system_prompt = load_prompts()
-    prompt_builder = PromptBuilder(
-        temperature=TEMPERATURE,
-        deployment_name=DEPLOYMENT_NAME_BULK,
-        client=client,
-    )
-
-    # Generate documents
-    bulk_generated_docs = generate_bulk_docs_for_department(
-        department=department,
-        enc_ids=enc_ids_for_department,
-        data=data,
-        prompt_builder=prompt_builder,
-        system_prompt=system_prompt,
-        general_prompt=general_prompt,
-        department_config=department_config,
+    run_bulk_generation(
+        client,
+        storage_location="database",
+        selected_department=department,
         department_prompt=department_prompt,
         post_processing_prompt=post_processing_prompt,
-    )
-
-    # Store updated bulk
-    update_stored_bulk_docs(
-        stored_bulk_path=stored_bulk_path,
-        department=department,
-        new_docs=bulk_generated_docs,
-        stored_bulk=stored_bulk_loaded,
     )
 
     return (

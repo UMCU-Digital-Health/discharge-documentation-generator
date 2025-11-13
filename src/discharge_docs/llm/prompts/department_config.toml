@@ -1,5 +1,12 @@
 [department]
 
+[department.DEMO]
+id = "DEMO"
+display_name = "Demonstratieafdeling"
+ehr = "DEMO"
+department_prompt = "NICU_prompt.txt"
+post_processing = false
+
 [department.IC]
 id = "IC"
 display_name = "Intensive Care"

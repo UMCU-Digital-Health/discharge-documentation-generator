@@ -394,7 +394,7 @@ if __name__ == "__main__":
             (default_start_date, default_end_date),
         )
 
-    engine = get_engine(schema_name=Request.__table__.schema)
+    engine = get_engine(db_env=env, schema_name=Request.__table__.schema)
     SESSIONMAKER = sessionmaker(bind=engine)
 
     nav = st.navigation(

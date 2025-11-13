@@ -212,3 +212,71 @@ class DashboardLogging(Base):
     timestamp: Mapped[datetime]
 
     discharge_letter_relation: Mapped["GeneratedDoc"] = relationship(init=False)
+
+
+class DashEncounter(Base):
+    """Patients used for development/testing; stores encounter + patient identifiers."""
+
+    __tablename__ = "dashencounter"
+    __table_args__ = {"schema": "discharge_aiva_dev"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    enc_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
+    patient_number: Mapped[int]
+    department: Mapped[str] = mapped_column(String(20), nullable=True)
+
+    admission_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    discharge_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    length_of_stay: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # one-to-many DashEncounter -> PatientFile
+    patient_file_relation: Mapped[List["PatientFile"]] = relationship(
+        back_populates="encounter_dev_relation", init=False
+    )
+
+    # one-to-many DashEncounter -> StoredDoc
+    stored_doc_relation: Mapped[List["StoredDoc"]] = relationship(
+        back_populates="encounter_dev_relation", init=False
+    )
+
+
+class PatientFile(Base):
+    """Patient data/files associated with a patient."""
+
+    __tablename__ = "patientfile"
+    __table_args__ = {"schema": "discharge_aiva_dev"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    encounter_id: Mapped[int] = mapped_column(
+        ForeignKey(DashEncounter.id), nullable=False, init=False
+    )
+    description: Mapped[str]
+    content: Mapped[str]
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    encounter_dev_relation: Mapped["DashEncounter"] = relationship(
+        back_populates="patient_file_relation", init=False
+    )
+
+
+class StoredDoc(Base):
+    """Discharge letters, both human and AI-generated."""
+
+    __tablename__ = "storeddoc"
+    __table_args__ = {"schema": "discharge_aiva_dev"}
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, init=False)
+    encounter_id: Mapped[int] = mapped_column(
+        ForeignKey(DashEncounter.id), nullable=False, init=False
+    )
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    discharge_letter: Mapped[str]
+    doc_type: Mapped[str] = mapped_column(String(15))
+
+    encounter_dev_relation: Mapped["DashEncounter"] = relationship(
+        back_populates="stored_doc_relation", init=False
+    )

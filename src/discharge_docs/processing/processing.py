@@ -267,7 +267,9 @@ def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
             .replace(metavision_tracti)
         )
     elif department == "ORT":
-        return df  # TODO: Implement ORT-specific processing logic here in the future
+        return df
+    elif department == "DEMO":
+        return df
     else:
         raise ValueError(f"Department {department} not recognized")
     return df

@@ -5,7 +5,10 @@ from datetime import datetime
 from dash import dcc, html
 
 from discharge_docs.config_models import DepartmentConfig
-from discharge_docs.llm.prompt import add_length_to_processing_prompt
+from discharge_docs.llm.prompt import (
+    add_length_to_processing_prompt,
+    load_prompts,
+)
 from discharge_docs.llm.prompt_builder import (
     ContextLengthError,
     GeneralError,
@@ -28,61 +31,49 @@ class DischargeLetter:
         format_type: str = "markdown",
         manual_filtering: bool = True,
         include_generation_time: bool = True,
-    ):
-        """Format the discharge letter to plain text or markdown with headers.
+    ) -> list[html.Div] | str:
+        return DischargeLetter.format_document(
+            generated_doc=self.generated_doc,
+            format_type=format_type,
+            generation_time=self.generation_time,
+            manual_filtering=manual_filtering,
+            include_generation_time=include_generation_time,
+        )
 
-        Parameters
-        ----------
-        format_type : str, optional
-            The desired format type of the generated document, by default "markdown".
-        manual_filtering : bool, optional
-            Whether to apply manual filtering to the generated document, by default True
-        include_generation_time : bool, optional
-            Whether to include the generation time in the plain text output, by
-              default True
-        Returns
-        -------
-        dict | str
-            The structured version of the generated document (dict) if format
-            is 'markdown'
-            The plain text version of the generated document if format is 'plain'.
-        """
-        if format_type not in ["markdown", "plain"]:
+    @staticmethod
+    def format_document(
+        generated_doc: dict,
+        format_type: str = "markdown",
+        generation_time: datetime | None = None,
+        manual_filtering: bool = True,
+        include_generation_time: bool = True,
+    ):
+        """Static version of the formatter — works directly with a dict."""
+        if format_type not in ("markdown", "plain"):
             raise ValueError(
                 "Invalid format type. Please choose 'markdown' or 'plain'."
             )
 
         output_structured = []
         output_plain = ""
-        if include_generation_time and self.generation_time is not None:
-            output_plain += f"Generatietijd: {self.generation_time}\n"
+
+        if include_generation_time and generation_time is not None:
+            output_plain += f"Generatietijd: {generation_time}\n"
             output_structured.append(
                 html.Div(
-                    [
-                        html.Strong("Generatietijd"),
-                        dcc.Markdown(f"{self.generation_time}"),
-                    ]
+                    [html.Strong("Generatietijd"), dcc.Markdown(f"{generation_time}")]
                 )
             )
-        for header in self.generated_doc.keys():
+
+        for header, content in generated_doc.items():
             if manual_filtering:
-                content = manual_filtering_message(self.generated_doc[header])
-            else:
-                content = self.generated_doc[header]
+                content = manual_filtering_message(content)
             output_structured.append(
-                html.Div(
-                    [
-                        html.Strong(header),
-                        dcc.Markdown(content),
-                    ]
-                )
+                html.Div([html.Strong(header), dcc.Markdown(content)])
             )
-            output_plain += f"{header}\n"
-            output_plain += f"{content}\n\n"
-        if format_type == "markdown":
-            return output_structured
-        else:
-            return output_plain
+            output_plain += f"{header}\n{content}\n\n"
+
+        return output_structured if format_type == "markdown" else output_plain
 
 
 def manual_filtering_message(message: str) -> str:
@@ -98,14 +89,14 @@ def manual_filtering_message(message: str) -> str:
 def generate_single_doc(
     prompt_builder: PromptBuilder,
     patient_file_string: str,
-    system_prompt: str | None,
-    general_prompt: str | None,
     department: str,
     department_config: DepartmentConfig,
     length_of_stay: int | None,
+    system_prompt: str | None = None,
+    general_prompt: str | None = None,
     department_prompt: str | None = None,
     post_processing_prompt: str | None = None,
-):
+) -> DischargeLetter:
     """
     Generate a single discharge letter for a patient using the prompt builder.
 
@@ -135,6 +126,10 @@ def generate_single_doc(
     DischargeLetter
         The generated discharge letter object.
     """
+    standard_general_prompt, standard_system_prompt = load_prompts()
+    system_prompt_used = system_prompt or standard_system_prompt
+    general_prompt_used = general_prompt or standard_general_prompt
+
     department_prompt_used = (
         department_prompt or department_config.department[department].department_prompt
     )
@@ -146,8 +141,8 @@ def generate_single_doc(
     try:
         discharge_letter = prompt_builder.generate_discharge_doc(
             patient_file=patient_file_string,
-            system_prompt=system_prompt,
-            general_prompt=general_prompt,
+            system_prompt=system_prompt_used,
+            general_prompt=general_prompt_used,
             department_prompt=department_prompt_used,
         )
 
