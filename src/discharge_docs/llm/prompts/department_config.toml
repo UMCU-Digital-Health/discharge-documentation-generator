@@ -12,7 +12,7 @@ id = "IC"
 display_name = "Intensive Care"
 ehr = "Metavision"
 department_prompt = "IC_prompt.txt"
-post_processing = true
+post_processing = false
 department_examples = "IC_examples.txt"
 
 [department.IC.length_range.short]

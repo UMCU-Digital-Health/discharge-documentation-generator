@@ -1,77 +1,9 @@
-De categorieën zijn: 
-- Aanvangsdiagnose:  
-    - Één zin met de aanvangsdiagnose van déze opname.  
-    - Indien heropname: vermeld dit expliciet (“Patiënt werd heropgenomen…”) en voeg de aanvangsdiagnose van de voorgaande opname toe als klinisch relevant.
+Er is een categorie: 'Beloop'. 
 
-- Klinisch beloop hoofddiagnose:  
-    - Beschrijf het klinisch beloop van de hoofddiagnose waarvoor IC-opname noodzakelijk was, inclusief relevante aanpassingen in beleid of therapie.  
-    - Laat complicaties, bijkomende problemen en symptoomclusters hier buiten; deze vallen onder de categorie 'klinisch relevante problemen'.  
-    - Noem alleen beleidswijzigingen, medicatiekeuzes of interventies die relevant zijn voor het beloop van de hoofddiagnose of de therapeutische koers hebben beïnvloed.  
-    - Gebruik bij voorkeur niet meer dan één alinea, tenzij sprake is van een uitzonderlijk langdurig of complex beloop.  
-    - Geen dag-voor-dag opsomming; groepeer gebeurtenissen logisch in chronologische volgorde.
+Schrijf onder 'Beloop' verhalenderwijs een chronologisch beloop van de opname met complicaties, beleid en beweegredenen voor het beleid. Wees duidelijk in welke beweegredenen belangrijk waren. Schrijf beknopt en focus op diagnoses in plaatst van symptomen.
+Het is belangrijk dat zowel wat over de respiratie als de hemodynamiek gedocumenteerd wordt. Schrijf het beloop in maximaal 300 woorden op.
 
-- Klinisch relevante problemen:  
-    - Beschrijf klinisch relevante problemen waarvoor tijdens de IC-opname diagnostische onzekerheid bestond (intercurrente complicaties of symptomen waarbij een differentiaaldiagnose werd overwogen).  
-    - Noem alleen problemen waarvoor signalen van twijfel zijn vastgelegd, expliciet (“verdenking op...”, “mogelijk...”) of impliciet via beleid, beloop of consultatiegedrag.  
-    - Geef bij elk probleem de aanleiding, overwegingen (bijv. differentiaaldiagnose) en het daaropvolgende beleid of afwachtend handelen.  
-    - Bij meerdere diagnosen: groepeer in een zin (“Differentiële diagnose omvatte X, Y en Z.”).  
-    - Bij één diagnose: “Er werd gedacht aan X.”  
-    - Verzin nooit een differentiaaldiagnose die niet uit het dossier blijkt.
-    - Neem alle problemen die in het dossier expliciet of impliciet zijn vastgelegd op, en geef per probleem voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
-    - Laat deze paragraaf volledig weg als er geen diagnostische onzekerheden speelden.
 
-- Respiratoir:  
-    - Beschrijf respiratoire parameters (zoals zuurstofgehalte, PF-ratio) met actie-werkwoorden; plaats ze in elkaar opvolgende zinnen binnen de alinea en link elke actie kort aan de (hoofd)diagnose of relevante complicatie.  
-    - Gebruik een parameter die tijdtechnisch hoort bij de beschreven actie; haal geen waarden uit een eerder moment.  
-    - Laat interventies zonder invloed op respiratie weg.
 
-- Hemodynamisch:  
-    - Beschrijf hemodynamische parameters (zoals MAP, vasopressor) met actie-werkwoorden; plaats ze in elkaar opvolgende zinnen binnen de alinea en link elke actie kort aan de (hoofd)diagnose of relevante complicatie.  
-    - Gebruik een parameter die tijdtechnisch hoort bij de beschreven actie; haal geen waarden uit een eerder moment.  
-    - Laat interventies zonder invloed op hemodynamiek weg.
-
-- Neurologie:  
-    - Rapporteer een trend of EMV/GCS-score alleen wanneer veranderingen de diagnostische of therapeutische koers hebben beïnvloed (bijv. indicatie voor sedatieafbouw, intubatie, comfortbeleid).  
-    - Gebruik de laatst gemeten én hoogste EMV/GCS-score als eindpunt; noem vroegere, lagere scores enkel als zij een duidelijke verbetering of verslechtering illustreren (“EMV steeg van 8 naar 14”).  
-    - Formuleer nooit “verslechterde” als de laatst gemeten score gelijk of hoger is dan eerdere waarden.  
-    - Is de neurologische status stabiel of niet doorslaggevend, volstaat één korte kwalificatie (“neurologisch stabiel” of “lichte verbetering zonder beleidsimpact”); laat exacte scores dan weg.  
-    - Noem neurologische informatie alleen als achtergrond wanneer deze geen invloed had op opname, heropname of beleidskeuzes tijdens de IC-periode.  
-    - Alleen indien beleid bepalend.
-
-- Ontslag:  
-    - Sluit af met één zin volgens het passende sjabloon.  
-        - Bij overlijden: “Patiënt overleed op <DATUM> door <PRIMAIRE OORZAAK> als gevolg van complicaties van <DIAGNOSE>.”  
-        - Bij ontslag/overplaatsing: “Patiënt werd [ontslagen | overgeplaatst] op <DATUM> na klinisch herstel van <DIAGNOSE>.”  
-    - Gebruik nooit plaatshoudertekst; laat velden weg als gegevens ontbreken.
-
-## Harde constraints:  
-- Volledige zinnen, verleden tijd, geen ik-vorm.
-- Neem alle relevante informatie die in het dossier expliciet of impliciet is vastgelegd op, en geef daarvan voldoende detail (aanleiding, beloop, diagnostiek en beleid) om een rijk en volledig overzicht te bieden.
-- Lees eerst de complete status voordat je een beschrijving maakt. Gebruik geen individuele items uit verschillende teksten. Maak in elke categorie een beschrijving van de gehele opname. Gebruik alleen getallen die functioneel zijn voor de beschrijving.
-
-## Stijlvoorkeuren:  
-- Professionele, medisch-technische toon.  
-- Gebruik meerdere alinea’s bij brieven langer dan 150 woorden.  
-- Beperk jargon waar het niets toevoegt.  
-- Vermijd herhaling.  
-- Vermijd vage of onprofessionele formuleringen (“ontwikkelde een indruk”, “beademing werd gecontinueerd”).  
-- Begin een nieuwe alinea bij:  
-    - een sprong in tijd (bijv. dag 4, postoperatief, later tijdens opname)  
-    - verandering van beleid (bijv. extubatie, wijziging medicatie, nieuwe behandelkoers)  
-    - nieuwe complicatie of diagnose  
-- Bij complexe belopen mag je binnen een alinea korte opsommingstekens (•) gebruiken, maar alleen voor maximaal drie items.  
-- Noem medicatiewijzigingen en invasieve lijnen (zoals EVD, tracheostoma, dialyse) alleen wanneer zij het beleid of de uitkomst duidelijk beïnvloeden; laat irrelevante details weg.
-
-# Format
-Het antwoord moet in het volgende JSON format gegeven worden:
-{
-  "Aanvangsdiagnose": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Klinisch beloop hoofddiagnose": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Klinisch relevante problemen": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Respiratoir": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Hemodynamisch": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Neurologie": "Volledige, samenhangende tekst conform de categorie-definitie.",
-  "Ontslag": "Volledige, samenhangende tekst conform de categorie-definitie.",
-}
-
-Herinnering: controleer vóór output dat alle harde constraints zijn nageleefd.
+# format
+Het format wordt dan: {"Beloop": "Tekstuele samenvatting van beloop zoals hierboven omschreven"}.

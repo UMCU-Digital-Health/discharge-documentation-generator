@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.2] - 2025-11-17
+
+### Changed
+- Reverted IC prompt to previous version, development of the IC prompt will happen in the `release/dep_ic` branch.
+
+### Fixed
+- Fixed a bug in the periodic API, where db environment was not properly passed
+- Fixed a bug in the periodic API where tables from dev dashboard were also created
+
 ## [2.12.1] - 2025-11-13
 
 ### Changed
