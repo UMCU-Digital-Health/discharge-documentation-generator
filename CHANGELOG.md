@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.4] - 2025-11-19
+### Fixed
+- Created init_engine function so that the engine is initialized and passed down to app.state.engine within Posit, as Posit does not run api_periodic.py directly, so the code under if name == __main__ wasn't called before. 
 
 ## [2.12.3] - 2025-11-19
 
