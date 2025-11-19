@@ -78,6 +78,22 @@ app.layout = get_layout_development_dashboard(system_prompt, general_prompt)
 
 
 @app.callback(
+    Output("llm_env", "children"),
+    Input("navbar", "children"),
+)
+def update_llm_env(_):
+    """
+    Update the LLM environment display within the navbar
+
+    Returns
+    -------
+    str
+        The updated LLM environment display.
+    """
+    return f"LLM Environment: {os.getenv('LLM_ENVIRONMENT')}"
+
+
+@app.callback(
     Output("patient_admission_dropdown", "options"),
     Output("patient_admission_dropdown", "value"),
     Output("logged_in_user", "children"),
@@ -123,7 +139,7 @@ def load_patient_selection_dropdown(_) -> tuple[list, str | None, list, dict]:
         )
         raise PreventUpdate
     patient_values = get_patients_values(development_admissions)
-    print(patient_values)
+
     patient_values_list = [
         item
         for key, values in patient_values.items()
@@ -373,6 +389,7 @@ def display_discharge_documentation(selected_patient_admission: str) -> str:
     discharge_documentation_df = query_stored_doc(
         selected_patient_admission, "Human", SESSIONMAKER
     )
+    print(discharge_documentation_df["discharge_letter"].values[0])
     return discharge_documentation_df["discharge_letter"].values[0]
 
 
@@ -419,7 +436,7 @@ def display_stored_discharge_documentation(
         second_newest_doc = (
             "Er is geen tweede opgeslagen GPT brief gevonden voor deze opname."
         )
-
+    print(newest_doc)
     return second_newest_doc, newest_doc
 
 

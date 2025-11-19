@@ -343,7 +343,7 @@ def get_patients_values(data: pd.DataFrame) -> dict[str, list[dict[str, str]]]:
                     "value": row["enc_id"],
                 }
             )
-        print(patients_list)
+
         if patients_list:
             values_list[department] = patients_list
 

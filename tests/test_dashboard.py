@@ -13,7 +13,6 @@ from discharge_docs.dashboard.helper import (
     replace_newlines,
 )
 from discharge_docs.dashboard.layout import (
-    get_demo_layout,
     get_discharge_doc_card,
     get_GPT_card,
     get_layout_development_dashboard,
@@ -35,7 +34,6 @@ def test_layout_functions():
     assert isinstance(
         get_layout_development_dashboard("system prompt", "user prompt"), html.Div
     )
-    assert isinstance(get_demo_layout(), html.Div)
 
 
 def test_highlight():

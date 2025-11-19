@@ -23,6 +23,7 @@ def get_navbar(
     """
     navbar = dbc.NavbarSimple(
         children=[
+            dbc.NavItem(html.Div(id="llm_env", className="text-white me-3")),
             dbc.NavItem(html.Div(id="logged_in_user", className="text-white me-5"))
             if view_user
             else "",
@@ -489,13 +490,13 @@ def get_layout_development_dashboard(
     view_docs_new_card = get_discharge_doc_card(
         "Placeholder for newer GPT discharge letter",
         "output_stored_generated_discharge_documentation_new",
-        "div",
+        "markdown",
     )
 
     view_docs_old_card = get_discharge_doc_card(
         "Placeholder for older GPT discharge letter",
         "output_stored_generated_discharge_documentation_old",
-        "div",
+        "markdown",
     )
 
     show_prompts_card = dbc.Offcanvas(
@@ -575,116 +576,6 @@ def get_layout_development_dashboard(
                 ],
             ),
             show_prompts_card,
-        ]
-    )
-    return layout
-
-
-def get_demo_layout() -> html.Div:
-    navbar = get_navbar(view_user=False, header_title="AI-ontslagbrief Generator Demo")
-
-    patient_selection_div = get_patient_selection_div(add_discharge_selection=False)
-    gpt_card = get_GPT_card()
-
-    patient_file_card = dbc.Card(
-        [
-            dbc.CardHeader(html.H2("Patiënt dossier:")),
-            dbc.CardBody(
-                dcc.Textarea(
-                    id="patient_file",
-                    readOnly=False,
-                    style={
-                        "width": "100%",
-                        "height": "600px",
-                    },
-                )
-            ),
-        ]
-    )
-
-    layout = html.Div(
-        [
-            navbar,
-            patient_selection_div,
-            dbc.Row(
-                [
-                    dbc.Col(patient_file_card, width=6),
-                    dbc.Col(gpt_card, width=6),
-                ]
-            ),
-        ]
-    )
-    return layout
-
-
-def get_external_dashboard_layout() -> html.Div:
-    """Create and return a layout for the external dashboard."""
-
-    layout = html.Div(
-        [
-            get_navbar(view_user=True, header_title="Ontslagbrief dashboard"),
-            dbc.Row(
-                dbc.Col(
-                    [
-                        dbc.Label("Selecteer een patiënt", class_name="my-2"),
-                        dcc.Dropdown(
-                            id="patient-select",
-                            searchable=True,
-                            placeholder="Vul hier het patiëntnummer in...",
-                        ),
-                    ],
-                    width={"size": 6, "offset": 3},
-                ),
-            ),
-            dbc.Row(
-                dbc.Col(
-                    dbc.Table(
-                        [
-                            html.Thead(
-                                [
-                                    html.Td("Status"),
-                                    html.Td("Aantal dagen oud"),
-                                    html.Td("Opnamedatum"),
-                                ]
-                            ),
-                            html.Tr(
-                                [
-                                    html.Td(id="success-td"),
-                                    html.Td(id="days-td"),
-                                    html.Td(id="admission-date-td"),
-                                ]
-                            ),
-                        ],
-                        bordered=True,
-                    ),
-                    width={"size": 3, "offset": 4},
-                    class_name="mt-2",
-                ),
-            ),
-            dbc.Row(
-                dbc.Col(
-                    get_discharge_doc_card(
-                        placeholder_text="Selecteer een patient...",
-                        id="doc-card",
-                        markdown_or_div="markdown",
-                    ),
-                    width={"size": 6, "offset": 3},
-                    class_name="mt-2",
-                )
-            ),
-            dbc.Row(
-                dbc.Col(
-                    dcc.Clipboard(
-                        id="copy-to-clipboard",
-                        style={
-                            "fontSize": 20,
-                            "display": "inline-block",
-                        },
-                        title="Copy to clipboard",
-                    ),
-                    width={"size": 6, "offset": 3},
-                )
-            ),
         ]
     )
     return layout

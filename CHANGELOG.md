@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [2.12.3] - 2025-11-19
+
+### Added
+- Added functionality to the dev dashboard to show the LLM environment (prod/acc/bulk/dev) in the navbar.
+
+### Changed
+- Removed the deprecated dashboard layouts of dashboards no longer in use.
+- Updated the markup of the shown discharge letters in the dev dashboard to markdown instead of raw html divs.
+
 ## [2.12.2] - 2025-11-17
 
 ### Changed
