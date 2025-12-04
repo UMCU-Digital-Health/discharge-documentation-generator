@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.5] - 2025-12-03
+### Fixed
+- Add warning and return if no retrieve requests found in monitoring tab.
+
 ## [2.12.4] - 2025-11-19
 ### Fixed
 - Created init_engine function so that the engine is initialized and passed down to app.state.engine within Posit, as Posit does not run api_periodic.py directly, so the code under if name == __main__ wasn't called before. 

@@ -273,25 +273,33 @@ def monitoring_page():
         logger.warning("No generated requests found for the selected period.")
         return
 
+    if request_retrieve.empty:
+        st.warning("Geen retrieve requests gevonden voor de geselecteerde periode.")
+        logger.warning("No retrieve requests found for the selected period.")
+        return
+
     # combine the request retrieve with dashboard logging, since dashboard does not
     # use the request table
     # TODO: this is a temporary solution, should be refactored in the near future
     dashboard_logging["request_id"] = (
         dashboard_logging["dashboard_logging_id"] + 100_000  # Prevent overlap
     )
-    request_retrieve = pd.concat(
-        [
-            request_retrieve,
-            dashboard_logging[
-                [
-                    "enc_id",
-                    "department",
-                    "request_id",
-                    "timestamp",
-                ]
-            ],
-        ]
-    )
+    if not dashboard_logging.empty:
+        request_retrieve = pd.concat(
+            [
+                request_retrieve,
+                dashboard_logging[
+                    [
+                        "enc_id",
+                        "department",
+                        "request_id",
+                        "timestamp",
+                    ]
+                ],
+            ]
+        )
+    else:
+        logger.info("No dashboard logging data to combine with retrieve requests.")
 
     department_selection = create_department_selection(
         request_generate["department"].unique().tolist()
