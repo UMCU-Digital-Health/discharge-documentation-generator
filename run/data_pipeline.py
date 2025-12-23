@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Literal, cast
 
 import click
 import pandas as pd
@@ -19,7 +20,8 @@ from discharge_docs.config import (
     setup_root_logger,
 )
 from discharge_docs.dashboard.helper import (
-    write_encounter_ids,
+    select_encounter_ids,
+    validate_enc_list,
 )
 from discharge_docs.database.models import Base, DashEncounter, PatientFile, StoredDoc
 from discharge_docs.llm.connection import initialise_azure_connection
@@ -201,6 +203,7 @@ def run_processing(
     n_enc_ids: int | None = None,
     selection_enc_ids: str | None = None,
     length_of_stay_cutoff: int | None = None,
+    encounters_to_include: list | None = None,
 ) -> None:
     """Run the data processing pipeline based on the specified parameters.
 
@@ -229,6 +232,8 @@ def run_processing(
         This is only used when selection_enc_ids is balanced.
         Half of the selected encounters will have a length of stay below and half above
         this value.
+    encounters_to_include : list | None, optional
+        Specific encounter IDs to include, by default None.
     """
     if data_source not in ["hix", "metavision", "demo"]:
         raise ValueError(
@@ -264,7 +269,7 @@ def run_processing(
             convert_dates=["admissionDate", "dischargeDate", "date"],
         )
 
-    elif data_source == "demo":
+    else:  # demo data
         data = pd.read_csv(
             Path(__file__).parents[1] / "data" / "examples" / "DEMO_patient_1.csv",
             sep=";",
@@ -278,16 +283,18 @@ def run_processing(
     data = data[data["department"] == selected_department]
 
     if data_source != "demo":
-        selected_encounter_ids = write_encounter_ids(
+        selected_encounter_ids = select_encounter_ids(
             data,
-            n_enc_ids=n_enc_ids,
+            n_enc_ids=n_enc_ids or 25,
             length_of_stay_cutoff=length_of_stay_cutoff,
-            selection=selection_enc_ids,
+            selection=selection_enc_ids or "random",
+            encounters_to_include=encounters_to_include,
         )
         data = data[data["enc_id"].isin(selected_encounter_ids)].reset_index(drop=True)
     if storage_location == "database":
+        db_env = cast(Literal["PROD", "ACC", "DEBUG"], os.getenv("DB_ENVIRONMENT"))
         engine = get_engine(
-            db_env=os.getenv("DB_ENVIRONMENT"),
+            db_env=db_env,
             schema_name=DashEncounter.__table__.schema,
         )
         tables_to_create = [
@@ -394,6 +401,7 @@ def get_selected_parameters() -> dict | None:
     n_encounters = None
     selection_method = None
     n_per_class = None
+    included_enc_list = None
     if department != "DEMO":
         start_date, end_date = _prompt_date_range()
 
@@ -421,6 +429,17 @@ def get_selected_parameters() -> dict | None:
                 default=7,
             )
 
+        included_encs = click.prompt(
+            "Do you want to include specific encounter IDs? "
+            "If so, please provide them as a comma-separated list or leave blank. "
+            "(example: 12345, 67890)",
+            type=str,
+            default="",
+            show_default=False,
+        )
+
+        included_enc_list = validate_enc_list(included_encs)
+
     remove_previous_encs = False
     if purpose == "dev":  # and thus storage_location = database
         remove_previous_encs = click.confirm(
@@ -437,6 +456,7 @@ def get_selected_parameters() -> dict | None:
             "selection_method": selection_method,
             "n_per_class": n_per_class,
             "remove_previous_encs": remove_previous_encs,
+            "included_enc_list": included_enc_list,
         }
     )
 
@@ -447,7 +467,7 @@ def get_selected_parameters() -> dict | None:
 
     if purpose == "eval":
         bulk_generation = True
-    elif purpose == "dev":
+    else:  # dev
         bulk_generation = click.confirm(
             "Do you want to bulk generate AI discharge letters for the selected "
             "encounters?",
@@ -503,6 +523,7 @@ if __name__ == "__main__":
         n_enc_ids=params["n_encounters"],
         selection_enc_ids=params["selection_method"],
         length_of_stay_cutoff=params.get("n_per_class"),
+        encounters_to_include=params.get("included_enc_list"),
     )
 
     if params["bulk_generation"]:

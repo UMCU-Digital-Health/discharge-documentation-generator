@@ -3,13 +3,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-import tomli_w
 
 from discharge_docs.api.pydantic_models import PatientFile
 from discharge_docs.dashboard import helper
 from discharge_docs.dashboard.helper import (
-    random_sample_with_warning,
-    write_encounter_ids,
+    select_encounter_ids,
 )
 from discharge_docs.processing.deduce_text import apply_deduce
 from discharge_docs.processing.processing import (
@@ -21,6 +19,14 @@ from discharge_docs.processing.processing import (
     process_data,
     replace_text,
 )
+
+
+class DummyPromptBuilder:
+    def __init__(self, **kwargs):
+        self.max_context_length = 10000
+
+    def get_token_length(self, **kwargs):
+        return 100
 
 
 def test_process_data():
@@ -236,16 +242,6 @@ def test_filter_data():
         filter_data(df, "UNKNOWN")
 
 
-def test_random_sample_with_warning():
-    df = pd.DataFrame({"a": range(3)})
-    # n < len(df)
-    sample = random_sample_with_warning(df, 2)
-    assert len(sample) == 2
-    # n > len(df) triggers warning, returns all
-    sample = random_sample_with_warning(df, 5)
-    assert len(sample) == 3
-
-
 def test_get_patient_discharge_docs():
     df = pd.DataFrame(
         {
@@ -294,24 +290,16 @@ def test_pre_process_hix_data():
     assert df["content"].iloc[0] == "A"
 
 
-def test_write_encounter_ids(monkeypatch):
-    # Patch PromptBuilder and file writing
-    class DummyPromptBuilder:
-        def __init__(self, **kwargs):
-            self.max_context_length = 10000
-
-        def get_token_length(self, **kwargs):
-            return 100
-
+def test_select_encounter_ids(monkeypatch):
+    """Test the select_encounter_ids function with random selection."""
     monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
     monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
-    monkeypatch.setattr(tomli_w, "dump", lambda data, f: f.write(b"test"))
 
     # Test random selection
     df_random = pd.DataFrame(
         {
             "enc_id": [1, 2, 3],
-            "department": ["IC", "IC", "CAR"],
+            "department": ["IC", "IC", "IC"],
             "description": ["Ontslagbrief", "Ontslagbrief", "Ontslagbrief"],
             "content": ["A", "B", "C"],
             "admissionDate": pd.to_datetime(["2024-01-01"] * 3),
@@ -319,13 +307,20 @@ def test_write_encounter_ids(monkeypatch):
         }
     )
     # Should not raise
-    write_encounter_ids(
+    result = select_encounter_ids(
         df_random,
         n_enc_ids=1,
         selection="random",
     )
+    assert len(result) == 1
+    assert result[0] in [1, 2, 3]
 
-    # Test 50/50 split selection
+
+def test_select_encounter_ids_balanced(monkeypatch):
+    """Test balanced selection in select_encounter_ids function."""
+    monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
+
     df_5050 = pd.DataFrame(
         {
             "enc_id": [1, 2, 3, 4, 5, 6],
@@ -347,10 +342,10 @@ def test_write_encounter_ids(monkeypatch):
     )
     df_5050["length_of_stay"] = (
         df_5050["dischargeDate"] - df_5050["admissionDate"]
-    ).dt.days
+    ).dt.days  # type: ignore
     length_of_stay_cutoff = 10
     # Should not raise and should select 50/50 split
-    selected_ids = write_encounter_ids(
+    selected_ids = select_encounter_ids(
         df_5050,
         n_enc_ids=4,
         length_of_stay_cutoff=length_of_stay_cutoff,
@@ -364,3 +359,115 @@ def test_write_encounter_ids(monkeypatch):
     long_count = sum(enc_id in selected_ids for enc_id in long_enc_ids)
     assert short_count == 2
     assert long_count == 2
+
+
+def test_select_encounter_ids_with_encs(monkeypatch):
+    """Tests the select_encounter_ids function with a list of encounters to include"""
+    monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
+
+    df = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3, 4],
+            "department": ["IC", "IC", "IC", "IC"],
+            "description": ["Ontslagbrief"] * 4,
+            "content": ["A", "B", "C", "D"],
+            "admissionDate": pd.to_datetime(["2024-01-01"] * 4),
+            "dischargeDate": pd.to_datetime(["2024-01-02"] * 4),
+        }
+    )
+
+    result = select_encounter_ids(
+        df,
+        n_enc_ids=3,
+        selection="random",
+        encounters_to_include=[2, 3],
+    )
+    assert {2, 3}.issubset(set(result))
+    assert len(result) == 3
+    assert len(set(result)) == 3  # ensure no duplicates
+
+
+def test_select_encounter_ids_with_encs_and_balanced(monkeypatch):
+    """Tests the select_encounter_ids function with a list of encounters to include
+    and balanced selection.
+    """
+    monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
+
+    df = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3, 4, 5, 6],
+            "department": ["IC"] * 6,
+            "description": ["Ontslagbrief"] * 6,
+            "content": ["A", "B", "C", "D", "E", "F"],
+            "admissionDate": pd.to_datetime(["2024-01-01"] * 6),
+            "dischargeDate": pd.to_datetime(
+                [
+                    "2024-01-02",
+                    "2024-01-15",
+                    "2024-01-20",
+                    "2024-01-02",
+                    "2024-01-15",
+                    "2024-01-20",
+                ]
+            ),
+        }
+    )
+    df["length_of_stay"] = (df["dischargeDate"] - df["admissionDate"]).dt.days  # type: ignore
+
+    result = select_encounter_ids(
+        df,
+        n_enc_ids=5,
+        length_of_stay_cutoff=10,
+        selection="balanced",
+        encounters_to_include=[2],
+    )
+    assert 2 in result
+
+    assert len(result) == 5
+    assert len(set(result)) == 5  # ensure no duplicates
+
+    assert 1 in result and 4 in result  # short stays
+
+
+def test_select_encounter_ids_falback_balanced(monkeypatch, caplog):
+    """Tests the select_encounter_ids function falls back to random selection
+    when balanced selection is not possible with the provided encounters.
+    """
+    monkeypatch.setattr(helper, "PromptBuilder", DummyPromptBuilder)
+    monkeypatch.setattr(helper, "initialise_azure_connection", lambda: None)
+
+    df = pd.DataFrame(
+        {
+            "enc_id": [1, 2, 3, 4, 5, 6],
+            "department": ["IC"] * 6,
+            "description": ["Ontslagbrief"] * 6,
+            "content": ["A", "B", "C", "D", "E", "F"],
+            "admissionDate": pd.to_datetime(["2024-01-01"] * 6),
+            "dischargeDate": pd.to_datetime(
+                [
+                    "2024-01-02",
+                    "2024-01-15",
+                    "2024-01-20",
+                    "2024-01-10",
+                    "2024-01-15",
+                    "2024-01-20",
+                ]
+            ),
+        }
+    )
+    df["length_of_stay"] = (df["dischargeDate"] - df["admissionDate"]).dt.days  # type: ignore
+
+    with caplog.at_level("WARNING"):
+        result = select_encounter_ids(
+            df,
+            n_enc_ids=4,
+            length_of_stay_cutoff=4,
+            selection="balanced",
+        )
+
+    assert "Falling back to random sampling" in caplog.text
+
+    assert len(result) == 4
+    assert len(set(result)) == 4  # ensure no duplicates

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.6] - 2025-12-15
+
+### Added
+- Added the option to include encounter ID's in the processing pipeline which are always used regardless of selection method
+- Added unit tests to test this new behaviour
+
+### Changed
+- Function to filter encounter ID's (previously write_encounter_ids) is simplified and only works on data from a single department (throws an error otherwise)
+
 ## [2.12.5] - 2025-12-03
 ### Fixed
 - Add warning and return if no retrieve requests found in monitoring tab.

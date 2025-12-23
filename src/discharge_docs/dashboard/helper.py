@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import re
 import tomllib
 from pathlib import Path
@@ -436,65 +437,16 @@ def remove_conclusion(doc: str | None) -> str | None:
         return doc
 
 
-def random_sample_with_warning(df: pd.DataFrame, n: int) -> pd.DataFrame:
-    """Randomly samples a DataFrame with a warning if the sample size is larger than the
-      DataFrame. Used in the write_encounter_ids function.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The DataFrame to sample from.
-    n : int
-        The number of samples to draw.
-
-    Returns
-    -------
-    pd.DataFrame
-        A DataFrame containing the sampled rows.
-    """
-    if len(df) >= n:
-        return df.sample(n=min(len(df), n))
-    else:
-        logger.warning(f"DataFrame has only {len(df)} rows, requested {n}")
-        return df
-
-
-def write_encounter_ids(
-    data: pd.DataFrame,
-    n_enc_ids: int,
-    selection: str = "random",
-    length_of_stay_cutoff: int | None = None,
-) -> list[int]:
-    """
-    Writes the encounter IDs from the data to a TOML file.
-
-    This function processes the provided DataFrame to extract unique encounter IDs
-    for each department, limits the number of encounter IDs per department to the
-    specified number, and writes the result to a TOML file.
-    Does not select encounters that have are above the token limit for the LLM.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        The DataFrame containing the encounter data.
-    n_enc_ids : int
-        The number of encounter IDs to keep per department.
-    length_of_stay_cutoff : int, optional
-        The cutoff for length of stay to differentiate between long and short stays.
-    selection : SelectionMethod, optional
-        The method to select encounters, by default SelectionMethod.RANDOM.
-        Options are:
-        - SelectionMethod.RANDOM: Randomly select encounters.
-        - SelectionMethod.BALANCED: Select 50% long stays and 50% short stays.
-    """
-    # remove encounter with too high token length
+def _filter_large_encounters(encounter_df: pd.DataFrame) -> pd.DataFrame:
+    """Filter out encounters that exceed the token limit for the LLM."""
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
         deployment_name=DEPLOYMENT_NAME_BULK,
         client=initialise_azure_connection(),
     )
-    for enc_id in data["enc_id"].unique():
-        patient_file, _ = get_patient_file(data, enc_id=enc_id)
+    big_encounters = []
+    for enc_id in encounter_df["enc_id"].unique():
+        patient_file, _ = get_patient_file(encounter_df, enc_id=enc_id)
         token_length = prompt_builder.get_token_length(
             patient_file=patient_file,
             system_prompt="",
@@ -502,50 +454,122 @@ def write_encounter_ids(
             department_prompt="",
         )
         if token_length > prompt_builder.max_context_length - 5000:
-            data = data[data["enc_id"] != enc_id]
-
-    if (
-        selection == "random"
-    ):  # TODO remove complexity as now only per department is done
-        enc_ids = data[["enc_id", "department"]].drop_duplicates()
-        # keep only first n_enc_ids per department
-        enc_ids = (
-            enc_ids.groupby("department")[["enc_id", "department"]]
-            .apply(random_sample_with_warning, n=n_enc_ids)
-            .reset_index(drop=True)
-        )
-    elif selection == "balanced":
-        # select 50% of encounters with long length of stay and 50% with short
-        long_encs = data[data["length_of_stay"] >= length_of_stay_cutoff][
-            ["enc_id", "department"]
-        ].drop_duplicates()
-
-        short_encs = data[data["length_of_stay"] < length_of_stay_cutoff][
-            ["enc_id", "department"]
-        ].drop_duplicates()
-
-        for dept in data["department"].unique():
-            long_count = len(long_encs[long_encs["department"] == dept])
-            short_count = len(short_encs[short_encs["department"] == dept])
+            big_encounters.append(enc_id)
             logger.info(
-                f"Department: {dept} - Long encounters: {long_count}"
-                f", Short encounters: {short_count}"
+                f"Encounter {enc_id} has token length {token_length}, "
+                "removing from selection."
             )
-        long_encs_sample = (
-            long_encs.groupby("department")[["enc_id", "department"]]
-            .apply(random_sample_with_warning, n=n_enc_ids // 2)
-            .reset_index(drop=True)
-        )
-        short_encs_sample = (
-            short_encs.groupby("department")[["enc_id", "department"]]
-            .apply(random_sample_with_warning, n=n_enc_ids // 2)
-            .reset_index(drop=True)
-        )
-        enc_ids = pd.concat([long_encs_sample, short_encs_sample], axis=0)
-    else:
-        raise ValueError(f"Selection {selection} not recognized")
+    return encounter_df[~encounter_df["enc_id"].isin(big_encounters)]
 
-    return enc_ids["enc_id"].tolist()
+
+def select_encounter_ids(
+    encounter_df: pd.DataFrame,
+    n_enc_ids: int,
+    selection: str = "random",
+    length_of_stay_cutoff: int | None = None,
+    encounters_to_include: list[int] | None = None,
+) -> list[int]:
+    """
+    Selects the encounter IDs for a given department for use in the pipeline.
+
+    This function filters out encounters that exceed the token limit for the LLM
+    and selects a specified number of encounter IDs based on the selection method.
+    It can also include specific encounter IDs regardless of other selection criteria.
+
+    Parameters
+    ----------
+    encounter_df : pd.DataFrame
+        The DataFrame containing the encounter data.
+    n_enc_ids : int
+        The number of encounter IDs to keep per department.
+    selection : str, optional
+        The method to select encounters, by default random.
+        Options are:
+        - random: Randomly select encounters.
+        - balanced: Select 50% long stays and 50% short stays.
+    length_of_stay_cutoff : int, optional
+        The cutoff for length of stay to differentiate between long and short stays.
+    encounters_to_include : list[int] | None
+        Specific encounter IDs to include, regardless of other selection criteria.
+
+    Returns
+    -------
+    list[int]
+        A list of selected encounter IDs.
+    """
+    if selection not in ["random", "balanced"]:
+        raise ValueError(f"Selection {selection} not recognized")
+    if encounter_df["department"].nunique() > 1:
+        raise ValueError("DataFrame contains multiple departments.")
+    if selection == "balanced" and length_of_stay_cutoff is None:
+        raise ValueError(
+            "Length of stay cutoff must be provided for balanced selection."
+        )
+
+    encounter_df = _filter_large_encounters(encounter_df)
+
+    enc_ids = encounter_df["enc_id"].unique()
+    if len(enc_ids) <= n_enc_ids:
+        logger.warning(
+            f"Only {len(enc_ids)} encounter IDs available, "
+            f"requested {n_enc_ids}. Returning all available IDs."
+        )
+        return enc_ids.tolist()
+
+    selected_enc_ids = []
+    if encounters_to_include:
+        selected_enc_ids = list(set(encounters_to_include) & set(enc_ids))
+    remaining_enc_ids = list(set(enc_ids) - set(selected_enc_ids))
+    encs_to_sample = n_enc_ids - len(selected_enc_ids)
+    if not remaining_enc_ids:
+        logger.warning("No remaining encounter IDs to select from.")
+        return selected_enc_ids
+    if encounters_to_include and set(selected_enc_ids) != set(encounters_to_include):
+        logger.warning(
+            f"Not all specified encounters were present in data, encounters not found: "
+            f"{set(encounters_to_include) - set(selected_enc_ids)}"
+        )
+
+    if selection == "random":
+        random_enc_ids = random.sample(
+            remaining_enc_ids,
+            k=encs_to_sample,
+        )
+        return selected_enc_ids + random_enc_ids
+
+    else:  # balanced
+        long_encs = encounter_df.loc[
+            encounter_df["length_of_stay"] >= length_of_stay_cutoff, "enc_id"
+        ].unique()
+
+        short_encs = encounter_df.loc[
+            encounter_df["length_of_stay"] < length_of_stay_cutoff, "enc_id"
+        ].unique()
+
+        long_encs = list(set(long_encs) & set(remaining_enc_ids))
+        short_encs = list(set(short_encs) & set(remaining_enc_ids))
+
+        if (
+            len(long_encs) < encs_to_sample // 2
+            or len(short_encs) < encs_to_sample // 2
+        ):
+            logger.warning(
+                "Not enough encounters in one of the length of stay categories "
+                "to perform balanced sampling. Falling back to random sampling."
+            )
+            random_enc_ids = random.sample(
+                remaining_enc_ids,
+                k=encs_to_sample,
+            )
+            return selected_enc_ids + random_enc_ids
+
+        # If encs_to_sample is odd, then sample one extra from long_encs
+        long_encs_sample = random.sample(
+            long_encs, k=encs_to_sample // 2 + encs_to_sample % 2
+        )
+        short_encs_sample = random.sample(short_encs, k=encs_to_sample // 2)
+
+        return selected_enc_ids + long_encs_sample + short_encs_sample
 
 
 def get_development_admissions(
@@ -565,3 +589,30 @@ def get_development_admissions(
             columns=list(development_admissions.keys()),
         )
         return development_admissions
+
+
+def validate_enc_list(string_list: str) -> None | list[int]:
+    """Validate and parse a comma-separated string of encounter IDs.
+
+    Parameters
+    ----------
+    enc_list : str
+        Comma-separated string of encounter IDs.
+
+    Returns
+    -------
+    None | list[int]
+        List of valid encounter IDs as integers, or None if the input string is empty.
+
+    Raises
+    ------
+    ValueError
+        If any of the encounter IDs are not valid integers.
+    """
+    if string_list.strip() == "":
+        return None
+    try:
+        enc_ids = [int(enc_id.strip()) for enc_id in string_list.split(",")]
+        return enc_ids
+    except ValueError as e:
+        raise ValueError("Encounter IDs must be integers.") from e
