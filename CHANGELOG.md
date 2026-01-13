@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.15.6] - 2025-12-15
+## [2.12.7] - 2026-01-06
+
+### Changed
+- Updated dependencies
+- Removed use_container_width from streamlit since this is now deprecated (and we use the default)
+
+## [2.12.6] - 2025-12-15
 
 ### Added
 - Added the option to include encounter ID's in the processing pipeline which are always used regardless of selection method

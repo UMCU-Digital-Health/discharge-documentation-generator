@@ -163,7 +163,7 @@ def kpi_page():
             ),
         )
     )
-    st.altair_chart(nr_docs_chart, use_container_width=True)
+    st.altair_chart(nr_docs_chart)
 
     if department_selection == "Alle afdelingen":
         st.write("### Gegenereerde documenten per afdeling per dag")
@@ -182,7 +182,7 @@ def kpi_page():
                 ),
             )
         )
-        st.altair_chart(nr_docs_dep_chart, use_container_width=True)
+        st.altair_chart(nr_docs_dep_chart)
 
     st.write("### Ingevulde feedback")
     piechart_columns = st.columns(2)
@@ -342,7 +342,7 @@ def monitoring_page():
             y=alt.Y("runtime:Q", axis=alt.Axis(title="Runtime (seconds)")),
         )
     )
-    st.altair_chart(runtime_chart, use_container_width=True)
+    st.altair_chart(runtime_chart)
 
     if department_selection != "CAR":  # TODO: use a config for this
         st.write("### Runtime van de retrieve API")
@@ -354,7 +354,7 @@ def monitoring_page():
                 y=alt.Y("runtime:Q", axis=alt.Axis(title="Runtime (seconds)")),
             )
         )
-        st.altair_chart(runtime_chart, use_container_width=True)
+        st.altair_chart(runtime_chart)
 
     st.write("### Aantal Retrieve requests per dag")
     request_retrieve["success"] = request_retrieve["enc_id"].notnull()
@@ -370,7 +370,7 @@ def monitoring_page():
             ),
         )
     )
-    st.altair_chart(runtime_chart, use_container_width=True)
+    st.altair_chart(runtime_chart)
 
     st.write("### Tijdstippen van retrieve API requests")
     request_retrieve["hour"] = request_retrieve["timestamp"].dt.hour
@@ -382,7 +382,7 @@ def monitoring_page():
             y=alt.Y("count()", title="Aantal requests"),
         )
     )
-    st.altair_chart(frequency_chart, use_container_width=True)
+    st.altair_chart(frequency_chart)
 
 
 if __name__ == "__main__":
