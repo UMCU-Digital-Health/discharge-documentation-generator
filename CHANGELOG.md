@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.9] - 2026-01-13
+
+### Added
+- Added PMS analysis functionality to the admin dashboard in a new tab
+
+### Changed
+- Small refactor of code in admin_dashboard.py to improve readability
+
+## [2.12.8] - 2025-12-15
+
+### Added
+- Added the option to include encounter ID's in the processing pipeline which are always used regardless of selection method
+- Added unit tests to test this new behaviour
+
+### Changed
+- Function to filter encounter ID's (previously write_encounter_ids) is simplified and only works on data from a single department (throws an error otherwise)
+
 ## [2.12.7] - 2026-01-06
 
 ### Changed

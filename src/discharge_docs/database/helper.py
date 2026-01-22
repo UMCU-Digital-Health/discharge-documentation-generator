@@ -5,7 +5,6 @@ from sqlalchemy import Date, select
 from sqlalchemy.orm import sessionmaker
 
 from discharge_docs.database.models import (
-    DashboardLogging,
     Encounter,
     FeedbackDetails,
     GeneratedDoc,
@@ -16,42 +15,7 @@ from discharge_docs.database.models import (
 )
 
 
-def get_request_table(
-    min_date: date, max_date: date, session_object: sessionmaker
-) -> pd.DataFrame:
-    """Retrieves the request table for the monitoring admin page
-
-    Parameters
-    ----------
-    min_date : datetime
-        Minimum date for the request table
-    max_date : datetime
-        Maximum date for the request table
-
-    Returns
-    -------
-    pd.DataFrame
-        Dataframe containing the request table
-    """
-    with session_object() as session:
-        request = session.execute(
-            select(
-                Request.id.label("request_id"),
-                Request.timestamp,
-                Request.response_code,
-                Request.runtime,
-                Request.api_version,
-                Request.endpoint,
-            )
-            .where(Request.timestamp.cast(Date) >= min_date)
-            .where(Request.timestamp.cast(Date) <= max_date)
-        )
-
-        request_df = pd.DataFrame(request.fetchall(), columns=request.keys())
-        return request_df
-
-
-def get_generated_doc_df(
+def get_generated_doc_table(
     min_date: date, max_date: date, session_object: sessionmaker
 ) -> pd.DataFrame:
     """Retrieves the generated doc table for the monitoring admin page and merges
@@ -78,6 +42,7 @@ def get_generated_doc_df(
                 GeneratedDoc.id.label("generated_doc_id"),
                 GeneratedDoc.success_ind,
                 GeneratedDoc.encounter_id,
+                GeneratedDoc.discharge_letter,
             )
             .join(Encounter, GeneratedDoc.encounter_id == Encounter.id)
             .join(
@@ -88,13 +53,14 @@ def get_generated_doc_df(
             .where(Request.timestamp.cast(Date) <= max_date)
         )
 
-        generated_doc_df = pd.DataFrame(
+        generated_doc_table = pd.DataFrame(
             generated_doc.fetchall(), columns=generated_doc.keys()
         )
-    return generated_doc_df
+
+    return generated_doc_table
 
 
-def get_feedback_merged_df(
+def get_feedback_table(
     min_date: date, max_date: date, session_object: sessionmaker
 ) -> pd.DataFrame:
     """Retrieves the feedback details table for the monitoring admin page and merges
@@ -129,11 +95,11 @@ def get_feedback_merged_df(
             .where(Request.timestamp.cast(Date) >= min_date)
             .where(Request.timestamp.cast(Date) <= max_date)
         )
-        feedback_df = pd.DataFrame(feedback.fetchall(), columns=feedback.keys())
-    return feedback_df
+        feedback_table = pd.DataFrame(feedback.fetchall(), columns=feedback.keys())
+    return feedback_table
 
 
-def get_request_retrieve_df(
+def get_request_retrieve_table(
     min_date: date, max_date: date, session_object: sessionmaker
 ) -> pd.DataFrame:
     """Retrieves the information on retrieve requests for the monitoring admin page
@@ -171,13 +137,13 @@ def get_request_retrieve_df(
             .where(Request.timestamp.cast(Date) <= max_date)
         )
 
-        request_retrieve_df = pd.DataFrame(
+        request_retrieve_table = pd.DataFrame(
             request_retrieve.fetchall(), columns=request_retrieve.keys()
         )
-    return request_retrieve_df
+    return request_retrieve_table
 
 
-def get_request_generate_df(
+def get_request_generate_table(
     min_date: date, max_date: date, session_object: sessionmaker
 ) -> pd.DataFrame:
     """Retrieves the information on generate requests for the monitoring admin page
@@ -217,54 +183,7 @@ def get_request_generate_df(
             .where(Request.timestamp.cast(Date) <= max_date)
         )
 
-        request_generate_df = pd.DataFrame(
+        request_generate_table = pd.DataFrame(
             request_generate.fetchall(), columns=request_generate.keys()
         )
-    return request_generate_df
-
-
-def get_dashboard_logging_df(
-    min_date: date,
-    max_date: date,
-    session_object: sessionmaker,
-    developer_emails: list[str] | None = None,
-) -> pd.DataFrame:
-    """Retrieves the dashboard logging table for the monitoring admin page
-
-    Parameters
-    ----------
-    min_date : date
-        Minimum date for the request table
-    max_date : date
-        Maximum date for the request table
-    session_object : sessionmaker
-        Session object for the database connection
-    developer_emails : list[str] | None, optional
-        List of developer emails to exclude from the logging, by default None
-
-    Returns
-    -------
-    pd.DataFrame
-        Dataframe containing the dashboard logging table
-    """
-    if developer_emails is None:
-        developer_emails = []
-    with session_object() as session:
-        dashboard_logging = session.execute(
-            select(
-                Encounter.enc_id,
-                Encounter.department,
-                DashboardLogging.id.label("dashboard_logging_id"),
-                DashboardLogging.timestamp,
-            )
-            .join(GeneratedDoc, DashboardLogging.discharge_letter_id == GeneratedDoc.id)
-            .join(Encounter, GeneratedDoc.encounter_id == Encounter.id)
-            .where(DashboardLogging.timestamp.cast(Date) >= min_date)
-            .where(DashboardLogging.timestamp.cast(Date) <= max_date)
-            .where(DashboardLogging.user_email.notin_(developer_emails))
-        )
-
-        dashboard_logging_df = pd.DataFrame(
-            dashboard_logging.fetchall(), columns=dashboard_logging.keys()
-        )
-    return dashboard_logging_df
+    return request_generate_table

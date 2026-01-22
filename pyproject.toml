@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "discharge_docs"
-version = "2.12.7"
+version = "2.12.9"
 authors = [
     { name = "Ruben Peters", email = "r.peters-7@umcutrecht.nl" },
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
@@ -39,6 +39,7 @@ dependencies = [
     "email-validator>=2.2.0",
     "umcu-ai-utils>=0.2.4",
     "click>=8.1.8",
+    "nltk>=3.9.1",
 ]
 
 [dependency-groups]

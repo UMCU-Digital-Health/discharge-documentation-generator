@@ -13,7 +13,7 @@
       "package_file": "requirements.txt"
     }
   },
- "files": {
+  "files": {
     "requirements.txt": {
       "checksum": "453a7b87a2c8c38f86c34265b1bc12bf"
     },
@@ -64,6 +64,12 @@
     },
     "manifest_development.json": {
       "checksum": "8c32b9e1252e5cefc320f7d09ae79f4d"
+    },
+    "data/raw/metavision_time_measurements.csv": {
+      "checksum": "90ca1c387a0971294f004f599cbd9f23"
+    },
+    "data/sql/metavision_discharge_docs_retro.sql": {
+      "checksum": "750de4c466b7e4562da5b2c8dc3b5282"
     },
     "pyproject.toml": {
       "checksum": "20158b0b2d0b74d2d2ceaf9b6dd74a82"
@@ -127,6 +133,9 @@
     },
     "src/discharge_docs/dashboard/helper.py": {
       "checksum": "6a35c7237e5ccff9b3e7c68bfab0a0c7"
+    },
+    "src/discharge_docs/dashboard/admin_helper.py": {
+      "checksum": "53cd8d078c63bed42660deb656f5819a"
     },
     "src/discharge_docs/dashboard/layout.py": {
       "checksum": "a50ee428c490310ff34c368f4495c1dc"
