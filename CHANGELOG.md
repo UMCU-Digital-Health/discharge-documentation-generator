@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-02-09
+
+This release updates the ICU (IC) document-generation prompt with the new approach using multiple subheadings and then summarizing into a final narrative header.
+
+### Changed
+- Fixed Python version and dependencies for Posit
+- Updated (pulled) changes from main branch.
+- Updated manual_filtering_message function to remove 'beloop' from old IC prompt, and to remove the 'Narratief' header name. 
+
+### Added
+- extract_header function: Extract only the specified header field, by default 'Narratief'.
+
+### Fixed
+- fixed error 'missing department', when generating doc in dev dashboard (copied solution from PICU/ORT release branch)
+
 ## [2.12.9] - 2026-01-13
 
 ### Added

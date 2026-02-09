@@ -3,6 +3,7 @@ import logging
 import os
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -192,3 +193,30 @@ def process_retrieved_discharge_letters(
     message = "".join(message_parts)
 
     return message, True, generated_doc_id, nr_days_old
+
+
+def extract_header(
+    doc: dict[str, Any],
+    header: str = "Narratief",
+) -> dict[str, Any]:
+    """
+    Extract only the specified header field, by default 'Narratief'.
+
+    Parameters
+    ----------
+    doc : dict[str, Any]
+        Input document containing discharge letter data.
+    header : str, optional
+        The header key to extract from the document, by default "Narratief".
+
+    Returns
+    -------
+    dict[str, Any]
+        A dictionary containing only the specified header key if its value is a string;
+        otherwise, the original dictionary is returned unchanged.
+    """
+
+    value = doc.get(header)
+    if isinstance(value, str):
+        return {header: value}
+    return doc

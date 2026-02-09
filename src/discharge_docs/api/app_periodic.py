@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from discharge_docs.api.api_helper import (
     ApiEndpoint,
     check_authorisation,
+    extract_header,
     process_retrieved_discharge_letters,
     remove_outdated_discharge_docs,
 )
@@ -155,6 +156,10 @@ async def process_and_generate_discharge_docs(
             department=department,
             department_config=department_config,
             length_of_stay=patient_data["length_of_stay"].values[0],
+        )
+
+        discharge_letter.generated_doc = extract_header(
+            discharge_letter.generated_doc, header="Narratief"
         )
 
         encounter_db = db.execute(

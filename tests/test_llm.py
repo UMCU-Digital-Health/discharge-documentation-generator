@@ -162,12 +162,9 @@ def test_general_error():
 
 
 def test_discharge_letter_format():
-    # Minimal generated_doc for testing
-    generated_doc = {
-        "Header1": "Some content [LEEFTIJD-1]-jarige",
-        "Header2": "Beloop\nSome more content",
-    }
+    generated_doc = {"Narratief": "Some content [LEEFTIJD-1]-jarige"}
     generation_time = datetime(2025, 10, 1, 12, 0, 0)
+
     letter = DischargeLetter(
         generated_doc=generated_doc,
         generation_time=generation_time,
@@ -175,24 +172,42 @@ def test_discharge_letter_format():
         error_type=None,
     )
 
-    # Test plain format with generation time and manual filtering
     plain = letter.format(
-        format_type="plain", manual_filtering=True, include_generation_time=True
+        format_type="plain",
+        manual_filtering=True,
+        include_generation_time=True,
     )
     assert "Generatietijd: 2025-10-01 12:00:00" in plain
+    assert "Narratief" not in plain
     assert "[LEEFTIJD-1]-jarige" not in plain
-    assert "Beloop" not in plain  # Should be filtered out
 
-    # Test markdown format returns a list of html.Div and check structure/content
     markdown = letter.format(
-        format_type="markdown", manual_filtering=True, include_generation_time=True
+        format_type="markdown",
+        manual_filtering=True,
+        include_generation_time=True,
+    )
+    assert isinstance(markdown, list)
+    assert len(markdown) == 2
+
+    text = "".join(str(div) for div in markdown)
+    assert "Generatietijd" in text
+    assert "[LEEFTIJD-1]-jarige" not in text
+
+
+def test_discharge_letter_format_other_header():
+    generated_doc = {"OtherHeader": "Hello [LEEFTIJD-1]-jarige"}
+
+    letter = DischargeLetter(
+        generated_doc=generated_doc,
+        generation_time=None,
+        success_indicator=True,
+        error_type=None,
     )
 
-    assert isinstance(markdown, list)
-    assert len(markdown) == 3  # Generatietijd + 2 headers
-    assert "Generatietijd" in str(markdown[0])
-    headers = [str(div) for div in markdown]
-    assert any("Header1" in h for h in headers)
-    assert any("Header2" in h for h in headers)
-    assert all("[LEEFTIJD-1]-jarige" not in h for h in headers)
-    assert all("Beloop" not in h for h in headers)
+    plain = letter.format(
+        format_type="plain",
+        manual_filtering=True,
+        include_generation_time=False,
+    )
+    assert "OtherHeader" in plain
+    assert "[LEEFTIJD-1]-jarige" not in plain

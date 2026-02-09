@@ -1,5 +1,5 @@
 outs:
-- md5: fb3d60c186b0030fe0da956aa8725633
-  size: 82784761
+- md5: 4519369678f161fd1150fcea3fc6cb25
+  size: 77016136
   hash: md5
   path: lookup_structs.pickle

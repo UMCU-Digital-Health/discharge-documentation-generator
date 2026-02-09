@@ -66,23 +66,26 @@ class DischargeLetter:
             )
 
         for header, content in generated_doc.items():
-            if manual_filtering:
+            if manual_filtering and format_type == "markdown":
                 content = manual_filtering_message(content)
             output_structured.append(
                 html.Div([html.Strong(header), dcc.Markdown(content)])
             )
             output_plain += f"{header}\n{content}\n\n"
 
+        if manual_filtering and format_type == "plain":
+            output_plain = manual_filtering_message(output_plain)
+
         return output_structured if format_type == "markdown" else output_plain
 
 
-def manual_filtering_message(message: str) -> str:
+def manual_filtering_message(message: str, header: str = "Narratief") -> str:
     """Manually filter out some placeholders from the message:
     1. [LEEFTIJD-1]-jarige is a DEDUCE-placeholder that should be removed.
-    2. IC letters only have one heading (beloop) so filter it out, NICU has others.
+    2. remove header.
     """
     message = message.replace(" [LEEFTIJD-1]-jarige", "")
-    message = message.replace("Beloop\n", "")
+    message = message.replace(f"{header}\n", "")
     return message
 
 
