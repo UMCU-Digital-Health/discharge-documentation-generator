@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
@@ -45,7 +45,6 @@ class LengthRange(BaseModel):
     medium: Optional[LengthRangeItem] = None
     long: Optional[LengthRangeItem] = None
 
-
 class DepartmentItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
@@ -56,8 +55,19 @@ class DepartmentItem(BaseModel):
     department_examples: Optional[str] = None
     post_processing_prompt: Optional[str] = None
     length_range: Optional[LengthRange] = None
+    column_description_set: Optional[List[str]] = None
 
+
+    def get_column_descriptions(self, all_descriptions: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+        """Merge all referenced column_description sets for this department."""
+
+        merged: Dict[str, str] = {}
+        if self.column_description_set:
+            for set_name in self.column_description_set:
+                merged.update(all_descriptions.get(set_name, {}))
+        return merged
 
 class DepartmentConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     department: Dict[str, DepartmentItem]
+    column_description: Dict[str, Dict[str, str]]

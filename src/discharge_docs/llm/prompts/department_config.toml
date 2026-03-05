@@ -14,6 +14,7 @@ ehr = "Metavision"
 department_prompt = "IC_prompt.txt"
 post_processing = true
 department_examples = "IC_examples.txt"
+column_description_set = ["descriptions_metavision_general"]
 
 [department.IC.length_range.short]
 max_days = 2
@@ -34,6 +35,7 @@ display_name = "Neonatale Intensive Care"
 ehr = "Metavision"
 department_prompt = "NICU_prompt.txt"
 post_processing = false
+column_description_set = ["descriptions_metavision_tracti", "descriptions_metavision_general"]
 
 [department.PICU]
 id = "PICU"
@@ -41,6 +43,7 @@ display_name = "Pediatric Intensive Care"
 ehr = "Metavision"
 department_prompt = "PICU_prompt.txt"
 post_processing = false
+column_description_set = ["descriptions_metavision_tracti", "descriptions_metavision_general"]
 
 [department.CAR]
 id = "CAR"
@@ -48,6 +51,7 @@ display_name = "Cardiologie"
 ehr = "HiX"
 department_prompt = "CAR_prompt.txt"
 post_processing = false
+column_description_set = ["descriptions_hix"]
 
 [department.ORT]
 id = "ORT"
@@ -55,3 +59,59 @@ display_name = "Orthopedie"
 ehr = "HiX"
 department_prompt = "ORT_prompt.txt"
 post_processing = false
+
+[column_description.descriptions_hix]
+"Aanvullend onderzoek" = "Aanvullend onderzoek"
+"Conclusie" = "Conclusie"
+"Lichamelijk onderzoek" = "Lichamelijk onderzoek"
+"Beleid" = "Beleid"
+"Anamnes" = "Anamnese"
+"Functieonderzoeken" = "Functieonderzoeken"
+"Reden van komst / Verwijzing" = "Reden van komst / Verwijzing"
+"Uitgevoerde behandeling/verrichting" = "Uitgevoerde behandeling/verrichting"
+"Overige acties" = "Overige acties"
+"Overweging / Differentiaal diagnose" = "Overweging / Differentiaal diagnose"
+"Beloop" = "Beloop"
+"Overdracht" = "Overdracht"
+"Samenvatting" = "Samenvatting"
+"Diagnos" = "Diagnose"
+"Actuele medicatie" = "Actuele medicatie"
+"Plan" = "Plan"
+"Complicatie" = "Complicatie"
+"Familieanamnese" = "Familieanamnese"
+"Medicatie" = "Medicatie"
+"Advies" = "Advies"
+"Voorgeschiedenis" = "Voorgeschiedenis"
+"Ontslagbrief" = "Ontslagbrief"
+
+[column_description.descriptions_metavision_tracti]
+"Dagstatus - Tractus 01 Lichamelijk Onderzoek" = "Dagstatus - Lichamelijk Onderzoek"
+"Dagstatus - Tractus 02 Respiratie" = "Dagstatus - Respiratie"
+"Dagstatus - Tractus 03 Circulatie" = "Dagstatus - Circulatie"
+"Dagstatus - Tractus 04 Neurologie" = "Dagstatus - Neurologie"
+"Dagstatus - Tractus 05 Infectie" = "Dagstatus - Infectie"
+"Dagstatus - Tractus 06 VB/nierfunctie" = "Dagstatus - VB/nierfunctie"
+"Dagstatus - Tractus 07 Gastro-Intestinaal" = "Dagstatus - Gastro-Intestinaal"
+"Dagstatus - Tractus 08 Milieu Interieur" = "Dagstatus - Milieu Interieur"
+"Dagstatus - Tractus 09 Extr/huid" = "Dagstatus - Extr/huid"
+"Dagstatus - Tractus 10 Psych/soc" = "Dagstatus - Psych/sociaal"
+"Dagstatus - Tractus 11 Overig" = "Dagstatus - Overig"
+
+[column_description.descriptions_metavision_general]
+"Dagstatus - Tractus 12 Conclusie" = "Dagstatus - Conclusie"
+"Dagstatus - Tractus 13 Opm dagdienst" = "Dagstatus - Opmerkingen dagdienst"
+"Dagstatus - Tractus 14 Opm A/N dienst" = "Dagstatus - Opmerkingen avond/nacht dienst"
+"Dagstatus Print Afspraken" = "Afspraken"
+"Dagstatus Print Behandeldoelen" = "Behandeldoelen"
+"MS Anamnese Overzicht" = "Anamnese"
+"MS Chronologie Eventlijst Print" = "Eventlijst"
+"MS Dagstatus Beleid KT" = "Korte Termijn Beleid"
+"MS Dagstatus Beleid LT Print" = "Lange Termijn Beleid"
+"MS Decursus Thuismedicatie" = "Thuismedicatie"
+"MS Decursus Toedracht bij Opname" = "Toedracht bij Opname"
+"MS Decursus Item Tekst" = "Familiegesprek"
+"MS Probleemlijst Print" = "Probleemlijst"
+"MS VoorGeschiedenis Overzicht" = "Voorgeschiedenis Overzicht"
+"Ontslagbrief" = "Ontslagbrief"
+"Ontslagregistratie - Ontslagbestemming - Naam ander ziekenhuis/afdeling (niet UMCU)" = "Ontslagbestemming - Naam ander ziekenhuis/afdeling"
+"Ontslagregistratie - Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen" = "Ontslagbestemming - Toelichting bij ontslag naar overige bestemmingen"
