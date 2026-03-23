@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from discharge_docs.api.pydantic_models import PatientFile
+from discharge_docs.config import load_department_config
 from discharge_docs.dashboard import helper
 from discharge_docs.dashboard.helper import (
     select_encounter_ids,
@@ -175,6 +176,12 @@ def test_process_dates():
 
 
 def test_filter_data():
+    department_config = load_department_config()
+    department_mappings = {
+        dept: cfg.get_column_descriptions(department_config.column_description)
+        for dept, cfg in department_config.department.items()
+    }
+
     # IC department
     df = pd.DataFrame(
         {
@@ -187,9 +194,9 @@ def test_filter_data():
             "department": ["IC", "IC", "IC"],
         }
     )
-    filtered = filter_data(df, "IC")
+    filtered = filter_data(df, "IC", department_mappings)
     assert set(filtered["description"]).issubset(
-        set(filter_data(df, "IC")["description"])
+        set(filter_data(df, "IC", department_mappings)["description"])
     )
 
     # NICU department
@@ -203,7 +210,7 @@ def test_filter_data():
             "department": ["NICU", "NICU"],
         }
     )
-    filtered = filter_data(df, "NICU")
+    filtered = filter_data(df, "NICU", department_mappings)
     assert (
         "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values
         or "Anamnese" in filtered["description"].values
@@ -217,7 +224,7 @@ def test_filter_data():
             "department": ["CAR", "CAR"],
         }
     )
-    filtered = filter_data(df, "CAR")
+    filtered = filter_data(df, "CAR", department_mappings)
     assert "Conclusie" in filtered["description"].values
 
     # PICU department
@@ -231,7 +238,7 @@ def test_filter_data():
             "department": ["PICU", "PICU"],
         }
     )
-    filtered = filter_data(df, "PICU")
+    filtered = filter_data(df, "PICU", department_mappings)
     assert (
         "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values
         or "Anamnese" in filtered["description"].values
@@ -239,7 +246,7 @@ def test_filter_data():
 
     # Unknown department raises error
     with pytest.raises(ValueError):
-        filter_data(df, "UNKNOWN")
+        filter_data(df, "UNKNOWN", department_mappings)
 
 
 def test_get_patient_discharge_docs():
