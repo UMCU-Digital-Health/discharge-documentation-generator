@@ -45,6 +45,7 @@ class LengthRange(BaseModel):
     medium: Optional[LengthRangeItem] = None
     long: Optional[LengthRangeItem] = None
 
+
 class DepartmentItem(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
@@ -57,8 +58,9 @@ class DepartmentItem(BaseModel):
     length_range: Optional[LengthRange] = None
     column_description_set: Optional[List[str]] = None
 
-
-    def get_column_descriptions(self, all_descriptions: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+    def get_column_descriptions(
+        self, all_descriptions: Dict[str, Dict[str, str]]
+    ) -> Dict[str, str]:
         """Merge all referenced column_description sets for this department."""
 
         merged: Dict[str, str] = {}
@@ -66,6 +68,7 @@ class DepartmentItem(BaseModel):
             for set_name in self.column_description_set:
                 merged.update(all_descriptions.get(set_name, {}))
         return merged
+
 
 class DepartmentConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
