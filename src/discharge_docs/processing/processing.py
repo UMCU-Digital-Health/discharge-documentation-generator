@@ -1,12 +1,11 @@
 import logging
 import re
-from typing import Optional, Tuple, cast
+from typing import Dict, Optional, Tuple, cast
 
 import pandas as pd
 from striprtf.striprtf import rtf_to_text
 
 from discharge_docs.api.pydantic_models import HixInput
-from discharge_docs.config import load_department_config
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +72,7 @@ def pre_process_hix_data(data: HixInput) -> pd.DataFrame:
 def process_data(
     patient_data: pd.DataFrame,
     remove_encs_no_docs: bool = False,
+    department_mappings: Dict[str, Dict[str, str]] = None,
 ) -> pd.DataFrame:
     """
     Processes patient data.
@@ -149,12 +149,6 @@ def process_data(
         }
     )
 
-    department_config = load_department_config()
-    department_mappings = {
-        dept: cfg.get_column_descriptions(department_config.column_description)
-        for dept, cfg in department_config.department.items()
-    }
-
     df = (
         df.groupby("department", group_keys=False)[df.columns]
         .apply(
@@ -192,10 +186,13 @@ def filter_data(
     -------
         df Filtered and renamed DataFrame.
     """
+    if department_mappings is None:
+        raise ValueError("Department mappings must be provided for filtering data.")
+
     if department not in department_mappings:
         raise ValueError(f"Department {department} not recognized")
 
-    if department in {"ORT", "DEMO"}:
+    if department in {"DEMO"}:
         return df
 
     dept_descriptions = department_mappings[department]

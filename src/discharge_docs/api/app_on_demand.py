@@ -20,6 +20,7 @@ from discharge_docs.config import (
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     get_current_version,
+    get_department_mappings,
     load_department_config,
     setup_root_logger,
 )
@@ -61,6 +62,7 @@ client = initialise_azure_connection()
 logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
 
 department_config = load_department_config()
+department_mappings = get_department_mappings(department_config)
 
 
 def get_session():
@@ -108,7 +110,9 @@ async def process_hix_data(
     db.commit()
 
     pre_processed_data = pre_process_hix_data(data)
-    processed_data = process_data(pre_processed_data)
+    processed_data = process_data(
+        pre_processed_data, department_mappings=department_mappings
+    )
     processed_data = apply_deduce(processed_data, "content")
 
     patient_file_string, patient_df = get_patient_file(processed_data)

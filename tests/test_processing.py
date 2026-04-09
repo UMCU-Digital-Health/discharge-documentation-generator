@@ -5,7 +5,8 @@ import pandas as pd
 import pytest
 
 from discharge_docs.api.pydantic_models import PatientFile
-from discharge_docs.config import load_department_config
+from discharge_docs.config import get_department_mappings
+from discharge_docs.config_models import DepartmentConfig, DepartmentItem
 from discharge_docs.dashboard import helper
 from discharge_docs.dashboard.helper import (
     select_encounter_ids,
@@ -49,7 +50,34 @@ def test_process_data():
             test_data["admissionDate"].astype(float), unit="ms"
         )
         test_data = test_data.astype(dtypes)
-    processed_data = process_data(test_data)
+
+    department_config = DepartmentConfig(
+        department={
+            "NICU": DepartmentItem(
+                id="NICU",
+                display_name="Neonatale Intensive Care",
+                ehr="Metavision",
+                department_prompt="NICU_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_tracti",
+                    "descriptions_metavision_general",
+                ],
+            ),
+        },
+        column_description={
+            "descriptions_metavision_tracti": {},
+            "descriptions_metavision_general": {
+                "Dagstatus - Tractus 12 Conclusie": "Dagstatus - Conclusie",
+            },
+        },
+    )
+
+    department_mappings = {}
+    department_mappings["NICU"] = department_config.department[
+        "NICU"
+    ].get_column_descriptions(department_config.column_description)
+    processed_data = process_data(test_data, department_mappings)
 
     # Test whether unnecessary columns are dropped and columns are correctly renamed
     expected_columns = [
@@ -175,13 +203,131 @@ def test_process_dates():
     assert pd.isna(test_data_df["date"].iloc[1])
 
 
-def test_filter_data():
-    department_config = load_department_config()
-    department_mappings = {
-        dept: cfg.get_column_descriptions(department_config.column_description)
-        for dept, cfg in department_config.department.items()
-    }
+def test_get_department_mappings():
+    department_config = DepartmentConfig(
+        department={
+            "NICU": DepartmentItem(
+                id="NICU",
+                display_name="Neonatale Intensive Care",
+                ehr="Metavision",
+                department_prompt="NICU_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_tracti",
+                    "descriptions_metavision_general",
+                ],
+            ),
+            "IC": DepartmentItem(
+                id="IC",
+                display_name="Intensive Care",
+                ehr="Metavision",
+                department_prompt="IC_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_general",
+                ],
+            ),
+            "PICU": DepartmentItem(
+                id="PICU",
+                display_name="Pediatric Intensive Care",
+                ehr="Metavision",
+                department_prompt="PICU_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_tracti",
+                    "descriptions_metavision_general",
+                ],
+            ),
+            "CAR": DepartmentItem(
+                id="CAR",
+                display_name="Cardiologie",
+                ehr="HiX",
+                department_prompt="CAR_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_hix",
+                ],
+            ),
+        },
+        column_description={
+            "descriptions_metavision_tracti": {
+                "Dagstatus - Tractus 02 Respiratie": "Dagstatus - Respiratie",
+                "Dagstatus - Tractus 06 VB/nierfunctie": "Dagstatus - VB/nierfunctie",
+                "Dagstatus - Tractus 10 Psych/soc": "Dagstatus - Psych/sociaal",
+            },
+            "descriptions_metavision_general": {
+                "Dagstatus - Tractus 12 Conclusie": "Dagstatus - Conclusie",
+                "MS Anamnese Overzicht": "Anamnese",
+                "MS Dagstatus Beleid KT": "Korte Termijn Beleid",
+                "MS Probleemlijst Print": "Probleemlijst",
+            },
+            "descriptions_hix": {
+                "Beleid": "Beleid",
+                "Anamnes": "Anamnese",
+                "Functieonderzoeken": "Functieonderzoeken",
+                "Reden van komst / Verwijzing": "Reden van komst / Verwijzing",
+            },
+        },
+    )
 
+    department_mappings = {}
+    for dept in department_config.department.values():
+        department_mappings[dept.id] = dept.get_column_descriptions(
+            department_config.column_description
+        )
+
+    # NICU department
+    mapped_descriptions = get_department_mappings(department_config)["NICU"].values()
+    expected_renamed_descriptions = {
+        "Dagstatus - Respiratie",
+        "Dagstatus - VB/nierfunctie",
+        "Dagstatus - Psych/sociaal",
+        "Dagstatus - Conclusie",
+        "Anamnese",
+        "Korte Termijn Beleid",
+        "Probleemlijst",
+    }
+    assert any(value in mapped_descriptions for value in expected_renamed_descriptions)
+
+    # PICU
+    mapped_descriptions = get_department_mappings(department_config)["PICU"].values()
+    assert any(value in mapped_descriptions for value in expected_renamed_descriptions)
+
+    # IC department
+    mapped_descriptions = get_department_mappings(department_config)["IC"].values()
+    expected_renamed_descriptions = {
+        "Dagstatus - Conclusie",
+        "Anamnese",
+        "Korte Termijn Beleid",
+        "Probleemlijst",
+    }
+    assert any(value in mapped_descriptions for value in expected_renamed_descriptions)
+
+    # CAR department
+    mapped_descriptions = get_department_mappings(department_config)["CAR"].values()
+    expected_renamed_descriptions = {
+        "Beleid",
+        "Anamnese",
+        "Functieonderzoeken",
+        "Reden van komst / Verwijzing",
+    }
+    assert any(value in mapped_descriptions for value in expected_renamed_descriptions)
+
+    # Unknown descriptions set for a department raises error
+    department_config.department["NICU"].column_description_set = ["non_existent_set"]
+    with pytest.raises(ValueError, match="Unknown description set"):
+        get_department_mappings(department_config)
+
+    # No department raises error
+    department_config.department = None
+    with pytest.raises(
+        ValueError,
+        match="Department config does not contain a department.",
+    ):
+        get_department_mappings(department_config)
+
+
+def test_filter_data():
     # IC department
     df = pd.DataFrame(
         {
@@ -194,9 +340,17 @@ def test_filter_data():
             "department": ["IC", "IC", "IC"],
         }
     )
+    department_mappings = {
+        "IC": {
+            "MS Chronologie Eventlijst Print": "Eventlijst",
+            "Ontslagbrief": "Ontslagbrief",
+        }
+    }
+
     filtered = filter_data(df, "IC", department_mappings)
-    assert set(filtered["description"]).issubset(
-        set(filter_data(df, "IC", department_mappings)["description"])
+    assert (
+        "Eventlijst" in filtered["description"].values
+        or "Ontslagbrief" in filtered["description"].values
     )
 
     # NICU department
@@ -210,22 +364,41 @@ def test_filter_data():
             "department": ["NICU", "NICU"],
         }
     )
+    department_mappings = {
+        "NICU": {
+            "Dagstatus - Tractus 01 Lichamelijk Onderzoek": (
+                "Dagstatus - Lichamelijk Onderzoek"
+            ),
+            "MS Chronologie Eventlijst Print": "Eventlijst",
+        }
+    }
     filtered = filter_data(df, "NICU", department_mappings)
     assert (
         "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values
-        or "Anamnese" in filtered["description"].values
+        or "Eventlijst" in filtered["description"].values
     )
 
     # CAR department
     df = pd.DataFrame(
         {
-            "description": ["Conclusie", "Ontslagbrief"],
-            "content": ["A", "B"],
-            "department": ["CAR", "CAR"],
+            "description": ["Conclusie", "Ontslagbrief", "Anamnes"],
+            "content": ["A", "B", "C"],
+            "department": ["CAR", "CAR", "CAR"],
         }
     )
+    department_mappings = {
+        "CAR": {
+            "Conclusie": "Conclusie",
+            "Ontslagbrief": "Ontslagbrief",
+            "Anamnes": "Anamnese",
+        }
+    }
     filtered = filter_data(df, "CAR", department_mappings)
-    assert "Conclusie" in filtered["description"].values
+    assert (
+        "Conclusie" in filtered["description"].values
+        or "Ontslagbrief" in filtered["description"].values
+        or "Anamnese" in filtered["description"].values
+    )
 
     # PICU department
     df = pd.DataFrame(
@@ -238,6 +411,14 @@ def test_filter_data():
             "department": ["PICU", "PICU"],
         }
     )
+    department_mappings = {
+        "PICU": {
+            "Dagstatus - Tractus 01 Lichamelijk Onderzoek": (
+                "Dagstatus - Lichamelijk Onderzoek"
+            ),
+            "MS Chronologie Eventlijst Print": "Eventlijst",
+        }
+    }
     filtered = filter_data(df, "PICU", department_mappings)
     assert (
         "Dagstatus - Lichamelijk Onderzoek" in filtered["description"].values

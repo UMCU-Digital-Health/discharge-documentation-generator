@@ -7,6 +7,7 @@ import pytest
 from MockAzureOpenAIEnv import MockAzureOpenAI
 
 from discharge_docs.config import DEPLOYMENT_NAME_ENV, TEMPERATURE
+from discharge_docs.config_models import DepartmentConfig, DepartmentItem
 from discharge_docs.llm.helper import DischargeLetter
 from discharge_docs.llm.prompt import (
     load_department_prompt,
@@ -77,9 +78,49 @@ def test_prompt_builder():
             test_data["admissionDate"].astype(float), unit="ms"
         )
         test_data = test_data.astype(dtypes)
-    test_data = process_data(test_data)
 
-    patient_file_string, patient_df = get_patient_file(test_data, 1234)
+    department_config = DepartmentConfig(
+        department={
+            "NICU": DepartmentItem(
+                id="NICU",
+                display_name="Neonatale Intensive Care",
+                ehr="Metavision",
+                department_prompt="NICU_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_tracti",
+                    "descriptions_metavision_general",
+                ],
+            ),
+            "IC": DepartmentItem(
+                id="IC",
+                display_name="Intensive Care",
+                ehr="Metavision",
+                department_prompt="IC_prompt.txt",
+                post_processing=False,
+                column_description_set=[
+                    "descriptions_metavision_general",
+                ],
+            ),
+        },
+        column_description={
+            "descriptions_metavision_tracti": {},
+            "descriptions_metavision_general": {
+                "Dagstatus - Tractus 12 Conclusie": "Dagstatus - Conclusie",
+            },
+        },
+    )
+
+    department_mappings = {}
+    for dept in department_config.department.values():
+        department_mappings[dept.id] = dept.get_column_descriptions(
+            department_config.column_description
+        )
+    processed_test_data = process_data(
+        test_data, department_mappings=department_mappings
+    )
+
+    patient_file_string, patient_df = get_patient_file(processed_test_data, 1234)
     department = patient_df["department"].values[0]
     department_prompt = load_department_prompt(department)
     general_prompt, system_prompt = load_prompts()
