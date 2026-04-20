@@ -64,15 +64,19 @@ class DepartmentItem(BaseModel):
         """Merge all referenced column_description sets for this department."""
 
         merged: Dict[str, str] = {}
-        if self.column_description_set:
-            for set_name in self.column_description_set:
-                if set_name not in all_descriptions:
-                    available = ", ".join(all_descriptions.keys()) or "none"
-                    raise ValueError(
-                        f"Column description set '{set_name}' not found "
-                        f"for department '{self.id}'. Available sets: {available}."
-                    )
-                merged.update(all_descriptions[set_name])
+        if not self.column_description_set:
+            raise ValueError(
+                f"Department '{self.id}' has no column description sets specified."
+            )
+
+        for set_name in self.column_description_set:
+            if set_name not in all_descriptions:
+                available = ", ".join(all_descriptions.keys()) or "none"
+                raise ValueError(
+                    f"Column description set '{set_name}' not found "
+                    f"for department '{self.id}'. Available sets: {available}."
+                )
+            merged.update(all_descriptions[set_name])
         return merged
 
 

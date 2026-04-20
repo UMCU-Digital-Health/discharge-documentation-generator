@@ -187,9 +187,11 @@ def filter_data(
         df Filtered and renamed DataFrame.
     """
     if department_mappings is None:
+        logger.error("Department mappings must be provided for filtering data.")
         raise ValueError("Department mappings must be provided for filtering data.")
 
     if department not in department_mappings:
+        logger.error(f"Department {department} not recognized")
         raise ValueError(f"Department {department} not recognized")
 
     if department in {"DEMO"}:

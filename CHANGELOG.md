@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.1] - 2026-05-20
+
+### Added
+- Config-based data filtering for improved scalability.
+- Department mappings for handling multiple sets of descriptions.
+- Added unit testing for the new filtering.
+
+### Changed
+- Refactored filtering logic to use the config-based approach.
+- Updated existing unit tests to work with the new filtering.
+
+### Fixed
+- Changed date processing test to make it more robust to datetime differences (nanoseconds vs microseconds).
+
 ## [2.13.0] - 2026-02-09
 
 This release updates the ICU (IC) document-generation prompt with the new approach using multiple subheadings and then summarizing into a final narrative header.
