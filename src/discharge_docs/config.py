@@ -132,8 +132,7 @@ def get_department_mappings(
 
     mappings: Dict[str, Dict[str, str]] = {}
     for dept, cfg in department_config.department.items():
-        # ORT doesn't have a description column yet
-        if dept == "DEMO" or dept == "ORT":
+        if dept == "DEMO":
             continue
         elif not cfg.column_description_set:
             raise ValueError(f"Department {dept} has no descriptions.")

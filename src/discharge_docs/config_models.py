@@ -57,6 +57,7 @@ class DepartmentItem(BaseModel):
     post_processing_prompt: Optional[str] = None
     length_range: Optional[LengthRange] = None
     column_description_set: Optional[List[str]] = None
+    excluded_descriptions: Optional[List[str]] = None
 
     def get_column_descriptions(
         self, all_descriptions: Dict[str, Dict[str, str]]
@@ -77,6 +78,21 @@ class DepartmentItem(BaseModel):
                     f"for department '{self.id}'. Available sets: {available}."
                 )
             merged.update(all_descriptions[set_name])
+
+        if not self.excluded_descriptions:
+            return merged
+
+        exclude = [key for key in self.excluded_descriptions if key not in merged]
+        if exclude:
+            available = ", ".join(sorted(merged.keys())) or "none"
+            raise ValueError(
+                f"Column description key(s) {exclude} not found "
+                f"for department '{self.id}'. Available keys: {available}."
+            )
+
+        for key in self.excluded_descriptions:
+            merged.pop(key)
+
         return merged
 
 

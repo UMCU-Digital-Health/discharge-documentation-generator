@@ -52,6 +52,24 @@ ehr = "HiX"
 department_prompt = "CAR_prompt.txt"
 post_processing = false
 column_description_set = ["descriptions_hix"]
+excluded_descriptions = [
+    "Aangevraagde onderzoeken", 
+    "Allergieën",
+    "Correspondentie",
+    "Endoscopie verslagen",
+    "Informed Consent",
+    "Intoxicaties",
+    "Laboratorium",
+    "Microbiologie", 
+    "Multimedia",
+    "Pathologie",
+    "Radiologie",
+    "Risicofactoren", 
+    "Sociale anamnese",
+    "Speciële anamnese",
+    "Tractus anamnese",
+    "Vitale functies",
+]
 
 [department.ORT]
 id = "ORT"
@@ -59,30 +77,53 @@ display_name = "Orthopedie"
 ehr = "HiX"
 department_prompt = "ORT_prompt.txt"
 post_processing = false
+column_description_set = ["descriptions_hix"]
+excluded_descriptions = [
+    "Aangevraagde onderzoeken",
+    "Correspondentie",
+    "Multimedia",
+    "Overige acties",
+]
 
 [column_description.descriptions_hix]
+"Aangevraagde onderzoeken" = "Aangevraagde onderzoeken"
 "Aanvullend onderzoek" = "Aanvullend onderzoek"
-"Conclusie" = "Conclusie"
-"Lichamelijk onderzoek" = "Lichamelijk onderzoek"
+"Actuele medicatie" = "Actuele medicatie"
+"Advies" = "Advies"
+"Allergieën" = "Allergieën"
+"Anamnese" = "Anamnese"
 "Beleid" = "Beleid"
-"Anamnes" = "Anamnese"
+"Beloop" = "Beloop"
+"Complicatie" = "Complicatie"
+"Conclusie" = "Conclusie"
+"Correspondentie" = "Correspondentie"
+"Diagnose" = "Diagnose"
+"Endoscopie verslagen" = "Endoscopie verslagen"
+"Familieanamnese" = "Familieanamnese"
 "Functieonderzoeken" = "Functieonderzoeken"
-"Reden van komst / Verwijzing" = "Reden van komst / Verwijzing"
-"Uitgevoerde behandeling/verrichting" = "Uitgevoerde behandeling/verrichting"
+"Informed Consent" = "Informed Consent"
+"Intoxicaties" = "Intoxicaties"
+"Laboratorium" = "Laboratorium"
+"Lichamelijk onderzoek" = "Lichamelijk onderzoek"
+"Medicatie" = "Medicatie"
+"Microbiologie" = "Microbiologie"
+"Multimedia" = "Multimedia"
+"Ontslagbrief" = "Ontslagbrief"
+"Overdracht" = "Overdracht"
 "Overige acties" = "Overige acties"
 "Overweging / Differentiaal diagnose" = "Overweging / Differentiaal diagnose"
-"Beloop" = "Beloop"
-"Overdracht" = "Overdracht"
-"Samenvatting" = "Samenvatting"
-"Diagnos" = "Diagnose"
-"Actuele medicatie" = "Actuele medicatie"
+"Pathologie" = "Pathologie"
 "Plan" = "Plan"
-"Complicatie" = "Complicatie"
-"Familieanamnese" = "Familieanamnese"
-"Medicatie" = "Medicatie"
-"Advies" = "Advies"
+"Radiologie" = "Radiologie"
+"Reden van komst / Verwijzing" = "Reden van komst / Verwijzing"
+"Risicofactoren" = "Risicofactoren"
+"Samenvatting" = "Samenvatting"
+"Sociale anamnese" = "Sociale anamnese"
+"Speciële anamnese" = "Speciële anamnese"
+"Tractus anamnese" = "Tractus anamnese"
+"Uitgevoerde behandeling/verrichting" = "Uitgevoerde behandeling/verrichting"
+"Vitale functies" = "Vitale functies"
 "Voorgeschiedenis" = "Voorgeschiedenis"
-"Ontslagbrief" = "Ontslagbrief"
 
 [column_description.descriptions_metavision_tracti]
 "Dagstatus - Tractus 01 Lichamelijk Onderzoek" = "Dagstatus - Lichamelijk Onderzoek"

@@ -265,7 +265,7 @@ def test_get_department_mappings():
             },
             "descriptions_hix": {
                 "Beleid": "Beleid",
-                "Anamnes": "Anamnese",
+                "Anamnese": "Anamnese",
                 "Functieonderzoeken": "Functieonderzoeken",
                 "Reden van komst / Verwijzing": "Reden van komst / Verwijzing",
             },
@@ -329,6 +329,73 @@ def test_get_department_mappings():
         get_department_mappings(department_config)
 
 
+def test_get_department_mappings_subsets():
+    department_config = DepartmentConfig(
+        department={
+            "CAR": DepartmentItem(
+                id="CAR",
+                display_name="Cardiologie",
+                ehr="HiX",
+                department_prompt="CAR_prompt.txt",
+                post_processing=False,
+                column_description_set=["descriptions_hix"],
+                excluded_descriptions=[
+                    "Aangevraagde onderzoeken",
+                    "Allergieën",
+                    "Correspondentie",
+                    "Endoscopie verslagen",
+                ],
+            ),
+            "ORT": DepartmentItem(
+                id="ORT",
+                display_name="Orthopedie",
+                ehr="HiX",
+                department_prompt="ORT_prompt.txt",
+                post_processing=False,
+                column_description_set=["descriptions_hix"],
+                excluded_descriptions=[
+                    "Aangevraagde onderzoeken",
+                    "Correspondentie",
+                    "Multimedia",
+                    "Overige acties",
+                ],
+            ),
+        },
+        column_description={
+            "descriptions_hix": {
+                "Aangevraagde onderzoeken": "Aangevraagde onderzoeken",
+                "Advies": "Advies",
+                "Allergieën": "Allergieën",
+                "Anamnese": "Anamnese",
+                "Beleid": "Beleid",
+                "Correspondentie": "Correspondentie",
+                "Endoscopie verslagen": "Endoscopie verslagen",
+                "Multimedia": "Multimedia",
+                "Overige acties": "Overige acties",
+            },
+        },
+    )
+
+    mappings = get_department_mappings(department_config)
+
+    assert set(mappings["CAR"].keys()) == {
+        "Advies",
+        "Beleid",
+        "Anamnese",
+        "Multimedia",
+        "Overige acties",
+    }
+    assert set(mappings["ORT"].keys()) == {
+        "Advies",
+        "Allergieën",
+        "Anamnese",
+        "Beleid",
+        "Endoscopie verslagen",
+    }
+    assert "Aangevraagde onderzoeken" and "Correspondentie" not in mappings["CAR"]
+    assert "Aangevraagde onderzoeken" and "Correspondentie" not in mappings["ORT"]
+
+
 def test_filter_data():
     # IC department
     df = pd.DataFrame(
@@ -383,7 +450,7 @@ def test_filter_data():
     # CAR department
     df = pd.DataFrame(
         {
-            "description": ["Conclusie", "Ontslagbrief", "Anamnes"],
+            "description": ["Conclusie", "Ontslagbrief", "Anamnese"],
             "content": ["A", "B", "C"],
             "department": ["CAR", "CAR", "CAR"],
         }
@@ -392,7 +459,7 @@ def test_filter_data():
         "CAR": {
             "Conclusie": "Conclusie",
             "Ontslagbrief": "Ontslagbrief",
-            "Anamnes": "Anamnese",
+            "Anamnese": "Anamnese",
         }
     }
     filtered = filter_data(df, "CAR", department_mappings)
