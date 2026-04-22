@@ -6,8 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
-## [2.13.1] - 2026-04-20
+## [2.13.2] - 2026-04-22
 
 ### Added
 - Config-based data filtering for improved scalability.
@@ -20,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Changed date processing test to make it more robust to datetime differences (nanoseconds vs microseconds).
+
+## [2.13.1] - 2026-04-14
+
+### Changed
+- Updated Azure model acceptance environment. Old model was deprecated.
+- Updated prompt builder to default to a context length of 128000 when model is unknown.
+- Changed datetime type in unit tests to work with pandas >= 3.0
+- Added unit tests to test get_token_length behaviour and unknown deployment behaviour
 
 ## [2.13.0] - 2026-02-09
 

@@ -191,8 +191,7 @@ def test_process_dates():
     test_data_after_validation = [item.model_dump() for item in test_data_validated]
     test_data_df = pd.DataFrame.from_records(test_data_after_validation)
 
-    assert str(test_data_df["date"].dtype).startswith("datetime64")
-    assert test_data_df["date"].dt.tz is not None
+    assert test_data_df["date"].dtype == "datetime64[us, UTC]"
 
     # Test with a None date from HiX, using a date with year 2999
     test_data[1]["date"] = "2999-12-31T23:59:59Z"
@@ -200,8 +199,7 @@ def test_process_dates():
     test_data_after_validation = [item.model_dump() for item in test_data_validated]
     test_data_df = pd.DataFrame.from_records(test_data_after_validation)
 
-    assert str(test_data_df["date"].dtype).startswith("datetime64")
-    assert test_data_df["date"].dt.tz is not None
+    assert test_data_df["date"].dtype == "datetime64[us, UTC]"
     assert pd.isna(test_data_df["date"].iloc[1])
 
 

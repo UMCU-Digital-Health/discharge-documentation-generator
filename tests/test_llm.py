@@ -134,6 +134,47 @@ def test_prompt_builder():
     assert isinstance(discharge_letter, dict)
 
 
+def test_get_token_length():
+    """Test the get_token_length method of the PromptBuilder class."""
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name=DEPLOYMENT_NAME_ENV,
+        client=MockAzureOpenAI(),
+    )
+
+    patient_file = "This is a patient file."
+    system_prompt = "This is a system prompt."
+    general_prompt = "This is a user prompt."
+    department_prompt = "This is a template prompt."
+
+    token_length = prompt_builder.get_token_length(
+        patient_file=patient_file,
+        system_prompt=system_prompt,
+        general_prompt=general_prompt,
+        department_prompt=department_prompt,
+    )
+    assert isinstance(token_length, int)
+    assert token_length == 21
+
+
+def test_get_token_length_unknown_deployment(caplog):
+    """Test that the get_token_length method returns the default context length for an
+    unknown deployment. Also test that a warning is logged."""
+    caplog.set_level("WARNING")
+
+    prompt_builder = PromptBuilder(
+        temperature=TEMPERATURE,
+        deployment_name="unknown-deployment",
+        client=MockAzureOpenAI(),
+    )
+
+    assert prompt_builder.max_context_length == 128_000
+    assert (
+        "Unknown deployment name: unknown-deployment. "
+        "Defaulting to 128k context length." in caplog.text
+    )
+
+
 def test_context_length_error():
     prompt_builder = PromptBuilder(
         temperature=TEMPERATURE,
