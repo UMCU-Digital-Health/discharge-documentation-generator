@@ -261,7 +261,9 @@ def run_processing(
             Path(raw_data_folder / f"{start_date}_{end_date}_hix_docs.json"),
             convert_dates=["admissionDate", "dischargeDate", "date"],
         )
-        hix_patient_data["content"] = hix_patient_data["content"].apply(rtf_to_text)
+        hix_patient_data["content"] = hix_patient_data["content"].apply(
+            rtf_to_text, errors="ignore"
+        )
         data = combine_patient_and_docs_data_hix(hix_patient_data, hix_docs_data)
 
     elif data_source == "metavision":
