@@ -66,10 +66,10 @@ class PromptBuilder:
         """Determine the maximum context length based on the deployment name.
 
         Currently supported deployments are:
-        - aiva-gpt: 16,384 tokens (GPT-3.5)
+        - aiva-gpt: 16,384 tokens (GPT-3.5) DEPRECATED
         - aiva-gpt4: 128,000 tokens (GPT-4o)
-        - aiva-gpt4-new: 128,000 tokens (GPT4-turbo)
-        - aiva-gpt4.1: 1,000,000 tokens (GPT-4.1)
+        - aiva-gpt4o-mini: 128,000 tokens (GPT-4o-mini) DEPRECATED
+        - aiva-discharge-gpt-4.1-mini: 1,000,000 tokens (GPT-4.1 mini)
 
         Parameters
         ----------
@@ -86,11 +86,16 @@ class PromptBuilder:
             "aiva-gpt": 16_384,
             "aiva-gpt4": 128_000,  # This is now 4o and has 128k context length
             "aiva-gpt-4o-mini": 128_000,
+            "aiva-discharge-gpt-4.1-mini": 1_000_000,
         }
         if deployment_name in context_length_by_deployment:
             return context_length_by_deployment[deployment_name]
         else:
-            raise ValueError(f"Unknown deployment name: {deployment_name}")
+            logger.warning(
+                f"Unknown deployment name: {deployment_name}. "
+                "Defaulting to 128k context length."
+            )
+            return 128_000  # Default to 128k context length for unknown deployments
 
     def get_token_length(
         self,

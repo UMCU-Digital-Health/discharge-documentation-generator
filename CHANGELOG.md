@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.1] - 2026-04-14
+
+### Changed
+- Updated Azure model acceptance environment. Old model was deprecated.
+- Updated prompt builder to default to a context length of 128000 when model is unknown.
+- Changed datetime type in unit tests to work with pandas >= 3.0
+- Added unit tests to test get_token_length behaviour and unknown deployment behaviour
+
 ## [2.13.0] - 2026-02-09
 
 This release updates the ICU (IC) document-generation prompt with the new approach using multiple subheadings and then summarizing into a final narrative header.
