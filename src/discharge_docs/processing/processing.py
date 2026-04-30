@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Optional, Tuple, cast
+from typing import Dict, Optional, Tuple, cast
 
 import pandas as pd
 from striprtf.striprtf import rtf_to_text
@@ -72,6 +72,7 @@ def pre_process_hix_data(data: HixInput) -> pd.DataFrame:
 def process_data(
     patient_data: pd.DataFrame,
     remove_encs_no_docs: bool = False,
+    department_mappings: Dict[str, Dict[str, str]] = None,
 ) -> pd.DataFrame:
     """
     Processes patient data.
@@ -151,7 +152,7 @@ def process_data(
     df = (
         df.groupby("department", group_keys=False)[df.columns]
         .apply(
-            lambda g: filter_data(g, cast(str, g.name)).assign(
+            lambda g: filter_data(g, cast(str, g.name), department_mappings).assign(
                 department=cast(str, g.name)
             )
         )
@@ -165,113 +166,40 @@ def process_data(
     return df
 
 
-def filter_data(df: pd.DataFrame, department: str) -> pd.DataFrame:
-    # filtering and renaming the 'description' column per department
-    metavision_tracti = {
-        "Dagstatus - Tractus 01 Lichamelijk Onderzoek": "Dagstatus - Lichamelijk "
-        + "Onderzoek",
-        "Dagstatus - Tractus 02 Respiratie": "Dagstatus - Respiratie",
-        "Dagstatus - Tractus 03 Circulatie": "Dagstatus - Circulatie",
-        "Dagstatus - Tractus 04 Neurologie": "Dagstatus - Neurologie",
-        "Dagstatus - Tractus 05 Infectie": "Dagstatus - Infectie",
-        "Dagstatus - Tractus 06 VB/nierfunctie": "Dagstatus - VB/nierfunctie",
-        "Dagstatus - Tractus 07 Gastro-Intestinaal": "Dagstatus - Gastro-Intestinaal",
-        "Dagstatus - Tractus 08 Milieu Interieur": "Dagstatus - Milieu Interieur",
-        "Dagstatus - Tractus 09 Extr/huid": "Dagstatus - Extr/huid",
-        "Dagstatus - Tractus 10 Psych/soc": "Dagstatus - Psych/sociaal",
-        "Dagstatus - Tractus 11 Overig": "Dagstatus - Overig",
-    }
+def filter_data(
+    df: pd.DataFrame, department: str, department_mappings: dict[str, dict[str, str]]
+) -> pd.DataFrame:
+    """
+    Filters and renames the column with descriptions for a given department.
 
-    metavision_general = {
-        "Dagstatus - Tractus 12 Conclusie": "Dagstatus - Conclusie",
-        "Dagstatus - Tractus 13 Opm dagdienst": "Dagstatus - Opmerkingen dagdienst",
-        "Dagstatus - Tractus 14 Opm A/N dienst": "Dagstatus - Opmerkingen avond/nacht"
-        + " dienst",
-        "Dagstatus Print Afspraken": "Afspraken",
-        "Dagstatus Print Behandeldoelen": "Behandeldoelen",
-        # "Form MS Diagnose 1": "Diagnosecode 1",
-        # "Form MS Diagnose 2": "Diagnosecode 2",
-        "MS Anamnese Overzicht": "Anamnese",
-        "MS Chronologie Eventlijst Print": "Eventlijst",
-        "MS Dagstatus Beleid KT": "Korte Termijn Beleid",
-        "MS Dagstatus Beleid LT Print": "Lange Termijn Beleid",
-        "MS Decursus Thuismedicatie": "Thuismedicatie",
-        "MS Decursus Toedracht bij Opname": "Toedracht bij Opname",
-        "MS Decursus Item Tekst": "Familiegesprek",
-        "MS Probleemlijst Print": "Probleemlijst",
-        "MS VoorGeschiedenis Overzicht": "Voorgeschiedenis Overzicht",
-        "Ontslagbrief": "Ontslagbrief",
-        "Ontslagregistratie - Ontslagbestemming - "
-        + "Naam ander ziekenhuis/afdeling (niet UMCU)": "Ontslagbestemming - Naam"
-        + " ander ziekenhuis/afdeling",
-        "Ontslagregistratie - Ontslagbestemming - "
-        + "Toelichting bij ontslag naar overige bestemmingen": "Ontslagbestemming - "
-        + "Toelichting bij ontslag naar overige bestemmingen",
-    }
+    Parameters
+    ----------
+        df : pd.DataFrame
+            containing at least a 'description' column.
+        department : str
+            Name of the department to filter columns for.
+        department_mappings : Dict
+            Mapping department to all sets of renamed column
+            descriptions of that department.
 
-    cardio_general = {
-        "Aanvullend onderzoek": "Aanvullend onderzoek",
-        "Conclusie": "Conclusie",
-        # "Correspondentie": "Correspondentie",
-        "Lichamelijk onderzoek": "Lichamelijk onderzoek",
-        "Beleid": "Beleid",
-        "Anamnese": "Anamnese",
-        "Functieonderzoeken": "Functieonderzoeken",
-        # "Aangevraagde onderzoeken": "Aangevraagde onderzoeken",
-        # "Laboratorium": "Laboratorium",
-        "Reden van komst / Verwijzing": "Reden van komst / Verwijzing",
-        "Uitgevoerde behandeling/verrichting": "Uitgevoerde behandeling/verrichting",
-        "Overige acties": "Overige acties",
-        "Overweging / Differentiaal diagnose": "Overweging / Differentiaal diagnose",
-        "Beloop": "Beloop",
-        "Overdracht": "Overdracht",
-        "Samenvatting": "Samenvatting",
-        # "Vitale functies": "Vitale functies",
-        # "Radiologie": "Radiologie",
-        "Diagnose": "Diagnose",
-        "Actuele medicatie": "Actuele medicatie",
-        # "Microbiologie": "Microbiologie",
-        "Plan": "Plan",
-        "Complicatie": "Complicatie",
-        # "Pathologie": "Pathologie",
-        # "Informed Consent": "Informed Consent",
-        "Familieanamnese": "Familieanamnese",
-        "Medicatie": "Medicatie",
-        "Advies": "Advies",
-        "Voorgeschiedenis": "Voorgeschiedenis",
-        "Ontslagbrief": "Ontslagbrief",
-    }
+    Returns
+    -------
+        df Filtered and renamed DataFrame.
+    """
+    if department_mappings is None:
+        logger.error("Department mappings must be provided for filtering data.")
+        raise ValueError("Department mappings must be provided for filtering data.")
 
-    if department == "IC":
-        df = df[df["description"].isin(metavision_general.keys())].replace(
-            metavision_general
-        )
-    elif department == "NICU":
-        df = (
-            df[
-                df["description"].isin(metavision_general.keys())
-                | df["description"].isin(metavision_tracti.keys())
-            ]
-            .replace(metavision_general)
-            .replace(metavision_tracti)
-        )
-    elif department == "CAR":
-        df = df[df["description"].isin(cardio_general.keys())].replace(cardio_general)
-    elif department == "PICU":
-        df = (
-            df[
-                df["description"].isin(metavision_general.keys())
-                | df["description"].isin(metavision_tracti.keys())
-            ]
-            .replace(metavision_general)
-            .replace(metavision_tracti)
-        )
-    elif department == "ORT":
-        return df
-    elif department == "DEMO":
-        return df
-    else:
+    if department not in department_mappings:
+        logger.error(f"Department {department} not recognized")
         raise ValueError(f"Department {department} not recognized")
+
+    if department in {"DEMO"}:
+        return df
+
+    dept_descriptions = department_mappings[department]
+    df = df[df["description"].isin(dept_descriptions.keys())].replace(dept_descriptions)
+
     return df
 
 

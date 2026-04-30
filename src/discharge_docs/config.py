@@ -3,6 +3,7 @@ import os
 import sys
 import tomllib
 from pathlib import Path
+from typing import Dict
 
 from rich.logging import RichHandler
 
@@ -106,6 +107,47 @@ def setup_root_logger() -> None:
             )
         )
     root_logger.addHandler(console_handler)
+
+
+def get_department_mappings(
+    department_config: DepartmentConfig,
+) -> Dict[str, Dict[str, str]]:
+    """Get a mapping of a department to their corresponding column containing
+    the descriptions and renamed descriptions.
+
+    Parameters
+    ----------
+    department_config : DepartmentConfig
+        The department configuration containing the department settings and column
+        description sets.
+
+    Returns
+    -------
+    Dict[str, Dict[str, str]]
+        Dictionary that maps departments to a dict with the discriptions mapped
+        to the renamed descriptions.
+    """
+    if department_config.department is None:
+        raise ValueError("Department config does not contain a department.")
+
+    mappings: Dict[str, Dict[str, str]] = {}
+    for dept, cfg in department_config.department.items():
+        if dept == "DEMO":
+            continue
+        elif not cfg.column_description_set:
+            raise ValueError(f"Department {dept} has no descriptions.")
+
+        for description_set in cfg.column_description_set:
+            if description_set not in department_config.column_description:
+                raise ValueError(
+                    f"Unknown description set '{description_set}' "
+                    f"for department '{dept}'"
+                )
+        mappings[dept] = cfg.get_column_descriptions(
+            department_config.column_description
+        )
+
+    return mappings
 
 
 def load_department_config(

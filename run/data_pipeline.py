@@ -16,6 +16,7 @@ from umcu_ai_utils.database_connection import get_engine
 
 from discharge_docs.config import (
     DEPLOYMENT_NAME_BULK,
+    get_department_mappings,
     load_department_config,
     setup_root_logger,
 )
@@ -260,7 +261,9 @@ def run_processing(
             Path(raw_data_folder / f"{start_date}_{end_date}_hix_docs.json"),
             convert_dates=["admissionDate", "dischargeDate", "date"],
         )
-        hix_patient_data["content"] = hix_patient_data["content"].apply(rtf_to_text)
+        hix_patient_data["content"] = hix_patient_data["content"].apply(
+            rtf_to_text, errors="ignore"
+        )
         data = combine_patient_and_docs_data_hix(hix_patient_data, hix_docs_data)
 
     elif data_source == "metavision":
@@ -276,8 +279,10 @@ def run_processing(
             parse_dates=["admissionDate", "dischargeDate", "date"],
         )
 
+    department_config = load_department_config()
+    department_mappings = get_department_mappings(department_config)
     data = data.pipe(apply_deduce, "content").pipe(
-        process_data, remove_encs_no_docs=True
+        process_data, remove_encs_no_docs=True, department_mappings=department_mappings
     )
 
     data = data[data["department"] == selected_department]

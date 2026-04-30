@@ -23,6 +23,7 @@ from discharge_docs.config import (
     DEPLOYMENT_NAME_ENV,
     TEMPERATURE,
     get_current_version,
+    get_department_mappings,
     load_department_config,
     setup_root_logger,
 )
@@ -64,6 +65,7 @@ client = initialise_azure_connection()
 logger.info(f"Using deployment {DEPLOYMENT_NAME_ENV}")
 
 department_config = load_department_config()
+department_mappings = get_department_mappings(department_config)
 
 
 def get_session():
@@ -121,7 +123,7 @@ async def process_and_generate_discharge_docs(
     validated_data = [item.model_dump() for item in data]
     data_df = pd.DataFrame.from_records(validated_data)
 
-    processed_data = process_data(data_df)
+    processed_data = process_data(data_df, department_mappings=department_mappings)
 
     processed_data = apply_deduce(processed_data, "content")
 
